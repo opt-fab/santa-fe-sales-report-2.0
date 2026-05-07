@@ -9,6 +9,8 @@
     <title>Santa Fe – ส่งยอดขาย v2.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet">
+    <!-- Supabase JS client (replaces Google Apps Script backend) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
       /* ── TOKENS ─────────────────────────────── */
       :root {
@@ -2856,9 +2858,14 @@ body { background: var(--bg); color: var(--txt); }
 ════════════════════════════════════════ -->
     <script>
       /* ════════════════════════════════════════════
-         CONFIG — แก้ WEB_APP_URL หลัง deploy ใหม่
+         CONFIG — Supabase backend
       ════════════════════════════════════════════ */
-      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxN8prgbl4sV2a_fkHVlOLcwr2lJY3OhGPlPDTW1rFAXKKHY7c6qXVaTNdbLDjuLqnTPQ/exec";
+      const SUPABASE_URL = "https://jvsjrqjrzdiujhxtahho.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_c0-2mEMzgunEQQAsT6n4XQ_fVW38Cwx";
+      const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      // legacy ref (some old code still reads this var) — ไม่ใช้แล้วแต่เก็บไว้กันพัง
+      const WEB_APP_URL = "";
 
       /* ────────────────────────────────────────
          BRANCH → DM MAP (ล็อกอัตโนมัติ)
@@ -3905,37 +3912,145 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       /* ════════════════════════════════════════════
-         API CALL — GET request (GAS doGet ไม่มี redirect, รองรับ CORS)
+         API CALL — Supabase backend
+         รักษา callback signature เดิม:
+           apiCall(params, cb)
+           cb({ ok: bool, rows?, saved?, duplicate?, error? })
       ════════════════════════════════════════════ */
-      function apiCall(params, cb, _retry) {
-        const maxRetry = (_retry === undefined) ? 3 : _retry;
 
-        const qs = new URLSearchParams();
-        Object.keys(params).forEach(k => qs.append(k, String(params[k] ?? "")));
+      // ─ helpers ─
+      const _SUPA_NUM_FIELDS = [
+        "plan_sale","actual_sale","sale_dine_in","sale_take_away","sale_grab","sale_lineman","sale_shopeefood",
+        "total_trans","trans_dine_in","trans_take_away","trans_grab","trans_lineman","trans_shopeefood",
+        "customer","labour_hour","labour_baht"
+      ];
+      function _supaCleanPayload(obj) {
+        const out = {};
+        Object.keys(obj).forEach(k => {
+          if (k === "mode" || k === "_row" || k === "entries") return;
+          let v = obj[k];
+          if (_SUPA_NUM_FIELDS.indexOf(k) >= 0) {
+            const n = parseFloat(String(v ?? "").replace(/,/g, ""));
+            v = isFinite(n) ? n : 0;
+          }
+          out[k] = v;
+        });
+        return out;
+      }
 
-        const controller = new AbortController();
-        // ใช้ AbortController ยกเลิก fetch เมื่อ timeout → catch จะ retry ได้จริง
-        const timer = setTimeout(() => controller.abort(), 28000);
+      async function apiCall(params, cb) {
+        try {
+          const mode = params.mode;
 
-        fetch(WEB_APP_URL + "?" + qs.toString(), { signal: controller.signal })
-          .then(r => r.json())
-          .then(data => {
-            clearTimeout(timer);
-            if (data && data.error === "LOCK_TIMEOUT" && maxRetry > 0) {
-              setTimeout(() => apiCall(params, cb, maxRetry - 1), 3000 + Math.random() * 2000);
+          /* ─────── HISTORY ─────── */
+          if (mode === "history") {
+            const days = parseInt(params.days) || 31;
+            const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+            const { data, error } = await sb
+              .from("sales_data")
+              .select("*")
+              .eq("branch_code", params.branch_code)
+              .gte("submit_date", since)
+              .order("submit_date", { ascending: false })
+              .order("submit_time_slot", { ascending: false });
+            if (error) { cb({ ok: false, error: error.message }); return; }
+            // map id → _row (ให้ openEdit ใช้แบบเดิม)
+            const rows = (data || []).map(r => ({ ...r, _row: r.id }));
+            cb({ ok: true, rows });
+            return;
+          }
+
+          /* ─────── SUBMIT ─────── */
+          if (mode === "submit") {
+            const payload = _supaCleanPayload(params);
+            payload.submitted_at = new Date().toISOString();
+
+            // เช็ค duplicate ก่อน
+            const { data: existing } = await sb
+              .from("sales_data")
+              .select("submit_date, submit_time_slot, submitter_name")
+              .eq("branch_code", payload.branch_code)
+              .eq("submit_date", payload.submit_date)
+              .eq("submit_time_slot", payload.submit_time_slot)
+              .limit(1);
+
+            if (existing && existing.length > 0) {
+              cb({ ok: false, duplicate: existing[0] });
               return;
             }
-            cb(data);
-          })
-          .catch(() => {
-            clearTimeout(timer);
-            if (maxRetry > 0) {
-              // GAS cold start หรือ network blip → รอแล้ว retry
-              setTimeout(() => apiCall(params, cb, maxRetry - 1), 2000);
-            } else {
-              cb(null);
+
+            const { error } = await sb.from("sales_data").insert(payload);
+            if (error) {
+              cb({ ok: false, error: error.message, userMessage: "ไม่สามารถบันทึกข้อมูลได้" });
+              return;
             }
-          });
+            cb({ ok: true });
+            return;
+          }
+
+          /* ─────── EDIT ─────── */
+          if (mode === "edit") {
+            const id = parseInt(params._row);
+            if (!id) { cb({ ok: false, error: "missing row id" }); return; }
+            const payload = _supaCleanPayload(params);
+            // edit_count + last_edited_at อัพเดทอัตโนมัติด้วย trigger
+            const { error } = await sb.from("sales_data").update(payload).eq("id", id);
+            if (error) { cb({ ok: false, error: error.message }); return; }
+            cb({ ok: true });
+            return;
+          }
+
+          /* ─────── GET PLAN ─────── */
+          if (mode === "getPlan") {
+            let q = sb.from("plan_sale").select("plan_date, plan_amount").eq("branch_code", params.branch_code);
+
+            if (params.year_month) {
+              const [y, m] = params.year_month.split("-");
+              const start = `${y}-${m}-01`;
+              const lastDay = new Date(parseInt(y), parseInt(m), 0).getDate();
+              const end = `${y}-${m}-${String(lastDay).padStart(2, "0")}`;
+              q = q.gte("plan_date", start).lte("plan_date", end);
+            } else if (params.date) {
+              q = q.eq("plan_date", params.date);
+            }
+
+            const { data, error } = await q;
+            if (error) { cb({ ok: false, error: error.message }); return; }
+            // shape ให้ตรงกับ GAS: rows = [{date, plan_sale}]
+            const rows = (data || []).map(r => ({ date: r.plan_date, plan_sale: r.plan_amount }));
+            cb({ ok: true, rows });
+            return;
+          }
+
+          /* ─────── SAVE PLAN ─────── */
+          if (mode === "savePlan") {
+            // entries มาเป็น JSON string: [{date, plan_sale}, ...]
+            let entries = params.entries;
+            if (typeof entries === "string") {
+              try { entries = JSON.parse(entries); } catch (_) { entries = []; }
+            }
+            entries = entries || [];
+            if (!entries.length) { cb({ ok: true, saved: 0 }); return; }
+
+            const upserts = entries.map(e => ({
+              branch_code: params.branch_code,
+              plan_date: e.date,
+              plan_amount: parseFloat(e.plan_sale) || 0,
+              updated_at: new Date().toISOString()
+            }));
+            const { error } = await sb
+              .from("plan_sale")
+              .upsert(upserts, { onConflict: "branch_code,plan_date" });
+            if (error) { cb({ ok: false, error: error.message }); return; }
+            cb({ ok: true, saved: entries.length });
+            return;
+          }
+
+          cb({ ok: false, error: "Unknown mode: " + mode });
+        } catch (err) {
+          console.error("apiCall error:", err);
+          cb({ ok: false, error: (err && err.message) || String(err) });
+        }
       }
 
       /* ════════════════════════════════════════════
