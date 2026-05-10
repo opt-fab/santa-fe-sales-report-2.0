@@ -4060,9 +4060,11 @@ body { background: var(--bg); color: var(--txt); }
           closeM("mAlert");
           if (!res) { showAlert("❌", "ไม่ได้รับการตอบกลับ", "กรุณาลองใหม่"); return; }
           if (res.ok && res.edited) {
-            showAlert("✅", "บันทึกสำเร็จ!",
-              `แก้ไขข้อมูลครั้งที่ ${res.editCount} เรียบร้อยแล้ว`, loadHistory);
             _editRow = null;
+            // Refresh history ทันที — ไม่รอให้ user คลิก OK
+            loadHistory();
+            showAlert("✅", "บันทึกสำเร็จ!",
+              `แก้ไขข้อมูลครั้งที่ ${res.editCount} เรียบร้อยแล้ว`);
           } else {
             showAlert("❌", "บันทึกไม่สำเร็จ", res.userMessage || res.error || "เกิดข้อผิดพลาด");
           }
@@ -4170,6 +4172,18 @@ body { background: var(--bg); color: var(--txt); }
               console.error("[Supabase edit error]", error, "payload:", payload);
               cb({ ok: false, error: error.message, userMessage: "แก้ไขไม่ได้: " + error.message });
               return;
+            }
+            // ถ้ามีการเปลี่ยน plan_sale ที่รอบ 16.00 → sync ไปตาราง plan_sale ด้วย (ตารางคือ source of truth)
+            if (params.submit_time_slot === "16.00" && payload.plan_sale > 0 && payload.submit_date) {
+              const { error: planErr } = await sb
+                .from("plan_sale")
+                .upsert({
+                  branch_code: payload.branch_code,
+                  plan_date: payload.submit_date,
+                  plan_amount: payload.plan_sale,
+                  updated_at: new Date().toISOString()
+                }, { onConflict: "branch_code,plan_date" });
+              if (planErr) console.warn("[plan_sale sync]", planErr);
             }
             // mirror → Google Sheets (upsert ใน sheet ตาม branch+date+slot)
             pushToSheet("submit_sales", { ...payload, edit_count: (data && data.edit_count) || 1 });
