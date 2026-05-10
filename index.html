@@ -3793,15 +3793,37 @@ body { background: var(--bg); color: var(--txt); }
         document.getElementById("histTableContent").innerHTML = loading;
         document.getElementById("histCardsContent").innerHTML = loading;
 
-        apiCall({ mode: "history", branch_code: S.code, days: 30 }, function (res) {
-          if (!res || !res.ok) {
-            const errMsg = `<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">${res ? (res.error || "โหลดข้อมูลไม่สำเร็จ") : "ไม่ได้รับการตอบกลับ"}</div></div>`;
+        const since = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+        const until = todayStr();
+
+        let _hist = null, _plan = null, _done = 0;
+        function _onDone() {
+          if (++_done < 2) return;
+          if (!_hist || !_hist.ok) {
+            const errMsg = `<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">${_hist ? (_hist.error || "โหลดข้อมูลไม่สำเร็จ") : "ไม่ได้รับการตอบกลับ"}</div></div>`;
             document.getElementById("histTableContent").innerHTML = errMsg;
             document.getElementById("histCardsContent").innerHTML = errMsg;
             return;
           }
-          renderHistory(res.rows || []);
-        });
+          // Build plan lookup จากตาราง plan_sale
+          const planByDate = {};
+          if (_plan && _plan.ok && Array.isArray(_plan.rows)) {
+            _plan.rows.forEach(r => { planByDate[r.date] = parseFloat(r.plan_sale) || 0; });
+          }
+          // Merge: ใช้ plan จากตาราง plan_sale แทนที่ฝังในแถว
+          const merged = (_hist.rows || []).map(r => ({
+            ...r,
+            plan_sale: planByDate[r.submit_date] !== undefined
+              ? planByDate[r.submit_date]
+              : (parseFloat(r.plan_sale) || 0)
+          }));
+          renderHistory(merged);
+        }
+
+        apiCall({ mode:"history", branch_code:S.code, start_date:since, end_date:until },
+                function(res) { _hist = res; _onDone(); });
+        apiCall({ mode:"getPlan", branch_code:S.code, start_date:since, end_date:until },
+                function(res) { _plan = res; _onDone(); });
       }
 
       function renderHistory(rows) {
@@ -4165,6 +4187,9 @@ body { background: var(--bg); color: var(--txt); }
               const lastDay = new Date(parseInt(y), parseInt(m), 0).getDate();
               const end = `${y}-${m}-${String(lastDay).padStart(2, "0")}`;
               q = q.gte("plan_date", start).lte("plan_date", end);
+            } else if (params.start_date || params.end_date) {
+              if (params.start_date) q = q.gte("plan_date", params.start_date);
+              if (params.end_date)   q = q.lte("plan_date", params.end_date);
             } else if (params.date) {
               q = q.eq("plan_date", params.date);
             }
