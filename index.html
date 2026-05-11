@@ -3949,10 +3949,13 @@ body { background: var(--bg); color: var(--txt); }
         }, function (res) {
           btn.disabled = false; btn.textContent = "💾 บันทึก Plan เดือนนี้";
           if (res && res.ok) {
-            // update local cache
+            // update local caches (ทั้ง Plan Sale page + Submit form)
             document.querySelectorAll(".plan-inp").forEach(inp => {
               const v = parseFloat(inp.value.replace(/,/g, "")) || 0;
-              _planData[inp.dataset.date] = v;
+              const d = inp.dataset.date;
+              _planData[d] = v;
+              // sync ไปยัง cache ของหน้าส่งยอด (ป้องกัน stale value)
+              _planCache[S.code + "|" + d] = v;
             });
             showAlert("✅", "บันทึกสำเร็จ", "บันทึก Plan " + res.saved + " วันเรียบร้อยแล้ว");
           } else {
