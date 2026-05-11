@@ -2178,6 +2178,9 @@ body { background: var(--bg); color: var(--txt); }
   }
   .dash-section { margin-bottom: 8px; }
 
+  /* ซ่อนแถบ tab ใน sAdmin บน desktop — sidebar ทำหน้าที่แทน */
+  #sAdmin .admin-tabs { display: none !important; }
+
   /* ─ Admin tabs — เป็นหัวข้อหลักของหน้า ─ */
   .admin-tab {
     background: transparent !important;
@@ -2505,8 +2508,18 @@ body { background: var(--bg); color: var(--txt); }
         <button class="desk-nav-btn" id="dnHistory" onclick="showHistory()">
           <span class="desk-nav-ico">🗂️</span>ประวัติ
         </button>
-        <button class="desk-nav-btn" id="dnAdmin" onclick="showAdmin()" style="display:none">
-          <span class="desk-nav-ico">👑</span>Admin
+        <!-- Admin sub-menu (visible only when logged in as Admin) -->
+        <button class="desk-nav-btn admin-only-nav" id="dnAdminSettings" onclick="showAdmin('settings')" style="display:none">
+          <span class="desk-nav-ico">⚙️</span>Settings
+        </button>
+        <button class="desk-nav-btn admin-only-nav" id="dnAdminBranches" onclick="showAdmin('branches')" style="display:none">
+          <span class="desk-nav-ico">🏢</span>จัดการสาขา
+        </button>
+        <button class="desk-nav-btn admin-only-nav" id="dnAdminBzms" onclick="showAdmin('bzms')" style="display:none">
+          <span class="desk-nav-ico">👤</span>จัดการ BZM
+        </button>
+        <button class="desk-nav-btn admin-only-nav" id="dnAdminZones" onclick="showAdmin('zones')" style="display:none">
+          <span class="desk-nav-ico">🗺️</span>โซน BZM
         </button>
       </nav>
       <div class="desk-nav-sep"></div>
@@ -3070,13 +3083,14 @@ body { background: var(--bg); color: var(--txt); }
 ════════════════════════════════════════ -->
     <div id="mAlert" class="modal-bg">
       <div class="modal modal-sm" style="position:relative">
-        <button class="alert-close-btn" onclick="closeM('mAlert')"
+        <button class="alert-close-btn" onclick="alertCloseClick()"
                 style="position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;border:none;background:#f1f5f9;color:#64748b;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1"
                 aria-label="ปิด">×</button>
         <div class="alert-ico" id="alertIco"></div>
         <div class="alert-title" id="alertTitle"></div>
-        <div class="alert-msg" id="alertMsg"></div>
-        <div class="alert-actions">
+        <div class="alert-msg" id="alertMsg" style="white-space:pre-line"></div>
+        <div class="alert-actions" style="display:flex;gap:10px;justify-content:center">
+          <button class="btn btn-outline" id="alertCancel" style="display:none">ยกเลิก</button>
           <button class="btn btn-brand" id="alertOk">ตกลง</button>
         </div>
       </div>
@@ -3451,13 +3465,14 @@ body { background: var(--bg); color: var(--txt); }
           if (el) el.style.display = isAdmin ? "none" : "flex";
         });
 
-        // แสดงปุ่ม Admin เฉพาะ admin
-        const dnAdminBtn = document.getElementById("dnAdmin");
+        // แสดงปุ่ม Admin ทุกตัวใน sidebar เฉพาะ admin
+        document.querySelectorAll(".admin-only-nav").forEach(el => {
+          el.style.display = isAdmin ? "flex" : "none";
+        });
         const mnAdminBtn = document.getElementById("mnAdmin");
-        if (dnAdminBtn) dnAdminBtn.style.display = isAdmin ? "flex" : "none";
         if (mnAdminBtn) mnAdminBtn.style.display = isAdmin ? "flex" : "none";
 
-        if (isAdmin) showAdmin();
+        if (isAdmin) showAdmin("settings");
         else         showDash();
       }
 
@@ -3485,15 +3500,22 @@ body { background: var(--bg); color: var(--txt); }
       let _adminBranches = []; // [{branch_code, branch_name, district_manager}]
       let _adminEditingCode = null; // null=add mode, otherwise=edit mode
 
-      function showAdmin() {
+      function showAdmin(tab) {
         if (S.code !== "ADMIN") { showAlert("⛔", "ต้องเป็น Admin", "เฉพาะ admin เท่านั้นที่เข้าได้"); return; }
         showScreen("sAdmin");
+        // Active sidebar item
+        const tabMap = {
+          settings: "dnAdminSettings",
+          branches: "dnAdminBranches",
+          bzms:     "dnAdminBzms",
+          zones:    "dnAdminZones"
+        };
         document.querySelectorAll(".mob-nav-btn, .desk-nav-btn").forEach(b => b.classList.remove("active"));
-        const dn = document.getElementById("dnAdmin"); if (dn) dn.classList.add("active");
+        const dn = document.getElementById(tabMap[tab] || "dnAdminSettings");
+        if (dn) dn.classList.add("active");
         const mn = document.getElementById("mnAdmin"); if (mn) mn.classList.add("active");
         document.getElementById("adminTestMode").checked = !!document.getElementById("testMode").checked;
-        // Load default tab data
-        adminSwitchTab(_adminCurrentTab || "settings");
+        adminSwitchTab(tab || _adminCurrentTab || "settings");
       }
 
       let _adminCurrentTab = "settings";
@@ -3626,13 +3648,20 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       function adminDeleteBranch(code, name) {
-        if (!confirm(`ยืนยันการลบสาขา?\n\nรหัส: ${code}\nชื่อ: ${name}\n\n⚠️ การลบนี้ไม่กระทบข้อมูล sales_data / plan_sale เดิม (จะคงอยู่)\nแต่สาขานี้จะ login เข้าระบบไม่ได้อีก`)) return;
-        sb.from("branches").delete().eq("branch_code", code).then(({ error }) => {
-          if (error) { showAlert("❌", "ลบไม่สำเร็จ", error.message); return; }
-          delete BRANCH_DM_MAP[code];
-          loadAdminBranches();
-          showAlert("✅", "ลบเรียบร้อย", `ลบสาขา ${code} แล้ว`);
-        });
+        showConfirm(
+          "🗑️",
+          "ยืนยันการลบสาขา?",
+          `รหัส: ${code}\nชื่อ: ${name}\n\n⚠️ การลบนี้ไม่กระทบข้อมูล sales_data / plan_sale เดิม (จะคงอยู่)\nแต่สาขานี้จะ login เข้าระบบไม่ได้อีก`,
+          function() {
+            sb.from("branches").delete().eq("branch_code", code).then(({ error }) => {
+              if (error) { showAlert("❌", "ลบไม่สำเร็จ", error.message); return; }
+              delete BRANCH_DM_MAP[code];
+              loadAdminBranches();
+              showAlert("✅", "ลบเรียบร้อย", `ลบสาขา ${code} แล้ว`);
+            });
+          },
+          { btnText: "ลบ", danger: true }
+        );
       }
 
       /* ───── BZM CRUD ───── */
@@ -3732,20 +3761,20 @@ body { background: var(--bg); color: var(--txt); }
         }
       }
 
-      async function adminDeleteBzm(name) {
+      function adminDeleteBzm(name) {
         const cnt = (_adminBzmList.find(b => b.name === name) || {}).count || 0;
-        if (cnt > 0) {
-          if (!confirm(`BZM "${name}" มี ${cnt} สาขาในโซน\n\nการลบจะทำให้สาขาเหล่านั้น"ไม่มี BZM" (ค่าจะถูกล้าง)\n\nยืนยันลบ?`)) return;
-        } else {
-          if (!confirm(`ลบ BZM "${name}"?`)) return;
-        }
-        const { error } = await sb.from("branches")
-          .update({ district_manager: "" })
-          .eq("district_manager", name);
-        if (error) { showAlert("❌", "ลบไม่สำเร็จ", error.message); return; }
-        await loadAdminBranches();
-        loadAdminBzms();
-        showAlert("✅", "ลบเรียบร้อย", `ลบ BZM "${name}" แล้ว`);
+        const msg = cnt > 0
+          ? `BZM "${name}" มี ${cnt} สาขาในโซน\n\nการลบจะทำให้สาขาเหล่านั้น "ไม่มี BZM" (ค่าจะถูกล้าง)\n\nยืนยันลบ?`
+          : `ลบ BZM "${name}"?`;
+        showConfirm("🗑️", "ยืนยันการลบ BZM", msg, async function() {
+          const { error } = await sb.from("branches")
+            .update({ district_manager: "" })
+            .eq("district_manager", name);
+          if (error) { showAlert("❌", "ลบไม่สำเร็จ", error.message); return; }
+          await loadAdminBranches();
+          loadAdminBzms();
+          showAlert("✅", "ลบเรียบร้อย", `ลบ BZM "${name}" แล้ว`);
+        }, { btnText: "ลบ", danger: true });
       }
 
       /* ───── BZM ZONE (assign branches) ───── */
@@ -5178,19 +5207,56 @@ body { background: var(--bg); color: var(--txt); }
       function closeM(id) { document.getElementById(id).classList.remove("open"); }
 
       let _alertCb = null;
+      let _alertCancelCb = null;
       function showAlert(ico, title, msg, okCb, opts) {
         opts = opts || {};
         document.getElementById("alertIco").textContent = ico;
         document.getElementById("alertTitle").textContent = title;
         document.getElementById("alertMsg").textContent = msg;
         _alertCb = okCb || null;
+        _alertCancelCb = opts.onCancel || null;
+
         const okBtn = document.getElementById("alertOk");
         okBtn.textContent = opts.btnText || "ตกลง";
+        // Style ปุ่ม OK: danger=แดง, default=ส้ม
+        okBtn.classList.remove("btn-brand","btn-danger");
+        okBtn.classList.add(opts.danger ? "btn-danger" : "btn-brand");
         okBtn.onclick = function () {
           closeM("mAlert");
           if (_alertCb) { const fn = _alertCb; _alertCb = null; fn(); }
         };
+
+        const cancelBtn = document.getElementById("alertCancel");
+        if (opts.cancelText) {
+          cancelBtn.style.display = "inline-flex";
+          cancelBtn.textContent = opts.cancelText;
+          cancelBtn.onclick = function () {
+            closeM("mAlert");
+            const fn = _alertCancelCb; _alertCancelCb = null;
+            if (fn) fn();
+          };
+        } else {
+          cancelBtn.style.display = "none";
+        }
         openM("mAlert");
+      }
+
+      // เรียกตอนกดปุ่ม X — รวม cancel callback
+      function alertCloseClick() {
+        closeM("mAlert");
+        const fn = _alertCancelCb; _alertCancelCb = null; _alertCb = null;
+        if (fn) fn();
+      }
+
+      /* Shortcut: ปุ่มยืนยัน (ตกลง/ยกเลิก) — ใช้แทน confirm() ของ browser */
+      function showConfirm(ico, title, msg, onOk, opts) {
+        opts = opts || {};
+        showAlert(ico, title, msg, onOk, {
+          btnText:    opts.btnText    || "ยืนยัน",
+          cancelText: opts.cancelText || "ยกเลิก",
+          danger:     !!opts.danger,
+          onCancel:   opts.onCancel || null
+        });
       }
 
       /* ─ Jump to Plan Sale page for a specific date ─ */
