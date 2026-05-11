@@ -3722,6 +3722,21 @@ body { background: var(--bg); color: var(--txt); }
 
         getPlan(date, function(planVal) {
           document.getElementById("mPlanLoad").style.display = "none";
+
+          // ── BLOCK ส่งถ้ายังไม่มี Plan สำหรับวันนั้น ──
+          if (!planVal || planVal <= 0) {
+            const [yy, mm, dd] = date.split("-");
+            const thDate = `${parseInt(dd)}/${parseInt(mm)}/${parseInt(yy)+543}`;
+            showAlert(
+              "📅",
+              "ยังไม่ได้กำหนด Plan Sale",
+              `กรุณาตั้ง Plan Sale สำหรับวันที่ ${thDate} ก่อนส่งยอดขาย`,
+              function() { showPlanForDate(date); },
+              { btnText: "ไปกำหนด Plan Sale →" }
+            );
+            return;
+          }
+
           p.plan_sale    = planVal;
           _pendingPayload = p;
 
@@ -4454,16 +4469,35 @@ body { background: var(--bg); color: var(--txt); }
       function closeM(id) { document.getElementById(id).classList.remove("open"); }
 
       let _alertCb = null;
-      function showAlert(ico, title, msg, okCb) {
+      function showAlert(ico, title, msg, okCb, opts) {
+        opts = opts || {};
         document.getElementById("alertIco").textContent = ico;
         document.getElementById("alertTitle").textContent = title;
         document.getElementById("alertMsg").textContent = msg;
         _alertCb = okCb || null;
-        document.getElementById("alertOk").onclick = function () {
+        const okBtn = document.getElementById("alertOk");
+        okBtn.textContent = opts.btnText || "ตกลง";
+        okBtn.onclick = function () {
           closeM("mAlert");
           if (_alertCb) { const fn = _alertCb; _alertCb = null; fn(); }
         };
         openM("mAlert");
+      }
+
+      /* ─ Jump to Plan Sale page for a specific date ─ */
+      function showPlanForDate(dateStr) {
+        if (dateStr) {
+          const [y, m] = dateStr.split("-");
+          _planYear  = parseInt(y);
+          _planMonth = parseInt(m) - 1;
+        } else {
+          const now = new Date();
+          _planYear  = now.getFullYear();
+          _planMonth = now.getMonth();
+        }
+        showScreen("sPlan");
+        setMobTab("mnPlan");
+        loadPlanMonth();
       }
 
       // Close modal on backdrop click — เฉพาะ modal ที่ไม่มี form data
