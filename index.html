@@ -2167,6 +2167,17 @@ body { background: var(--bg); color: var(--txt); }
   .dash-page-title, .plan-month-bar h2, .hist-hdr h2 { color: var(--txt) !important; }
   .plan-month-lbl { color: var(--txt) !important; }
 
+  /* ─ Section headings (สรุปรายเดือน / สรุปตามช่วงวันที่ / 30 วันล่าสุด) ─ */
+  .dash-section-h {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: var(--txt) !important;
+    margin: 0 0 12px 0 !important;
+    letter-spacing: -.01em;
+    line-height: 1.3;
+  }
+  .dash-section { margin-bottom: 8px; }
+
   /* ─ Page header (consistent) ─ */
   .dash-page-hdr {
     padding-bottom: 16px !important;
@@ -2542,7 +2553,13 @@ body { background: var(--bg); color: var(--txt); }
 
         <!-- ส่วนที่ 1: ข้อมูลการส่ง -->
         <div class="card">
-          <div class="card-hdr">📋 ข้อมูลการส่ง</div>
+          <div class="card-hdr" style="display:flex;align-items:center;justify-content:space-between">
+            <span>📋 ข้อมูลการส่ง</span>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;background:rgba(0,0,0,.18);padding:5px 12px;border-radius:6px">
+              <input type="checkbox" id="testMode" style="width:14px;height:14px;cursor:pointer;accent-color:#fff">
+              🧪 โหมดทดสอบ
+            </label>
+          </div>
           <div class="card-body">
             <div class="info-grid">
               <div class="field">
@@ -2732,72 +2749,68 @@ body { background: var(--bg); color: var(--txt); }
           <button class="btn btn-sm" onclick="loadDash()" style="background:#f1f5f9;color:#475569;flex-shrink:0">🔄 รีเฟรช</button>
         </div>
 
-        <!-- รายเดือน — 4 stats เต็มแถว (บน) + month nav -->
-        <div class="dash-month-bar" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap">
-          <div id="dashMonthTitle" class="dash-sec-title" style="margin:0">สรุปรายเดือน</div>
-          <div class="dash-month-nav" style="display:flex;align-items:center;gap:6px;background:#f1f5f9;border-radius:10px;padding:6px 10px">
-            <button class="btn btn-sm" onclick="dashPrevMonth()" style="background:#fff;border:1px solid var(--bd);width:30px;height:30px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">‹</button>
-            <span id="dashMonthLabel" style="font-size:13px;font-weight:700;min-width:120px;text-align:center;color:var(--txt);background:#fff;padding:6px 12px;border-radius:6px;border:1px solid var(--bd)">—</span>
-            <button class="btn btn-sm" onclick="dashNextMonth()" style="background:#fff;border:1px solid var(--bd);width:30px;height:30px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">›</button>
-            <button class="btn btn-sm btn-outline" onclick="dashThisMonth()" style="font-size:12px;padding:5px 12px;margin-left:4px">เดือนนี้</button>
+        <!-- ───────── SECTION 1: สรุปรายเดือน ───────── -->
+        <div class="dash-section">
+          <h2 class="dash-section-h" id="dashMonthTitle">สรุปรายเดือน</h2>
+          <!-- ปุ่มเลื่อนเดือน อยู่ใต้หัวข้อ -->
+          <div class="dash-month-nav" style="display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border-radius:10px;padding:6px 10px;margin-bottom:16px">
+            <button class="btn btn-sm" onclick="dashPrevMonth()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">‹</button>
+            <span id="dashMonthLabel" style="font-size:13px;font-weight:700;min-width:130px;text-align:center;color:var(--txt);background:#fff;padding:6px 14px;border-radius:6px;border:1px solid var(--bd)">—</span>
+            <button class="btn btn-sm" onclick="dashNextMonth()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">›</button>
+            <button class="btn btn-sm btn-outline" onclick="dashThisMonth()" style="font-size:12px;padding:6px 12px;margin-left:4px">เดือนนี้</button>
           </div>
-        </div>
-        <div class="dash-stats-grid dash-stats-row" id="dashStatsGrid">
-          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Actual Sale</div></div>
-          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">% ของ Plan</div></div>
-          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Trans/วัน</div></div>
-          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Labour %</div></div>
-        </div>
-
-        <!-- 2-col: รายวัน (ซ้าย) + 30 วันล่าสุด (ขวา) -->
-        <div class="dash-grid-main">
-
-          <div class="dash-col-left">
-            <div class="dash-upper-left">
-              <div class="dash-sec-title">สรุปตามช่วงวันที่</div>
-              <!-- Date range picker (with background) -->
-              <div class="dash-date-range" style="background:#f1f5f9;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-                <input type="date" id="dashDateFrom" onchange="renderDashFromCache()"
-                       style="background:#fff;border:1px solid var(--bd);border-radius:7px;padding:6px 10px;font-family:inherit;font-size:13px;color:var(--txt);outline:none">
-                <span style="font-size:12px;color:var(--txt2);font-weight:600">ถึง</span>
-                <input type="date" id="dashDateTo" onchange="renderDashFromCache()"
-                       style="background:#fff;border:1px solid var(--bd);border-radius:7px;padding:6px 10px;font-family:inherit;font-size:13px;color:var(--txt);outline:none">
-                <button class="btn btn-sm btn-outline" onclick="setDashDateToday()"
-                        style="font-size:12px;padding:5px 12px;margin-left:auto">วันนี้</button>
-              </div>
-              <div class="dash-today-grid" id="dashTodayGrid">
-                <div class="dash-today-card"><div class="dtc-slot">🕓 รอบ 16.00</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
-                <div class="dash-today-card"><div class="dtc-slot">🌙 รอบสิ้นวัน</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
-              </div>
+          <!-- 4 stat cards -->
+          <div class="dash-stats-grid dash-stats-row" id="dashStatsGrid">
+            <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Actual Sale</div></div>
+            <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">% ของ Plan</div></div>
+            <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Trans/วัน</div></div>
+            <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Labour %</div></div>
+          </div>
+          <!-- กราฟยอดสะสม (ย้ายมาอยู่ใต้รายเดือน) -->
+          <div class="dash-sec-title" style="margin-top:18px">กราฟยอดสะสม Actual vs Plan (รอบสิ้นวัน)</div>
+          <div class="dash-card-wrap" style="padding:16px">
+            <div style="position:relative;height:320px">
+              <canvas id="dashChart"></canvas>
             </div>
           </div>
-
-          <div class="dash-col-right">
-            <!-- กราฟยอดสะสม Actual vs Plan -->
-            <div class="dash-sec-title">กราฟยอดสะสม Actual vs Plan (รอบสิ้นวัน)</div>
-            <div class="dash-card-wrap" style="padding:16px;margin-bottom:24px">
-              <div style="position:relative;height:300px">
-                <canvas id="dashChart"></canvas>
-              </div>
-            </div>
-
-            <!-- ตาราง 30 วันล่าสุด -->
-            <div class="dash-sec-title">30 วันล่าสุด <span style="font-weight:400;text-transform:none">(รอบสิ้นวัน)</span></div>
-            <div class="dash-card-wrap">
-              <table class="dash-tbl">
-                <thead><tr>
-                  <th>วันที่</th>
-                  <th style="text-align:right">Plan</th>
-                  <th style="text-align:right">Actual (%)</th>
-                  <th style="text-align:right">Labour Hour</th>
-                  <th style="text-align:right">Labour Baht (%)</th>
-                </tr></thead>
-                <tbody id="dashRecentBody"><tr><td colspan="5" style="color:#94a3b8;padding:16px">⏳ กำลังโหลด...</td></tr></tbody>
-              </table>
-            </div>
-          </div>
-
         </div>
+
+        <!-- ───────── SECTION 2: สรุปตามช่วงวันที่ ───────── -->
+        <div class="dash-section" style="margin-top:32px">
+          <h2 class="dash-section-h">สรุปตามช่วงวันที่</h2>
+          <!-- Date range picker อยู่ใต้หัวข้อ -->
+          <div class="dash-date-range" style="background:#f1f5f9;border-radius:10px;padding:10px 12px;display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+            <input type="date" id="dashDateFrom" onchange="renderDashFromCache()"
+                   style="background:#fff;border:1px solid var(--bd);border-radius:7px;padding:6px 10px;font-family:inherit;font-size:13px;color:var(--txt);outline:none">
+            <span style="font-size:12px;color:var(--txt2);font-weight:600">ถึง</span>
+            <input type="date" id="dashDateTo" onchange="renderDashFromCache()"
+                   style="background:#fff;border:1px solid var(--bd);border-radius:7px;padding:6px 10px;font-family:inherit;font-size:13px;color:var(--txt);outline:none">
+            <button class="btn btn-sm btn-outline" onclick="setDashDateToday()"
+                    style="font-size:12px;padding:6px 12px">วันนี้</button>
+          </div>
+          <div class="dash-today-grid" id="dashTodayGrid">
+            <div class="dash-today-card"><div class="dtc-slot">🕓 รอบ 16.00</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
+            <div class="dash-today-card"><div class="dtc-slot">🌙 รอบสิ้นวัน</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
+          </div>
+        </div>
+
+        <!-- ───────── SECTION 3: 30 วันล่าสุด ───────── -->
+        <div class="dash-section" style="margin-top:32px">
+          <h2 class="dash-section-h">30 วันล่าสุด <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(รอบสิ้นวัน)</span></h2>
+          <div class="dash-card-wrap">
+            <table class="dash-tbl">
+              <thead><tr>
+                <th>วันที่</th>
+                <th style="text-align:right">Plan</th>
+                <th style="text-align:right">Actual (%)</th>
+                <th style="text-align:right">Labour Hour</th>
+                <th style="text-align:right">Labour Baht (%)</th>
+              </tr></thead>
+              <tbody id="dashRecentBody"><tr><td colspan="5" style="color:#94a3b8;padding:16px">⏳ กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -3748,8 +3761,81 @@ body { background: var(--bg); color: var(--txt); }
             return;
           }
 
-          p.plan_sale    = planVal;
-          _pendingPayload = p;
+          // ── BLOCK ตรวจลำดับการส่งยอด ──
+          const testMode = document.getElementById("testMode")?.checked;
+          if (!testMode) {
+            checkSubmissionOrder(date, slot, function(check) {
+              if (!check.ok) {
+                showAlert("⛔", "ลำดับการส่งไม่ถูกต้อง", check.msg);
+                return;
+              }
+              proceedReview(p, planVal, name, date, slot);
+            });
+            return;
+          }
+
+          proceedReview(p, planVal, name, date, slot);
+        });
+      }
+
+      /* ─ ตรวจลำดับการส่งยอด ─ */
+      function checkSubmissionOrder(date, slot, cb) {
+        // กฎ:
+        //   slot = "สิ้นวัน"  → ต้องมี 16.00 ของวันเดียวกัน
+        //   slot = "16.00"   → ต้องมีสิ้นวันของเมื่อวาน (ถ้าเมื่อวานไม่ใช่ขอบเขตข้อมูล)
+        if (slot === "สิ้นวัน") {
+          sb.from("sales_data").select("id")
+            .eq("branch_code", S.code)
+            .eq("submit_date", date)
+            .eq("submit_time_slot", "16.00")
+            .limit(1)
+            .then(({ data }) => {
+              if (!data || !data.length) {
+                const [yy, mm, dd] = date.split("-");
+                const thDate = `${parseInt(dd)}/${parseInt(mm)}/${parseInt(yy)+543}`;
+                cb({ ok: false, msg: `ยังไม่ได้ส่งรอบ 16.00 ของวันที่ ${thDate} กรุณาส่งรอบ 16.00 ก่อน` });
+              } else cb({ ok: true });
+            });
+          return;
+        }
+        if (slot === "16.00") {
+          // หาวันก่อนหน้า
+          const y = new Date(date);
+          y.setDate(y.getDate() - 1);
+          const ystr = y.toISOString().slice(0, 10);
+          sb.from("sales_data").select("id")
+            .eq("branch_code", S.code)
+            .eq("submit_date", ystr)
+            .eq("submit_time_slot", "สิ้นวัน")
+            .limit(1)
+            .then(({ data }) => {
+              if (!data || !data.length) {
+                // เช็คว่าสาขามีข้อมูลย้อนหลังที่ผ่านมาบ้างไหม (กันบล็อกสาขาที่เพิ่งเริ่มใช้ระบบ)
+                sb.from("sales_data").select("id")
+                  .eq("branch_code", S.code)
+                  .lt("submit_date", date)
+                  .limit(1)
+                  .then(({ data: pastData }) => {
+                    if (!pastData || !pastData.length) {
+                      // สาขายังไม่เคยส่งเลย — ผ่านได้ (first submission)
+                      cb({ ok: true });
+                      return;
+                    }
+                    const [yy, mm, dd] = ystr.split("-");
+                    const thDate = `${parseInt(dd)}/${parseInt(mm)}/${parseInt(yy)+543}`;
+                    cb({ ok: false, msg: `ยังไม่ได้ส่งรอบสิ้นวันของวันที่ ${thDate} กรุณาส่งรอบสิ้นวันของเมื่อวานก่อน` });
+                  });
+              } else cb({ ok: true });
+            });
+          return;
+        }
+        cb({ ok: true });
+      }
+
+      /* ─ proceed: set payload + build review modal + open ─ */
+      function proceedReview(p, planVal, name, date, slot) {
+        p.plan_sale     = planVal;
+        _pendingPayload = p;
 
         function rvRow(lbl, val) {
           return `<div class="rv-row"><span class="rv-lbl">${lbl}</span><span class="rv-val">${val}</span></div>`;
@@ -3796,11 +3882,10 @@ body { background: var(--bg); color: var(--txt); }
           html += rvRow("Labour Baht", fmt(p.labour_baht) + labPct);
         }
 
-          document.getElementById("reviewBody").innerHTML = html;
-          document.getElementById("confirmBtn").disabled = false;
-          document.getElementById("confirmBtn").textContent = "ยืนยันส่ง ✓";
-          openM("mReview");
-        }); // end getPlan callback
+        document.getElementById("reviewBody").innerHTML = html;
+        document.getElementById("confirmBtn").disabled = false;
+        document.getElementById("confirmBtn").textContent = "ยืนยันส่ง ✓";
+        openM("mReview");
       }
 
       function confirmSubmit() {
