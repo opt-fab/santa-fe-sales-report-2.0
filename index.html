@@ -2461,6 +2461,11 @@ body { background: var(--bg); color: var(--txt); }
     <!-- ════════════════════════════════════════
      SHARED HEADER (hidden until logged in)
 ════════════════════════════════════════ -->
+    <!-- Test mode global banner (เห็นเมื่อเปิด test mode ใน DB) -->
+    <div id="testModeBanner" style="display:none;background:linear-gradient(90deg,#fef3c7,#fde68a);color:#92400e;text-align:center;padding:8px 16px;font-size:13px;font-weight:700;border-bottom:1px solid #fcd34d;position:sticky;top:0;z-index:200">
+      🧪 โหมดทดสอบเปิดอยู่ — ระบบจะไม่ตรวจสอบลำดับการส่งยอด
+    </div>
+
     <header class="hdr" id="appHdr" style="display:none">
       <div class="hdr-logo">
         <img src="536282464_1192954076197758_7560981869126705598_n.jpg" alt="Santa Fe Happy Steak" class="hdr-logo-img">
@@ -2509,9 +2514,6 @@ body { background: var(--bg); color: var(--txt); }
           <span class="desk-nav-ico">🗂️</span>ประวัติ
         </button>
         <!-- Admin sub-menu (visible only when logged in as Admin) -->
-        <button class="desk-nav-btn admin-only-nav" id="dnAdminSettings" onclick="showAdmin('settings')" style="display:none">
-          <span class="desk-nav-ico">⚙️</span>Settings
-        </button>
         <button class="desk-nav-btn admin-only-nav" id="dnAdminBranches" onclick="showAdmin('branches')" style="display:none">
           <span class="desk-nav-ico">🏢</span>จัดการสาขา
         </button>
@@ -2523,7 +2525,15 @@ body { background: var(--bg); color: var(--txt); }
         </button>
       </nav>
       <div class="desk-nav-sep"></div>
-      <button class="desk-logout-btn" onclick="doLogout()">ออกจากระบบ</button>
+
+      <!-- Test mode toggle (admin only, above logout) -->
+      <button class="desk-nav-btn admin-only-nav" id="testModeBtn" onclick="toggleTestModeAdmin()" style="display:none;margin:0 10px 8px">
+        <span class="desk-nav-ico">🧪</span>
+        <span>โหมดทดสอบ: <span id="testModeStatus" style="font-weight:800;color:var(--brand)">ปิด</span></span>
+      </button>
+
+      <!-- Logout — centered -->
+      <button class="desk-logout-btn" onclick="doLogout()" style="justify-content:center;margin-left:auto;margin-right:auto">ออกจากระบบ</button>
     </aside>
 
     <!-- ════════════════════════════════════════
@@ -2925,29 +2935,16 @@ body { background: var(--bg); color: var(--txt); }
 ════════════════════════════════════════ -->
     <div id="sAdmin" class="screen">
       <div class="dash-wrap">
-        <!-- Tabs เป็นหัวข้อหลัก (ไม่มี "Admin Panel" แล้ว) -->
+        <!-- Tabs (มือถือเห็น — desktop sidebar replace) -->
         <div class="admin-tabs" style="display:flex;align-items:center;gap:4px;border-bottom:2px solid var(--bd);margin-bottom:20px;flex-wrap:wrap">
-          <button class="admin-tab active" data-tab="settings"  onclick="adminSwitchTab('settings')">⚙️ Settings</button>
-          <button class="admin-tab"        data-tab="branches"  onclick="adminSwitchTab('branches')">🏢 จัดการสาขา</button>
+          <button class="admin-tab active" data-tab="branches"  onclick="adminSwitchTab('branches')">🏢 จัดการสาขา</button>
           <button class="admin-tab"        data-tab="bzms"      onclick="adminSwitchTab('bzms')">👤 จัดการ BZM</button>
           <button class="admin-tab"        data-tab="zones"     onclick="adminSwitchTab('zones')">🗺️ โซน BZM</button>
           <button class="btn btn-sm" onclick="adminTabReload()" style="background:#f1f5f9;color:#475569;margin-left:auto;margin-bottom:6px">🔄 รีเฟรช</button>
         </div>
 
-        <!-- ── Tab: Settings ── -->
-        <div class="admin-tab-pane" data-tab="settings">
-          <div class="dash-card-wrap" style="padding:16px 20px">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600">
-              <input type="checkbox" id="adminTestMode" style="width:18px;height:18px;cursor:pointer;accent-color:var(--brand)"
-                     onchange="document.getElementById('testMode').checked = this.checked">
-              🧪 โหมดทดสอบ (ข้ามการตรวจลำดับการส่งยอด)
-            </label>
-            <div style="font-size:12px;color:var(--txt2);margin-top:6px;margin-left:28px">เมื่อเปิด: สาขาส่งยอดได้โดยไม่ตรวจว่า 16.00 หรือสิ้นวันของเมื่อวานถูกส่งหรือยัง</div>
-          </div>
-        </div>
-
         <!-- ── Tab: Branches ── -->
-        <div class="admin-tab-pane" data-tab="branches" style="display:none">
+        <div class="admin-tab-pane" data-tab="branches">
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
             <button class="btn btn-brand" onclick="openAdminBranchModal()" style="font-size:13px">+ เพิ่มสาขา</button>
             <input type="text" id="adminBranchSearch" placeholder="🔍 ค้นหา รหัส/ชื่อ/BZM..." oninput="renderAdminBranches()"
@@ -3416,6 +3413,9 @@ body { background: var(--bg); color: var(--txt); }
         document.getElementById("hdrLogoutBtn").style.display = "none";
         document.getElementById("deskSidebar").classList.add("hidden");
         document.getElementById("mobNav").classList.remove("visible");
+        // Hide test mode banner (เห็นเฉพาะตอน login)
+        const banner = document.getElementById("testModeBanner");
+        if (banner) banner.style.display = "none";
         showScreen("sLogin");
       }
 
@@ -3472,7 +3472,10 @@ body { background: var(--bg); color: var(--txt); }
         const mnAdminBtn = document.getElementById("mnAdmin");
         if (mnAdminBtn) mnAdminBtn.style.display = isAdmin ? "flex" : "none";
 
-        if (isAdmin) showAdmin("settings");
+        // Refresh test mode banner (อาจถูก toggle จาก admin อื่นระหว่าง user offline)
+        loadTestModeFromDB();
+
+        if (isAdmin) showAdmin("branches");
         else         showDash();
       }
 
@@ -3505,17 +3508,15 @@ body { background: var(--bg); color: var(--txt); }
         showScreen("sAdmin");
         // Active sidebar item
         const tabMap = {
-          settings: "dnAdminSettings",
           branches: "dnAdminBranches",
           bzms:     "dnAdminBzms",
           zones:    "dnAdminZones"
         };
         document.querySelectorAll(".mob-nav-btn, .desk-nav-btn").forEach(b => b.classList.remove("active"));
-        const dn = document.getElementById(tabMap[tab] || "dnAdminSettings");
+        const dn = document.getElementById(tabMap[tab] || "dnAdminBranches");
         if (dn) dn.classList.add("active");
         const mn = document.getElementById("mnAdmin"); if (mn) mn.classList.add("active");
-        document.getElementById("adminTestMode").checked = !!document.getElementById("testMode").checked;
-        adminSwitchTab(tab || _adminCurrentTab || "settings");
+        adminSwitchTab(tab || _adminCurrentTab || "branches");
       }
 
       let _adminCurrentTab = "settings";
@@ -3826,6 +3827,64 @@ body { background: var(--bg); color: var(--txt); }
         renderAdminZone();
       }
 
+      /* ───── TEST MODE (global, ดึงจาก app_settings table) ───── */
+      let _testMode = false;
+      async function loadTestModeFromDB() {
+        try {
+          const { data } = await sb.from("app_settings").select("value").eq("key", "test_mode").maybeSingle();
+          _testMode = (data && data.value === "true");
+        } catch (_) { _testMode = false; }
+        applyTestModeUI();
+      }
+      function applyTestModeUI() {
+        // hidden checkbox in form
+        const cb = document.getElementById("testMode");
+        if (cb) cb.checked = _testMode;
+        // banner — เห็นเมื่อ logged in + test mode on
+        const banner = document.getElementById("testModeBanner");
+        if (banner) banner.style.display = (_testMode && S.code) ? "block" : "none";
+        // admin button status
+        const status = document.getElementById("testModeStatus");
+        if (status) {
+          status.textContent = _testMode ? "เปิด" : "ปิด";
+          status.style.color = _testMode ? "var(--green)" : "var(--brand)";
+        }
+        const btn = document.getElementById("testModeBtn");
+        if (btn) {
+          btn.style.background = _testMode ? "var(--brand-l)" : "";
+          btn.style.borderLeft = _testMode ? "3px solid var(--brand)" : "";
+        }
+      }
+      async function saveTestModeToDB(val) {
+        const v = val ? "true" : "false";
+        const { error } = await sb.from("app_settings")
+          .upsert({ key: "test_mode", value: v, updated_at: new Date().toISOString() }, { onConflict: "key" });
+        if (error) {
+          showAlert("❌", "บันทึกไม่สำเร็จ", error.message + "\n\nหมายเหตุ: ต้องสร้าง table app_settings ใน Supabase ก่อน (ดู supabase_schema.sql)");
+          return false;
+        }
+        _testMode = val;
+        applyTestModeUI();
+        return true;
+      }
+      function toggleTestModeAdmin() {
+        if (S.code !== "ADMIN") return;
+        const next = !_testMode;
+        const action = next ? "เปิด" : "ปิด";
+        showConfirm(
+          next ? "🧪" : "🔒",
+          `${action}โหมดทดสอบ?`,
+          next
+            ? "เมื่อเปิด: ทุกสาขาจะส่งยอดขายได้โดยไม่ตรวจลำดับการส่ง\n(16.00 ต้องมาก่อนสิ้นวัน / สิ้นวันเมื่อวานต้องมาก่อน 16.00 ของวันนี้)\n\nสาขาจะเห็น banner แจ้งเตือนด้านบน"
+            : "เมื่อปิด: ระบบจะกลับมาตรวจลำดับการส่งยอดตามปกติ",
+          async function() {
+            const ok = await saveTestModeToDB(next);
+            if (ok) showAlert("✅", `${action}โหมดทดสอบเรียบร้อย`, next ? "ทุกสาขาจะเห็น banner แจ้งเตือน" : "ระบบกลับมาตรวจลำดับปกติ");
+          },
+          { btnText: next ? "เปิด" : "ปิด", danger: !next }
+        );
+      }
+
       /* Load branches from Supabase at startup (merge into BRANCH_DM_MAP) */
       async function loadBranchesFromSupabase() {
         try {
@@ -3850,6 +3909,7 @@ body { background: var(--bg); color: var(--txt); }
       }
       // เรียกหลังจาก sb พร้อม
       loadBranchesFromSupabase();
+      loadTestModeFromDB();
 
       let _dashRows  = [];          // cache rows for date picker re-render
       let _dashMonth = undefined;   // 0-11

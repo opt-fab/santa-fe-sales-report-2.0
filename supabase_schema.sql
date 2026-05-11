@@ -70,12 +70,26 @@ create table if not exists public.branches (
 );
 
 -- ──────────────────────────────────────────────
--- 4. RLS (Row Level Security) — ปิดไว้ก่อน เพื่อ migrate ง่าย
+-- 4. APP_SETTINGS — global flags (test_mode, etc.)
+-- ──────────────────────────────────────────────
+create table if not exists public.app_settings (
+  key        text primary key,
+  value      text,
+  updated_at timestamptz default now()
+);
+
+insert into public.app_settings (key, value) values
+  ('test_mode', 'false')
+on conflict (key) do nothing;
+
+-- ──────────────────────────────────────────────
+-- 5. RLS (Row Level Security) — ปิดไว้ก่อน เพื่อ migrate ง่าย
 --    ค่อยเปิดและทำ policy ทีหลัง
 -- ──────────────────────────────────────────────
-alter table public.sales_data disable row level security;
-alter table public.plan_sale  disable row level security;
-alter table public.branches   disable row level security;
+alter table public.sales_data   disable row level security;
+alter table public.plan_sale    disable row level security;
+alter table public.branches     disable row level security;
+alter table public.app_settings disable row level security;
 
 -- ──────────────────────────────────────────────
 -- 5. Auto-update last_edited_at เมื่อ row ถูก update
