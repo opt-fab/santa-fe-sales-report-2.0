@@ -2178,6 +2178,40 @@ body { background: var(--bg); color: var(--txt); }
   }
   .dash-section { margin-bottom: 8px; }
 
+  /* ─ Admin tabs ─ */
+  .admin-tab {
+    background: transparent !important;
+    border: none !important;
+    padding: 12px 18px !important;
+    font-family: inherit;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: var(--txt2) !important;
+    cursor: pointer;
+    border-bottom: 2px solid transparent !important;
+    margin-bottom: -2px;
+    transition: color .15s, border-color .15s;
+  }
+  .admin-tab:hover { color: var(--txt) !important; }
+  .admin-tab.active {
+    color: var(--brand) !important;
+    border-bottom-color: var(--brand) !important;
+  }
+  .admin-zone-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px; border-radius: 6px;
+    margin-bottom: 4px; font-size: 13px;
+    background: var(--bg-2);
+  }
+  .admin-zone-item:hover { background: #fff7ed; }
+  .admin-zone-btn {
+    background: var(--brand); color: #fff;
+    border: none; border-radius: 6px;
+    padding: 4px 10px; font-size: 12px; font-weight: 600;
+    cursor: pointer;
+  }
+  .admin-zone-btn-remove { background: var(--red); }
+
   /* ─ Page header (consistent) ─ */
   .dash-page-hdr {
     padding-bottom: 16px !important;
@@ -2716,6 +2750,7 @@ body { background: var(--bg); color: var(--txt); }
       <div class="hist-wrap">
         <div class="hist-hdr">
           <h2>📊 ประวัติ 30 วันล่าสุด</h2>
+          <select id="histBranchFilter" onchange="loadHistory()" style="display:none;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;min-width:180px"></select>
           <button class="btn btn-sm btn-outline" onclick="showForm()">← ส่งยอด</button>
           <button class="btn btn-sm btn-brand" onclick="loadHistory()">🔄 รีเฟรช</button>
         </div>
@@ -2749,7 +2784,11 @@ body { background: var(--bg); color: var(--txt); }
             <div class="dash-page-title">📊 แดชบอร์ด</div>
             <div class="dash-page-sub" id="dashPageSub"></div>
           </div>
-          <button class="btn btn-sm" onclick="loadDash()" style="background:#f1f5f9;color:#475569;flex-shrink:0">🔄 รีเฟรช</button>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <!-- Branch filter (admin only) -->
+            <select id="dashBranchFilter" onchange="loadDash()" style="display:none;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;min-width:180px"></select>
+            <button class="btn btn-sm" onclick="loadDash()" style="background:#f1f5f9;color:#475569;flex-shrink:0">🔄 รีเฟรช</button>
+          </div>
         </div>
 
         <!-- ───────── SECTION 1: สรุปรายเดือน ───────── -->
@@ -2873,13 +2912,21 @@ body { background: var(--bg); color: var(--txt); }
         <div class="dash-page-hdr">
           <div>
             <div class="dash-page-title">👑 Admin Panel</div>
-            <div class="dash-page-sub">จัดการสาขา · ตั้งค่าระบบ</div>
+            <div class="dash-page-sub">จัดการสาขา · BZM · ตั้งค่าระบบ</div>
           </div>
-          <button class="btn btn-sm" onclick="loadAdminBranches()" style="background:#f1f5f9;color:#475569;flex-shrink:0">🔄 รีเฟรช</button>
+          <button class="btn btn-sm" onclick="adminTabReload()" style="background:#f1f5f9;color:#475569;flex-shrink:0">🔄 รีเฟรช</button>
         </div>
 
-        <!-- Settings Section -->
-        <div class="dash-section">
+        <!-- Tabs -->
+        <div class="admin-tabs" style="display:flex;gap:4px;border-bottom:2px solid var(--bd);margin-bottom:20px;flex-wrap:wrap">
+          <button class="admin-tab active" data-tab="settings"  onclick="adminSwitchTab('settings')">⚙️ Settings</button>
+          <button class="admin-tab"        data-tab="branches"  onclick="adminSwitchTab('branches')">🏢 จัดการสาขา</button>
+          <button class="admin-tab"        data-tab="bzms"      onclick="adminSwitchTab('bzms')">👤 จัดการ BZM</button>
+          <button class="admin-tab"        data-tab="zones"     onclick="adminSwitchTab('zones')">🗺️ โซน BZM</button>
+        </div>
+
+        <!-- ── Tab: Settings ── -->
+        <div class="admin-tab-pane" data-tab="settings">
           <h2 class="dash-section-h">⚙️ Settings</h2>
           <div class="dash-card-wrap" style="padding:16px 20px">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600">
@@ -2887,12 +2934,12 @@ body { background: var(--bg); color: var(--txt); }
                      onchange="document.getElementById('testMode').checked = this.checked">
               🧪 โหมดทดสอบ (ข้ามการตรวจลำดับการส่งยอด)
             </label>
-            <div style="font-size:12px;color:var(--txt2);margin-top:6px;margin-left:28px">เมื่อเปิด: ส่งยอดได้โดยไม่ตรวจว่า 16.00 หรือสิ้นวันของเมื่อวานถูกส่งหรือยัง</div>
+            <div style="font-size:12px;color:var(--txt2);margin-top:6px;margin-left:28px">เมื่อเปิด: สาขาส่งยอดได้โดยไม่ตรวจว่า 16.00 หรือสิ้นวันของเมื่อวานถูกส่งหรือยัง</div>
           </div>
         </div>
 
-        <!-- Branch CRUD Section -->
-        <div class="dash-section" style="margin-top:32px">
+        <!-- ── Tab: Branches ── -->
+        <div class="admin-tab-pane" data-tab="branches" style="display:none">
           <h2 class="dash-section-h">🏢 จัดการสาขา</h2>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
             <button class="btn btn-brand" onclick="openAdminBranchModal()" style="font-size:13px">+ เพิ่มสาขา</button>
@@ -2913,6 +2960,80 @@ body { background: var(--bg); color: var(--txt); }
               </tbody>
             </table>
           </div>
+        </div>
+
+        <!-- ── Tab: BZMs ── -->
+        <div class="admin-tab-pane" data-tab="bzms" style="display:none">
+          <h2 class="dash-section-h">👤 จัดการ BZM</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+            <button class="btn btn-brand" onclick="openAdminBzmModal()" style="font-size:13px">+ เพิ่ม BZM</button>
+            <input type="text" id="adminBzmSearch" placeholder="🔍 ค้นหา BZM..." oninput="renderAdminBzms()"
+                   style="flex:1;min-width:200px;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;outline:none">
+            <span id="adminBzmCount" style="font-size:12px;color:var(--txt2);font-weight:600">— BZM</span>
+          </div>
+          <div class="dash-card-wrap" style="overflow-x:auto">
+            <table class="dash-tbl" style="min-width:500px">
+              <thead><tr>
+                <th>ชื่อ BZM</th>
+                <th style="text-align:right">จำนวนสาขา</th>
+                <th style="text-align:right;width:140px">Action</th>
+              </tr></thead>
+              <tbody id="adminBzmBody">
+                <tr><td colspan="3" style="color:#94a3b8;padding:16px;text-align:center">⏳ กำลังโหลด...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Tab: Zones ── -->
+        <div class="admin-tab-pane" data-tab="zones" style="display:none">
+          <h2 class="dash-section-h">🗺️ จัดการสาขาในโซน BZM</h2>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+            <label style="font-size:13px;font-weight:600">เลือก BZM:</label>
+            <select id="adminZoneBzm" onchange="renderAdminZone()"
+                    style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;min-width:240px"></select>
+            <span id="adminZoneCount" style="font-size:12px;color:var(--txt2);font-weight:600;margin-left:auto">— สาขาในโซน</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start" id="adminZoneGrid">
+            <!-- LEFT: branches in this BZM zone -->
+            <div class="dash-card-wrap" style="padding:14px">
+              <div style="font-weight:700;margin-bottom:10px;color:var(--brand)">✅ สาขาในโซนนี้</div>
+              <div id="adminZoneIn" style="max-height:420px;overflow-y:auto"></div>
+            </div>
+            <!-- RIGHT: other branches (not in this zone) -->
+            <div class="dash-card-wrap" style="padding:14px">
+              <div style="font-weight:700;margin-bottom:10px;color:var(--txt2)">📋 สาขาอื่น (คลิก ⇆ เพื่อย้ายมาโซนนี้)</div>
+              <input type="text" id="adminZoneOutSearch" placeholder="🔍 ค้นหา..." oninput="renderAdminZone()"
+                     style="width:100%;background:var(--bg-2);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;font-family:inherit;font-size:12px;margin-bottom:8px;outline:none">
+              <div id="adminZoneOut" style="max-height:380px;overflow-y:auto"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+     MODAL: BZM ADD/EDIT
+════════════════════════════════════════ -->
+    <div id="mBzm" class="modal-bg">
+      <div class="modal">
+        <div class="modal-hdr">
+          <h3 id="mBzmTitle">เพิ่ม BZM ใหม่</h3>
+          <button class="modal-close" onclick="closeM('mBzm')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="field">
+            <label>ชื่อ BZM *</label>
+            <input id="abz_name" type="text" placeholder="เช่น นพชัย จันทร์รุ่ง (พี่นพ)">
+          </div>
+          <input type="hidden" id="abz_old">
+          <div id="abz_warn" style="display:none;background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeM('mBzm')">ยกเลิก</button>
+          <button class="btn btn-brand" id="mBzmSaveBtn" onclick="adminSaveBzm()">บันทึก ✓</button>
         </div>
       </div>
     </div>
@@ -3323,10 +3444,22 @@ body { background: var(--bg); color: var(--txt); }
         const savedName = localStorage.getItem(LS_NAME);
         if (savedName) document.getElementById("submitter_name").value = savedName;
 
-        // Admin-only UI: test mode, admin nav
+        // Admin-only UI: test mode, admin nav. Hide form/plan for admin.
         const isAdmin = (S.code === "ADMIN");
         const testLbl = document.getElementById("testModeLabel");
         if (testLbl) testLbl.style.display = isAdmin ? "inline-flex" : "none";
+
+        // ซ่อน "ส่งยอดขาย" + "Plan Sale" สำหรับ admin
+        ["dnForm","dnPlan"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = isAdmin ? "none" : "flex";
+        });
+        ["mnForm","mnPlan"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = isAdmin ? "none" : "flex";
+        });
+
+        // แสดงปุ่ม Admin เฉพาะ admin
         const dnAdminBtn = document.getElementById("dnAdmin");
         const mnAdminBtn = document.getElementById("mnAdmin");
         if (dnAdminBtn) dnAdminBtn.style.display = isAdmin ? "flex" : "none";
@@ -3363,13 +3496,28 @@ body { background: var(--bg); color: var(--txt); }
       function showAdmin() {
         if (S.code !== "ADMIN") { showAlert("⛔", "ต้องเป็น Admin", "เฉพาะ admin เท่านั้นที่เข้าได้"); return; }
         showScreen("sAdmin");
-        // ไม่มี nav button ใน mnAdmin ให้ active ตอนนี้ — เราจัดการแล้วใน enterApp
         document.querySelectorAll(".mob-nav-btn, .desk-nav-btn").forEach(b => b.classList.remove("active"));
         const dn = document.getElementById("dnAdmin"); if (dn) dn.classList.add("active");
         const mn = document.getElementById("mnAdmin"); if (mn) mn.classList.add("active");
-        // Sync test mode toggle
         document.getElementById("adminTestMode").checked = !!document.getElementById("testMode").checked;
-        loadAdminBranches();
+        // Load default tab data
+        adminSwitchTab(_adminCurrentTab || "settings");
+      }
+
+      let _adminCurrentTab = "settings";
+      function adminSwitchTab(tab) {
+        _adminCurrentTab = tab;
+        document.querySelectorAll(".admin-tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+        document.querySelectorAll(".admin-tab-pane").forEach(p => {
+          p.style.display = (p.dataset.tab === tab) ? "block" : "none";
+        });
+        if (tab === "branches") loadAdminBranches();
+        else if (tab === "bzms") loadAdminBzms();
+        else if (tab === "zones") loadAdminZones();
+      }
+
+      function adminTabReload() {
+        adminSwitchTab(_adminCurrentTab);
       }
 
       async function loadAdminBranches() {
@@ -3495,6 +3643,168 @@ body { background: var(--bg); color: var(--txt); }
         });
       }
 
+      /* ───── BZM CRUD ───── */
+      // BZM list = distinct district_manager values from branches (no separate bzms table)
+      let _adminBzmList = []; // [{name, count}]
+      let _adminBzmEditingOld = null;
+
+      function loadAdminBzms() {
+        // Build BZM list from current _adminBranches (loaded earlier)
+        // If _adminBranches is empty, fetch first
+        if (!_adminBranches.length) {
+          loadAdminBranches().then(() => loadAdminBzms());
+          return;
+        }
+        const grp = {};
+        _adminBranches.forEach(b => {
+          const k = (b.district_manager || "(ไม่ระบุ)").trim();
+          grp[k] = (grp[k] || 0) + 1;
+        });
+        _adminBzmList = Object.keys(grp).sort().map(name => ({ name, count: grp[name] }));
+        renderAdminBzms();
+      }
+
+      function renderAdminBzms() {
+        const q = (document.getElementById("adminBzmSearch")?.value || "").toLowerCase().trim();
+        const list = _adminBzmList.filter(b => !q || b.name.toLowerCase().includes(q));
+        document.getElementById("adminBzmCount").textContent = `${list.length} / ${_adminBzmList.length} BZM`;
+        const body = document.getElementById("adminBzmBody");
+        if (!list.length) {
+          body.innerHTML = `<tr><td colspan="3" style="color:#94a3b8;padding:24px;text-align:center">ไม่พบ BZM</td></tr>`;
+          return;
+        }
+        body.innerHTML = list.map(b => `
+          <tr>
+            <td style="font-weight:600">${escHtml(b.name)}</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">${b.count}</td>
+            <td style="text-align:right;white-space:nowrap">
+              <button class="btn-edit-row btn btn-sm" onclick="openAdminBzmModal('${escHtml(b.name).replace(/'/g, "\\'")}')">✏️ แก้ไข</button>
+              <button class="btn btn-sm" onclick="adminDeleteBzm('${escHtml(b.name).replace(/'/g, "\\'")}')"
+                      style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;font-size:11.5px;padding:5px 10px;border-radius:7px;margin-left:4px">🗑️ ลบ</button>
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      function openAdminBzmModal(oldName) {
+        _adminBzmEditingOld = oldName || null;
+        document.getElementById("mBzmTitle").textContent = oldName ? `แก้ไข BZM · ${oldName}` : "เพิ่ม BZM ใหม่";
+        document.getElementById("abz_name").value = oldName || "";
+        document.getElementById("abz_old").value = oldName || "";
+        const warn = document.getElementById("abz_warn");
+        if (oldName) {
+          const cnt = (_adminBzmList.find(b => b.name === oldName) || {}).count || 0;
+          warn.style.display = "block";
+          warn.innerHTML = `⚠️ มี <strong>${cnt} สาขา</strong> ที่อยู่ใต้ BZM นี้ — การเปลี่ยนชื่อจะอัพเดททุกสาขาให้ใช้ชื่อใหม่`;
+        } else {
+          warn.style.display = "none";
+        }
+        openM("mBzm");
+        setTimeout(() => document.getElementById("abz_name").focus(), 100);
+      }
+
+      async function adminSaveBzm() {
+        const newName = document.getElementById("abz_name").value.trim();
+        const oldName = document.getElementById("abz_old").value.trim();
+        if (!newName) { showAlert("⚠️", "กรอกไม่ครบ", "กรุณาระบุชื่อ BZM"); return; }
+        if (newName === oldName) { closeM("mBzm"); return; }
+        if (_adminBzmList.some(b => b.name === newName && b.name !== oldName)) {
+          showAlert("⚠️", "ชื่อซ้ำ", "BZM ชื่อนี้มีอยู่แล้ว"); return;
+        }
+        const btn = document.getElementById("mBzmSaveBtn");
+        btn.disabled = true; btn.textContent = "⏳ กำลังบันทึก...";
+        try {
+          if (oldName) {
+            // Rename — bulk update branches.district_manager
+            const { error } = await sb.from("branches")
+              .update({ district_manager: newName })
+              .eq("district_manager", oldName);
+            if (error) throw error;
+          } else {
+            // Add new — no branches yet, just appear in list. To actually persist,
+            // we'd need a bzms table. For now, add an empty placeholder branch?
+            // Better: just alert that BZM appears when assigned to ≥1 branch.
+            showAlert("ℹ️", "ยังไม่ปรากฏ", "BZM ใหม่จะปรากฏในรายการเมื่อมีอย่างน้อย 1 สาขาที่กำหนด BZM นี้\n(ไปกำหนดในแท็บ 'จัดการสาขา' หรือ 'โซน BZM')");
+            closeM("mBzm");
+            btn.disabled = false; btn.textContent = "บันทึก ✓";
+            return;
+          }
+          closeM("mBzm");
+          await loadAdminBranches();
+          loadAdminBzms();
+          showAlert("✅", "บันทึกสำเร็จ", oldName ? `เปลี่ยนชื่อ BZM เป็น "${newName}" แล้ว` : `เพิ่ม BZM "${newName}" แล้ว`);
+        } catch (e) {
+          showAlert("❌", "บันทึกไม่สำเร็จ", e.message || String(e));
+        } finally {
+          btn.disabled = false; btn.textContent = "บันทึก ✓";
+        }
+      }
+
+      async function adminDeleteBzm(name) {
+        const cnt = (_adminBzmList.find(b => b.name === name) || {}).count || 0;
+        if (cnt > 0) {
+          if (!confirm(`BZM "${name}" มี ${cnt} สาขาในโซน\n\nการลบจะทำให้สาขาเหล่านั้น"ไม่มี BZM" (ค่าจะถูกล้าง)\n\nยืนยันลบ?`)) return;
+        } else {
+          if (!confirm(`ลบ BZM "${name}"?`)) return;
+        }
+        const { error } = await sb.from("branches")
+          .update({ district_manager: "" })
+          .eq("district_manager", name);
+        if (error) { showAlert("❌", "ลบไม่สำเร็จ", error.message); return; }
+        await loadAdminBranches();
+        loadAdminBzms();
+        showAlert("✅", "ลบเรียบร้อย", `ลบ BZM "${name}" แล้ว`);
+      }
+
+      /* ───── BZM ZONE (assign branches) ───── */
+      function loadAdminZones() {
+        if (!_adminBranches.length) {
+          loadAdminBranches().then(() => loadAdminZones());
+          return;
+        }
+        const sel = document.getElementById("adminZoneBzm");
+        const prev = sel.value;
+        const bzms = [...new Set(_adminBranches.map(b => b.district_manager).filter(Boolean))].sort();
+        sel.innerHTML = bzms.map(b => `<option value="${escHtml(b)}">${escHtml(b)}</option>`).join("");
+        if (prev && bzms.includes(prev)) sel.value = prev;
+        renderAdminZone();
+      }
+
+      function renderAdminZone() {
+        const targetBzm = document.getElementById("adminZoneBzm").value;
+        const q = (document.getElementById("adminZoneOutSearch")?.value || "").toLowerCase().trim();
+        const inZone = _adminBranches.filter(b => b.district_manager === targetBzm);
+        const outZone = _adminBranches.filter(b => b.district_manager !== targetBzm)
+          .filter(b => !q || b.branch_code.toLowerCase().includes(q) || (b.branch_name || "").toLowerCase().includes(q) || (b.district_manager || "").toLowerCase().includes(q));
+
+        document.getElementById("adminZoneCount").textContent = `${inZone.length} สาขาในโซน`;
+
+        document.getElementById("adminZoneIn").innerHTML = inZone.length
+          ? inZone.map(b => `
+              <div class="admin-zone-item">
+                <span><strong>${escHtml(b.branch_code)}</strong> ${escHtml(b.branch_name)}</span>
+                <button class="admin-zone-btn admin-zone-btn-remove" onclick="adminMoveBranchToBzm('${escHtml(b.branch_code)}', '')">⇄ ออก</button>
+              </div>`).join("")
+          : `<div style="color:#94a3b8;padding:14px;text-align:center;font-size:13px">ยังไม่มีสาขาในโซนนี้</div>`;
+
+        document.getElementById("adminZoneOut").innerHTML = outZone.length
+          ? outZone.map(b => `
+              <div class="admin-zone-item">
+                <span><strong>${escHtml(b.branch_code)}</strong> ${escHtml(b.branch_name)}<br><span style="color:var(--txt2);font-size:11px">BZM: ${escHtml(b.district_manager || "—")}</span></span>
+                <button class="admin-zone-btn" onclick="adminMoveBranchToBzm('${escHtml(b.branch_code)}', '${escHtml(targetBzm).replace(/'/g, "\\'")}')">⇄ ย้ายมา</button>
+              </div>`).join("")
+          : `<div style="color:#94a3b8;padding:14px;text-align:center;font-size:13px">ไม่พบสาขาอื่น</div>`;
+      }
+
+      async function adminMoveBranchToBzm(branchCode, newBzm) {
+        const { error } = await sb.from("branches")
+          .update({ district_manager: newBzm })
+          .eq("branch_code", branchCode);
+        if (error) { showAlert("❌", "ย้ายไม่สำเร็จ", error.message); return; }
+        await loadAdminBranches();
+        renderAdminZone();
+      }
+
       /* Load branches from Supabase at startup (merge into BRANCH_DM_MAP) */
       async function loadBranchesFromSupabase() {
         try {
@@ -3540,6 +3850,25 @@ body { background: var(--bg); color: var(--txt); }
         loadDash();
       }
 
+      /* ─ Populate admin branch filter dropdown ─ */
+      function populateBranchFilter(selectId) {
+        const sel = document.getElementById(selectId);
+        if (!sel || S.code !== "ADMIN") return null;
+        sel.style.display = "inline-block";
+        const current = sel.value || "ALL";
+        const codes = Object.keys(BRANCH_DM_MAP).sort();
+        sel.innerHTML = `<option value="ALL">— ทุกสาขา (${codes.length}) —</option>` +
+          codes.map(c => `<option value="${c}">${c} · ${escHtml(BRANCH_DM_MAP[c].branch || "")}</option>`).join("");
+        sel.value = current;
+        return sel.value;
+      }
+
+      function getEffectiveBranchCode(selectId) {
+        if (S.code !== "ADMIN") return S.code;
+        const sel = document.getElementById(selectId);
+        return (sel && sel.value) ? sel.value : "ALL";
+      }
+
       function loadDash() {
         // init month เป็นเดือนปัจจุบันถ้ายังไม่มี
         if (_dashMonth === undefined) {
@@ -3547,6 +3876,10 @@ body { background: var(--bg); color: var(--txt); }
           _dashMonth = now.getMonth();
           _dashYear  = now.getFullYear();
         }
+
+        // Admin: populate branch filter + resolve effective branch code
+        populateBranchFilter("dashBranchFilter");
+        const effectiveCode = getEffectiveBranchCode("dashBranchFilter");
 
         // คำนวณช่วงวันของเดือนที่เลือก
         const ym = _dashYear + "-" + String(_dashMonth + 1).padStart(2, "0");
@@ -3614,9 +3947,9 @@ body { background: var(--bg); color: var(--txt); }
           renderDashRecent(_dashRows);
         }
 
-        apiCall({ mode:"history", branch_code:S.code, start_date:startDate, end_date:endDate },
+        apiCall({ mode:"history", branch_code:effectiveCode, start_date:startDate, end_date:endDate },
                 function(res) { _hist = res; _onDone(); });
-        apiCall({ mode:"getPlan", branch_code:S.code, year_month:ym },
+        apiCall({ mode:"getPlan", branch_code:effectiveCode, year_month:ym },
                 function(res) { _plan = res; _onDone(); });
       }
 
@@ -4373,6 +4706,10 @@ body { background: var(--bg); color: var(--txt); }
         document.getElementById("histTableContent").innerHTML = loading;
         document.getElementById("histCardsContent").innerHTML = loading;
 
+        // Admin: populate branch filter + resolve effective branch code
+        populateBranchFilter("histBranchFilter");
+        const effectiveCode = getEffectiveBranchCode("histBranchFilter");
+
         const since = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
         const until = todayStr();
 
@@ -4400,9 +4737,9 @@ body { background: var(--bg); color: var(--txt); }
           renderHistory(merged);
         }
 
-        apiCall({ mode:"history", branch_code:S.code, start_date:since, end_date:until },
+        apiCall({ mode:"history", branch_code:effectiveCode, start_date:since, end_date:until },
                 function(res) { _hist = res; _onDone(); });
-        apiCall({ mode:"getPlan", branch_code:S.code, start_date:since, end_date:until },
+        apiCall({ mode:"getPlan", branch_code:effectiveCode, start_date:since, end_date:until },
                 function(res) { _plan = res; _onDone(); });
       }
 
@@ -4686,7 +5023,11 @@ body { background: var(--bg); color: var(--txt); }
 
           /* ─────── HISTORY ─────── */
           if (mode === "history") {
-            let q = sb.from("sales_data").select("*").eq("branch_code", params.branch_code);
+            let q = sb.from("sales_data").select("*");
+            // ถ้า branch_code = "ALL" หรือว่าง / "ADMIN" → ไม่กรอง (สำหรับ admin ดูข้อมูลทุกสาขา)
+            if (params.branch_code && params.branch_code !== "ALL" && params.branch_code !== "ADMIN") {
+              q = q.eq("branch_code", params.branch_code);
+            }
 
             if (params.start_date) q = q.gte("submit_date", params.start_date);
             if (params.end_date)   q = q.lte("submit_date", params.end_date);
@@ -4773,7 +5114,10 @@ body { background: var(--bg); color: var(--txt); }
 
           /* ─────── GET PLAN ─────── */
           if (mode === "getPlan") {
-            let q = sb.from("plan_sale").select("plan_date, plan_amount").eq("branch_code", params.branch_code);
+            let q = sb.from("plan_sale").select("plan_date, plan_amount");
+            if (params.branch_code && params.branch_code !== "ALL" && params.branch_code !== "ADMIN") {
+              q = q.eq("branch_code", params.branch_code);
+            }
 
             if (params.year_month) {
               const [y, m] = params.year_month.split("-");
@@ -4791,7 +5135,13 @@ body { background: var(--bg); color: var(--txt); }
             const { data, error } = await q;
             if (error) { cb({ ok: false, error: error.message }); return; }
             // shape ให้ตรงกับ GAS: rows = [{date, plan_sale}]
-            const rows = (data || []).map(r => ({ date: r.plan_date, plan_sale: r.plan_amount }));
+            // ถ้า admin (multi-branch) อาจมี plan ของหลายสาขาในวันเดียวกัน → รวม (sum)
+            const acc = {};
+            (data || []).forEach(r => {
+              const d = r.plan_date;
+              acc[d] = (acc[d] || 0) + (parseFloat(r.plan_amount) || 0);
+            });
+            const rows = Object.keys(acc).map(d => ({ date: d, plan_sale: acc[d] }));
             cb({ ok: true, rows });
             return;
           }
