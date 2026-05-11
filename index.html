@@ -2468,6 +2468,9 @@ body { background: var(--bg); color: var(--txt); }
         <button class="desk-nav-btn" id="dnHistory" onclick="showHistory()">
           <span class="desk-nav-ico">🗂️</span>ประวัติ
         </button>
+        <button class="desk-nav-btn" id="dnAdmin" onclick="showAdmin()" style="display:none">
+          <span class="desk-nav-ico">👑</span>Admin
+        </button>
       </nav>
       <div class="desk-nav-sep"></div>
       <button class="desk-logout-btn" onclick="doLogout()">ออกจากระบบ</button>
@@ -2555,7 +2558,7 @@ body { background: var(--bg); color: var(--txt); }
         <div class="card">
           <div class="card-hdr" style="display:flex;align-items:center;justify-content:space-between">
             <span>📋 ข้อมูลการส่ง</span>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;background:rgba(0,0,0,.18);padding:5px 12px;border-radius:6px">
+            <label id="testModeLabel" style="display:none;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;background:rgba(0,0,0,.18);padding:5px 12px;border-radius:6px">
               <input type="checkbox" id="testMode" style="width:14px;height:14px;cursor:pointer;accent-color:#fff">
               🧪 โหมดทดสอบ
             </label>
@@ -2863,6 +2866,93 @@ body { background: var(--bg); color: var(--txt); }
     </div>
 
     <!-- ════════════════════════════════════════
+     SCREEN: ADMIN (เฉพาะ ADMIN เท่านั้น)
+════════════════════════════════════════ -->
+    <div id="sAdmin" class="screen">
+      <div class="dash-wrap">
+        <div class="dash-page-hdr">
+          <div>
+            <div class="dash-page-title">👑 Admin Panel</div>
+            <div class="dash-page-sub">จัดการสาขา · ตั้งค่าระบบ</div>
+          </div>
+          <button class="btn btn-sm" onclick="loadAdminBranches()" style="background:#f1f5f9;color:#475569;flex-shrink:0">🔄 รีเฟรช</button>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="dash-section">
+          <h2 class="dash-section-h">⚙️ Settings</h2>
+          <div class="dash-card-wrap" style="padding:16px 20px">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600">
+              <input type="checkbox" id="adminTestMode" style="width:18px;height:18px;cursor:pointer;accent-color:var(--brand)"
+                     onchange="document.getElementById('testMode').checked = this.checked">
+              🧪 โหมดทดสอบ (ข้ามการตรวจลำดับการส่งยอด)
+            </label>
+            <div style="font-size:12px;color:var(--txt2);margin-top:6px;margin-left:28px">เมื่อเปิด: ส่งยอดได้โดยไม่ตรวจว่า 16.00 หรือสิ้นวันของเมื่อวานถูกส่งหรือยัง</div>
+          </div>
+        </div>
+
+        <!-- Branch CRUD Section -->
+        <div class="dash-section" style="margin-top:32px">
+          <h2 class="dash-section-h">🏢 จัดการสาขา</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+            <button class="btn btn-brand" onclick="openAdminBranchModal()" style="font-size:13px">+ เพิ่มสาขา</button>
+            <input type="text" id="adminBranchSearch" placeholder="🔍 ค้นหา รหัส/ชื่อ/BZM..." oninput="renderAdminBranches()"
+                   style="flex:1;min-width:200px;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;outline:none">
+            <span id="adminBranchCount" style="font-size:12px;color:var(--txt2);font-weight:600">— สาขา</span>
+          </div>
+          <div class="dash-card-wrap" style="overflow-x:auto">
+            <table class="dash-tbl" style="min-width:600px">
+              <thead><tr>
+                <th>รหัสสาขา</th>
+                <th>ชื่อสาขา</th>
+                <th>BZM (ผู้จัดการเขต)</th>
+                <th style="text-align:right;width:140px">Action</th>
+              </tr></thead>
+              <tbody id="adminBranchBody">
+                <tr><td colspan="4" style="color:#94a3b8;padding:16px;text-align:center">⏳ กำลังโหลด...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+     MODAL: BRANCH ADD/EDIT
+════════════════════════════════════════ -->
+    <div id="mBranch" class="modal-bg">
+      <div class="modal">
+        <div class="modal-hdr">
+          <h3 id="mBranchTitle">เพิ่มสาขาใหม่</h3>
+          <button class="modal-close" onclick="closeM('mBranch')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="field-grid" style="grid-template-columns:1fr 1fr;gap:14px">
+            <div class="field" style="grid-column:1/-1">
+              <label>รหัสสาขา (4 หลัก) *</label>
+              <input id="ab_code" type="tel" maxlength="4" inputmode="numeric" placeholder="เช่น 5099" autocomplete="off">
+              <div style="font-size:11px;color:var(--txt2);margin-top:4px">รหัสนี้ใช้สำหรับเข้าสู่ระบบ (4 ตัวเลข)</div>
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <label>ชื่อสาขา *</label>
+              <input id="ab_name" type="text" placeholder="เช่น 5099 เซ็นทรัล อยุธยา">
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <label>BZM (ผู้จัดการเขต) *</label>
+              <input id="ab_dm" type="text" placeholder="เช่น นพชัย จันทร์รุ่ง (พี่นพ)" list="ab_dm_list">
+              <datalist id="ab_dm_list"></datalist>
+              <div style="font-size:11px;color:var(--txt2);margin-top:4px">พิมพ์ใหม่ หรือเลือกจากรายชื่อที่มีอยู่</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeM('mBranch')">ยกเลิก</button>
+          <button class="btn btn-brand" id="mBranchSaveBtn" onclick="adminSaveBranch()">บันทึก ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
      MODAL: ALERT
 ════════════════════════════════════════ -->
     <div id="mAlert" class="modal-bg">
@@ -2898,6 +2988,10 @@ body { background: var(--bg); color: var(--txt); }
       <button class="mob-nav-btn" id="mnHistory" onclick="showHistory()">
         <span class="mob-nav-ico">🗂️</span>
         <span class="mob-nav-lbl">ประวัติ</span>
+      </button>
+      <button class="mob-nav-btn" id="mnAdmin" onclick="showAdmin()" style="display:none">
+        <span class="mob-nav-ico">👑</span>
+        <span class="mob-nav-lbl">Admin</span>
       </button>
     </nav>
 
@@ -3228,7 +3322,18 @@ body { background: var(--bg); color: var(--txt); }
         document.getElementById("submit_date").value = todayStr();
         const savedName = localStorage.getItem(LS_NAME);
         if (savedName) document.getElementById("submitter_name").value = savedName;
-        showDash();
+
+        // Admin-only UI: test mode, admin nav
+        const isAdmin = (S.code === "ADMIN");
+        const testLbl = document.getElementById("testModeLabel");
+        if (testLbl) testLbl.style.display = isAdmin ? "inline-flex" : "none";
+        const dnAdminBtn = document.getElementById("dnAdmin");
+        const mnAdminBtn = document.getElementById("mnAdmin");
+        if (dnAdminBtn) dnAdminBtn.style.display = isAdmin ? "flex" : "none";
+        if (mnAdminBtn) mnAdminBtn.style.display = isAdmin ? "flex" : "none";
+
+        if (isAdmin) showAdmin();
+        else         showDash();
       }
 
       function showForm() {
@@ -3248,6 +3353,172 @@ body { background: var(--bg); color: var(--txt); }
         setMobTab("mnDash");
         loadDash();
       }
+
+      /* ══════════════════════════════════════════════
+         ADMIN PANEL — Branch CRUD + Settings
+      ══════════════════════════════════════════════ */
+      let _adminBranches = []; // [{branch_code, branch_name, district_manager}]
+      let _adminEditingCode = null; // null=add mode, otherwise=edit mode
+
+      function showAdmin() {
+        if (S.code !== "ADMIN") { showAlert("⛔", "ต้องเป็น Admin", "เฉพาะ admin เท่านั้นที่เข้าได้"); return; }
+        showScreen("sAdmin");
+        // ไม่มี nav button ใน mnAdmin ให้ active ตอนนี้ — เราจัดการแล้วใน enterApp
+        document.querySelectorAll(".mob-nav-btn, .desk-nav-btn").forEach(b => b.classList.remove("active"));
+        const dn = document.getElementById("dnAdmin"); if (dn) dn.classList.add("active");
+        const mn = document.getElementById("mnAdmin"); if (mn) mn.classList.add("active");
+        // Sync test mode toggle
+        document.getElementById("adminTestMode").checked = !!document.getElementById("testMode").checked;
+        loadAdminBranches();
+      }
+
+      async function loadAdminBranches() {
+        const body = document.getElementById("adminBranchBody");
+        body.innerHTML = `<tr><td colspan="4" style="color:#94a3b8;padding:16px;text-align:center">⏳ กำลังโหลด...</td></tr>`;
+        const { data, error } = await sb.from("branches")
+          .select("*")
+          .order("branch_code", { ascending: true });
+        if (error) {
+          body.innerHTML = `<tr><td colspan="4" style="color:#dc2626;padding:16px;text-align:center">⚠️ ${error.message}</td></tr>`;
+          return;
+        }
+        _adminBranches = data || [];
+        // Sync ไปเป็น BRANCH_DM_MAP ด้วย (ให้ login ใช้ได้)
+        _adminBranches.forEach(b => {
+          BRANCH_DM_MAP[b.branch_code] = { branch: b.branch_name, dm: b.district_manager };
+        });
+        renderAdminBranches();
+      }
+
+      function renderAdminBranches() {
+        const q = (document.getElementById("adminBranchSearch").value || "").toLowerCase().trim();
+        const list = _adminBranches.filter(b => {
+          if (!q) return true;
+          return b.branch_code.toLowerCase().includes(q)
+              || (b.branch_name || "").toLowerCase().includes(q)
+              || (b.district_manager || "").toLowerCase().includes(q);
+        });
+
+        document.getElementById("adminBranchCount").textContent = `${list.length} / ${_adminBranches.length} สาขา`;
+
+        const body = document.getElementById("adminBranchBody");
+        if (!list.length) {
+          body.innerHTML = `<tr><td colspan="4" style="color:#94a3b8;padding:24px;text-align:center">ไม่พบสาขา</td></tr>`;
+          return;
+        }
+        body.innerHTML = list.map(b => `
+          <tr>
+            <td style="font-weight:700;font-variant-numeric:tabular-nums">${escHtml(b.branch_code)}</td>
+            <td>${escHtml(b.branch_name)}</td>
+            <td style="color:var(--txt2)">${escHtml(b.district_manager || "")}</td>
+            <td style="text-align:right;white-space:nowrap">
+              <button class="btn-edit-row btn btn-sm" onclick='adminEditBranch(${JSON.stringify(b).replace(/'/g, "&apos;")})'>✏️ แก้ไข</button>
+              <button class="btn btn-sm" onclick="adminDeleteBranch('${escHtml(b.branch_code)}', '${escHtml(b.branch_name).replace(/'/g, "\\'")}')" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;font-size:11.5px;padding:5px 10px;border-radius:7px;margin-left:4px">🗑️ ลบ</button>
+            </td>
+          </tr>
+        `).join("");
+
+        // populate DM datalist (unique values)
+        const dms = [...new Set(_adminBranches.map(b => b.district_manager).filter(Boolean))].sort();
+        document.getElementById("ab_dm_list").innerHTML = dms.map(d => `<option value="${escHtml(d)}">`).join("");
+      }
+
+      function openAdminBranchModal() {
+        _adminEditingCode = null;
+        document.getElementById("mBranchTitle").textContent = "เพิ่มสาขาใหม่";
+        document.getElementById("ab_code").value = "";
+        document.getElementById("ab_code").disabled = false;
+        document.getElementById("ab_name").value = "";
+        document.getElementById("ab_dm").value = "";
+        openM("mBranch");
+        setTimeout(() => document.getElementById("ab_code").focus(), 100);
+      }
+
+      function adminEditBranch(b) {
+        _adminEditingCode = b.branch_code;
+        document.getElementById("mBranchTitle").textContent = "แก้ไขสาขา · " + b.branch_code;
+        document.getElementById("ab_code").value = b.branch_code;
+        document.getElementById("ab_code").disabled = true; // ห้ามแก้ code (เป็น primary key + อ้างถึงใน sales)
+        document.getElementById("ab_name").value = b.branch_name || "";
+        document.getElementById("ab_dm").value = b.district_manager || "";
+        openM("mBranch");
+        setTimeout(() => document.getElementById("ab_name").focus(), 100);
+      }
+
+      async function adminSaveBranch() {
+        const code = document.getElementById("ab_code").value.trim();
+        const name = document.getElementById("ab_name").value.trim();
+        const dm   = document.getElementById("ab_dm").value.trim();
+
+        const errs = [];
+        if (!_adminEditingCode) {
+          if (!/^\d{4}$/.test(code)) errs.push("รหัสสาขาต้องเป็นเลข 4 หลัก");
+          else if (_adminBranches.some(b => b.branch_code === code))
+            errs.push("รหัสสาขานี้มีอยู่แล้ว");
+        }
+        if (!name) errs.push("ต้องระบุชื่อสาขา");
+        if (!dm)   errs.push("ต้องระบุ BZM");
+
+        if (errs.length) { showAlert("⚠️", "กรอกไม่ครบ", errs.join("\n")); return; }
+
+        const btn = document.getElementById("mBranchSaveBtn");
+        btn.disabled = true; btn.textContent = "⏳ กำลังบันทึก...";
+
+        try {
+          if (_adminEditingCode) {
+            const { error } = await sb.from("branches")
+              .update({ branch_name: name, district_manager: dm })
+              .eq("branch_code", _adminEditingCode);
+            if (error) throw error;
+          } else {
+            const { error } = await sb.from("branches")
+              .insert({ branch_code: code, branch_name: name, district_manager: dm });
+            if (error) throw error;
+          }
+          closeM("mBranch");
+          await loadAdminBranches();
+          showAlert("✅", "บันทึกสำเร็จ", _adminEditingCode ? "แก้ไขข้อมูลสาขาเรียบร้อย" : "เพิ่มสาขาใหม่เรียบร้อย");
+        } catch (e) {
+          showAlert("❌", "บันทึกไม่สำเร็จ", e.message || String(e));
+        } finally {
+          btn.disabled = false; btn.textContent = "บันทึก ✓";
+        }
+      }
+
+      function adminDeleteBranch(code, name) {
+        if (!confirm(`ยืนยันการลบสาขา?\n\nรหัส: ${code}\nชื่อ: ${name}\n\n⚠️ การลบนี้ไม่กระทบข้อมูล sales_data / plan_sale เดิม (จะคงอยู่)\nแต่สาขานี้จะ login เข้าระบบไม่ได้อีก`)) return;
+        sb.from("branches").delete().eq("branch_code", code).then(({ error }) => {
+          if (error) { showAlert("❌", "ลบไม่สำเร็จ", error.message); return; }
+          delete BRANCH_DM_MAP[code];
+          loadAdminBranches();
+          showAlert("✅", "ลบเรียบร้อย", `ลบสาขา ${code} แล้ว`);
+        });
+      }
+
+      /* Load branches from Supabase at startup (merge into BRANCH_DM_MAP) */
+      async function loadBranchesFromSupabase() {
+        try {
+          const { data } = await sb.from("branches").select("*");
+          if (data && data.length) {
+            data.forEach(b => {
+              BRANCH_DM_MAP[b.branch_code] = { branch: b.branch_name, dm: b.district_manager };
+            });
+          } else {
+            // Auto-seed: ถ้าตารางว่าง ให้ใส่ data จาก BRANCH_DM_MAP (one-time migration)
+            const seed = Object.keys(BRANCH_DM_MAP).map(code => ({
+              branch_code: code,
+              branch_name: BRANCH_DM_MAP[code].branch,
+              district_manager: BRANCH_DM_MAP[code].dm
+            }));
+            if (seed.length) {
+              await sb.from("branches").insert(seed);
+              console.log("[branches] seeded", seed.length, "entries");
+            }
+          }
+        } catch (e) { console.warn("[loadBranchesFromSupabase]", e); }
+      }
+      // เรียกหลังจาก sb พร้อม
+      loadBranchesFromSupabase();
 
       let _dashRows  = [];          // cache rows for date picker re-render
       let _dashMonth = undefined;   // 0-11
