@@ -11,6 +11,8 @@
       rel="stylesheet">
     <!-- Supabase JS client (replaces Google Apps Script backend) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js for dashboard charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
       /* ── TOKENS ─────────────────────────────── */
       :root {
@@ -2763,10 +2765,25 @@ body { background: var(--bg); color: var(--txt); }
           </div>
 
           <div class="dash-col-right">
+            <!-- กราฟ Actual vs Plan รายวัน -->
+            <div class="dash-sec-title">กราฟยอดขายรายวัน (รอบสิ้นวัน)</div>
+            <div class="dash-card-wrap" style="padding:16px;margin-bottom:24px">
+              <div style="position:relative;height:280px">
+                <canvas id="dashChart"></canvas>
+              </div>
+            </div>
+
+            <!-- ตาราง 30 วันล่าสุด -->
             <div class="dash-sec-title">30 วันล่าสุด <span style="font-weight:400;text-transform:none">(รอบสิ้นวัน)</span></div>
             <div class="dash-card-wrap">
               <table class="dash-tbl">
-                <thead><tr><th>วันที่</th><th>Plan</th><th>Actual</th><th>%</th><th>%Labour</th></tr></thead>
+                <thead><tr>
+                  <th>วันที่</th>
+                  <th style="text-align:right">Plan</th>
+                  <th style="text-align:right">Actual (%)</th>
+                  <th style="text-align:right">Labour (Hour)</th>
+                  <th style="text-align:right">Labour (บาท) / %</th>
+                </tr></thead>
                 <tbody id="dashRecentBody"><tr><td colspan="5" style="color:#94a3b8;padding:16px">⏳ กำลังโหลด...</td></tr></tbody>
               </table>
             </div>
@@ -3386,23 +3403,115 @@ body { background: var(--bg); color: var(--txt); }
 
       function renderDashRecent(rows) {
         const eodRows = rows.filter(r => r.submit_time_slot === "สิ้นวัน");
-        if (!eodRows.length) {
+
+        // เรียงวันที่จากน้อย → มาก (เก่า → ใหม่) เพื่อให้กราฟดูธรรมชาติ
+        const sorted = eodRows.slice().sort((a, b) =>
+          String(a.submit_date).localeCompare(String(b.submit_date))
+        );
+
+        // วาดกราฟ
+        renderDashChart(sorted);
+
+        if (!sorted.length) {
           document.getElementById("dashRecentBody").innerHTML =
-            `<tr><td colspan="5" style="color:#94a3b8;padding:16px 0">ยังไม่มีข้อมูลรอบสิ้นวัน</td></tr>`;
+            `<tr><td colspan="5" style="color:#94a3b8;padding:16px 0;text-align:center">ยังไม่มีข้อมูลรอบสิ้นวัน</td></tr>`;
           return;
         }
-        document.getElementById("dashRecentBody").innerHTML = eodRows.map(r => {
-          const pct       = r.plan_sale > 0 ? ((r.actual_sale / r.plan_sale) * 100).toFixed(1) + "%" : "-";
-          const pctColor  = r.plan_sale > 0 && r.actual_sale >= r.plan_sale ? "var(--green)" : "var(--red)";
-          const labPct    = r.actual_sale > 0 ? ((r.labour_baht / r.actual_sale) * 100).toFixed(1) + "%" : "-";
+
+        // ตาราง: วันที่ | Plan | Actual(%) | Labour(Hour) | Labour(บาท)/%
+        // เรียง: ใหม่สุดอยู่บน
+        document.getElementById("dashRecentBody").innerHTML = sorted.slice().reverse().map(r => {
+          const plan = parseFloat(r.plan_sale) || 0;
+          const actual = parseFloat(r.actual_sale) || 0;
+          const lh = parseFloat(r.labour_hour) || 0;
+          const lb = parseFloat(r.labour_baht) || 0;
+
+          const pct      = plan > 0 ? ((actual / plan) * 100).toFixed(1) + "%" : "-";
+          const pctColor = plan > 0 && actual >= plan ? "var(--green)" : "var(--red)";
+          const labPct   = actual > 0 ? ((lb / actual) * 100).toFixed(1) + "%" : "-";
+
           return `<tr>
             <td style="white-space:nowrap">${fmtThaiDate(r.submit_date)}</td>
-            <td>${fmt(r.plan_sale)}</td>
-            <td>${fmt(r.actual_sale)}</td>
-            <td style="color:${pctColor};font-weight:700">${pct}</td>
-            <td>${labPct}</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(plan)}</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(actual)} <span style="color:${pctColor};font-weight:700">(${pct})</span></td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(lh)}</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(lb)} <span style="color:var(--txt2)">/ ${labPct}</span></td>
           </tr>`;
         }).join("");
+      }
+
+      /* ─── Dashboard Chart (Actual vs Plan รายวัน) ─── */
+      let _dashChartInstance = null;
+      function renderDashChart(eodRows) {
+        const ctx = document.getElementById("dashChart");
+        if (!ctx) return;
+
+        // ทำลายกราฟเก่าก่อนสร้างใหม่ (กัน memory leak)
+        if (_dashChartInstance) {
+          _dashChartInstance.destroy();
+          _dashChartInstance = null;
+        }
+
+        if (!eodRows.length) {
+          ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
+          return;
+        }
+
+        const labels  = eodRows.map(r => {
+          const [y, m, d] = r.submit_date.split("-");
+          return `${parseInt(d)}/${parseInt(m)}`;
+        });
+        const actuals = eodRows.map(r => parseFloat(r.actual_sale) || 0);
+        const plans   = eodRows.map(r => parseFloat(r.plan_sale)   || 0);
+
+        _dashChartInstance = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Plan",
+                data: plans,
+                backgroundColor: "rgba(148,163,184,0.55)",
+                borderColor: "rgba(148,163,184,1)",
+                borderWidth: 1,
+                borderRadius: 4
+              },
+              {
+                label: "Actual",
+                data: actuals,
+                backgroundColor: "rgba(242,108,28,0.85)",
+                borderColor: "rgba(242,108,28,1)",
+                borderWidth: 1,
+                borderRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+              legend: { position: "top", labels: { font: { size: 12 }, boxWidth: 14 } },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`
+                }
+              }
+            },
+            scales: {
+              x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  font: { size: 11 },
+                  callback: (v) => v >= 1000 ? (v/1000).toFixed(0) + "k" : v
+                },
+                grid: { color: "rgba(0,0,0,.06)" }
+              }
+            }
+          }
+        });
       }
 
       /* ════════════════════════════════════════════
