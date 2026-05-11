@@ -2727,11 +2727,11 @@ body { background: var(--bg); color: var(--txt); }
         <!-- รายเดือน — 4 stats เต็มแถว (บน) + month nav -->
         <div class="dash-month-bar" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap">
           <div id="dashMonthTitle" class="dash-sec-title" style="margin:0">สรุปรายเดือน</div>
-          <div class="dash-month-nav" style="display:flex;align-items:center;gap:4px;background:#f1f5f9;border-radius:8px;padding:3px">
-            <button class="btn btn-sm" onclick="dashPrevMonth()" style="background:none;border:none;width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt2)">‹</button>
-            <span id="dashMonthLabel" style="font-size:13px;font-weight:700;min-width:120px;text-align:center;color:var(--txt)">—</span>
-            <button class="btn btn-sm" onclick="dashNextMonth()" style="background:none;border:none;width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt2)">›</button>
-            <button class="btn btn-sm btn-outline" onclick="dashThisMonth()" style="margin-left:6px;font-size:12px;padding:4px 10px">เดือนนี้</button>
+          <div class="dash-month-nav" style="display:flex;align-items:center;gap:6px;background:#f1f5f9;border-radius:10px;padding:6px 10px">
+            <button class="btn btn-sm" onclick="dashPrevMonth()" style="background:#fff;border:1px solid var(--bd);width:30px;height:30px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">‹</button>
+            <span id="dashMonthLabel" style="font-size:13px;font-weight:700;min-width:120px;text-align:center;color:var(--txt);background:#fff;padding:6px 12px;border-radius:6px;border:1px solid var(--bd)">—</span>
+            <button class="btn btn-sm" onclick="dashNextMonth()" style="background:#fff;border:1px solid var(--bd);width:30px;height:30px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">›</button>
+            <button class="btn btn-sm btn-outline" onclick="dashThisMonth()" style="font-size:12px;padding:5px 12px;margin-left:4px">เดือนนี้</button>
           </div>
         </div>
         <div class="dash-stats-grid dash-stats-row" id="dashStatsGrid">
@@ -2746,16 +2746,16 @@ body { background: var(--bg); color: var(--txt); }
 
           <div class="dash-col-left">
             <div class="dash-upper-left">
-              <div class="dash-sec-title">สรุปรายวัน</div>
-              <div class="dash-date-row">
-                <div class="dash-date-nav">
-                  <button class="dash-date-arrow" onclick="shiftDashDate(-1)">‹</button>
-                  <div class="dash-date-divider"></div>
-                  <input type="date" id="dashDatePicker" onchange="renderDashFromCache()">
-                  <div class="dash-date-divider"></div>
-                  <button class="dash-date-arrow" onclick="shiftDashDate(1)">›</button>
-                </div>
-                <button class="btn btn-sm btn-outline" onclick="document.getElementById('dashDatePicker').value=todayStr();renderDashFromCache()">วันนี้</button>
+              <div class="dash-sec-title">สรุปตามช่วงวันที่</div>
+              <!-- Date range picker (with background) -->
+              <div class="dash-date-range" style="background:#f1f5f9;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+                <input type="date" id="dashDateFrom" onchange="renderDashFromCache()"
+                       style="background:#fff;border:1px solid var(--bd);border-radius:7px;padding:6px 10px;font-family:inherit;font-size:13px;color:var(--txt);outline:none">
+                <span style="font-size:12px;color:var(--txt2);font-weight:600">ถึง</span>
+                <input type="date" id="dashDateTo" onchange="renderDashFromCache()"
+                       style="background:#fff;border:1px solid var(--bd);border-radius:7px;padding:6px 10px;font-family:inherit;font-size:13px;color:var(--txt);outline:none">
+                <button class="btn btn-sm btn-outline" onclick="setDashDateToday()"
+                        style="font-size:12px;padding:5px 12px;margin-left:auto">วันนี้</button>
               </div>
               <div class="dash-today-grid" id="dashTodayGrid">
                 <div class="dash-today-card"><div class="dtc-slot">🕓 รอบ 16.00</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
@@ -3259,9 +3259,9 @@ body { background: var(--bg); color: var(--txt); }
         const lastDay   = new Date(_dashYear, _dashMonth + 1, 0).getDate();
         const endDate   = ym + "-" + String(lastDay).padStart(2, "0");
 
-        // อัพเดท label เดือน
+        // อัพเดท label เดือน (อยู่ในกล่อง picker เท่านั้น — title ไม่ใส่เดือน)
         document.getElementById("dashMonthLabel").textContent = TH_MONTHS[_dashMonth] + " " + (_dashYear + 543);
-        document.getElementById("dashMonthTitle").textContent = "สรุปรายเดือน — " + TH_MONTHS[_dashMonth] + " " + (_dashYear + 543);
+        document.getElementById("dashMonthTitle").textContent = "สรุปรายเดือน";
 
         const sub = document.getElementById("dashPageSub");
         if (sub) sub.textContent = S.branch + (S.dm ? "  ·  BZM: " + S.dm : "");
@@ -3275,14 +3275,20 @@ body { background: var(--bg); color: var(--txt); }
         document.getElementById("dashRecentBody").innerHTML =
           `<tr><td colspan="5" style="color:#94a3b8;padding:16px">⏳ กำลังโหลด...</td></tr>`;
 
-        // ตั้ง date picker — ถ้านอกเดือน ให้ตั้งเป็นวันแรกของเดือน (หรือวันนี้ถ้าอยู่ในเดือนนั้น)
-        const picker = document.getElementById("dashDatePicker");
+        // ตั้ง date range — default = today (ถ้าอยู่ในเดือน), ถ้าไม่ใช้วันแรก-วันสุดท้ายของเดือน
         const today = todayStr();
-        if (!picker.value || picker.value < startDate || picker.value > endDate) {
-          picker.value = (today >= startDate && today <= endDate) ? today : startDate;
-        }
-        picker.min = startDate;
-        picker.max = endDate;
+        const inThisMonth = (today >= startDate && today <= endDate);
+        const defaultDate = inThisMonth ? today : startDate;
+
+        const dFrom = document.getElementById("dashDateFrom");
+        const dTo   = document.getElementById("dashDateTo");
+        // ถ้าค่าปัจจุบันหลุดเดือน → reset เป็น default
+        if (!dFrom.value || dFrom.value < startDate || dFrom.value > endDate) dFrom.value = defaultDate;
+        if (!dTo.value   || dTo.value   < startDate || dTo.value   > endDate) dTo.value   = defaultDate;
+        // ถ้า from > to → swap
+        if (dFrom.value > dTo.value) { const t = dFrom.value; dFrom.value = dTo.value; dTo.value = t; }
+        dFrom.min = dTo.min = startDate;
+        dFrom.max = dTo.max = endDate;
 
         // Fetch parallel: history + plans
         let _hist = null, _plan = null, _done = 0;
@@ -3308,7 +3314,7 @@ body { background: var(--bg); color: var(--txt); }
               : (parseFloat(r.plan_sale) || 0)
           }));
 
-          renderDashToday(_dashRows, picker.value);
+          renderDashRange(_dashRows, dFrom.value, dTo.value);
           renderDashMonthly(_dashRows);
           renderDashRecent(_dashRows);
         }
@@ -3322,15 +3328,19 @@ body { background: var(--bg); color: var(--txt); }
       // เรียกเมื่อเปลี่ยนวันที่ใน date picker (ไม่ fetch ใหม่)
       function renderDashFromCache() {
         if (!_dashRows.length) return;
-        const date = document.getElementById("dashDatePicker").value || todayStr();
-        renderDashToday(_dashRows, date);
+        const dFrom = document.getElementById("dashDateFrom");
+        const dTo   = document.getElementById("dashDateTo");
+        // ถ้า from > to → swap auto
+        if (dFrom.value && dTo.value && dFrom.value > dTo.value) {
+          const t = dFrom.value; dFrom.value = dTo.value; dTo.value = t;
+        }
+        renderDashRange(_dashRows, dFrom.value || todayStr(), dTo.value || todayStr());
       }
 
-      function shiftDashDate(delta) {
-        const picker = document.getElementById("dashDatePicker");
-        const d = new Date(picker.value || todayStr());
-        d.setDate(d.getDate() + delta);
-        picker.value = d.toISOString().slice(0, 10);
+      function setDashDateToday() {
+        const today = todayStr();
+        document.getElementById("dashDateFrom").value = today;
+        document.getElementById("dashDateTo").value   = today;
         renderDashFromCache();
       }
 
@@ -3340,30 +3350,54 @@ body { background: var(--bg); color: var(--txt); }
         return `${parseInt(d)} ${TH_SHORT[parseInt(m)-1]} ${parseInt(y)+543}`;
       }
 
-      function renderDashToday(rows, date) {
-        const r1600 = rows.find(r => r.submit_date === date && r.submit_time_slot === "16.00");
-        const rEod  = rows.find(r => r.submit_date === date && r.submit_time_slot === "สิ้นวัน");
+      function renderDashRange(rows, dateFrom, dateTo) {
+        // กรอง rows ในช่วง
+        const inRange = rows.filter(r => r.submit_date >= dateFrom && r.submit_date <= dateTo);
+        const r1600s = inRange.filter(r => r.submit_time_slot === "16.00");
+        const rEods  = inRange.filter(r => r.submit_time_slot === "สิ้นวัน");
+        const isSingleDay = (dateFrom === dateTo);
 
-        function cardHtml(ico, slotLabel, row) {
-          if (!row) return `
-            <div class="dash-today-card">
-              <div class="dtc-slot">${ico} ${slotLabel}</div>
-              <div class="dtc-status" style="color:#94a3b8">⏳ ยังไม่ส่ง</div>
-            </div>`;
-          const pct = row.plan_sale > 0 ? ((row.actual_sale / row.plan_sale) * 100).toFixed(1) : "-";
-          const pctColor = row.plan_sale > 0 && row.actual_sale >= row.plan_sale ? "var(--green)" : "var(--brand)";
-          return `
-            <div class="dash-today-card">
-              <div class="dtc-slot">${ico} ${slotLabel}</div>
-              <div class="dtc-status" style="color:var(--green)">✅ ส่งแล้ว</div>
-              <div class="dtc-actual">${fmt(row.actual_sale)}</div>
-              <div class="dtc-plan">Plan ${fmt(row.plan_sale)} · <span style="color:${pctColor};font-weight:700">${pct}%</span></div>
-            </div>`;
+        function cardHtml(ico, slotLabel, list) {
+          if (!list.length) {
+            return `
+              <div class="dash-today-card">
+                <div class="dtc-slot">${ico} ${slotLabel}</div>
+                <div class="dtc-status" style="color:#94a3b8">⏳ ${isSingleDay ? "ยังไม่ส่ง" : "ไม่มีข้อมูล"}</div>
+              </div>`;
+          }
+          // กรณีวันเดียว → ดึง row เดียว / กรณีช่วง → รวม
+          if (isSingleDay) {
+            const row = list[0];
+            const plan = parseFloat(row.plan_sale) || 0;
+            const actual = parseFloat(row.actual_sale) || 0;
+            const pct = plan > 0 ? ((actual / plan) * 100).toFixed(1) : "-";
+            const pctColor = plan > 0 && actual >= plan ? "var(--green)" : "var(--brand)";
+            return `
+              <div class="dash-today-card">
+                <div class="dtc-slot">${ico} ${slotLabel}</div>
+                <div class="dtc-status" style="color:var(--green)">✅ ส่งแล้ว</div>
+                <div class="dtc-actual">${fmt(actual)}</div>
+                <div class="dtc-plan">Plan ${fmt(plan)} · <span style="color:${pctColor};font-weight:700">${pct}%</span></div>
+              </div>`;
+          } else {
+            // ช่วงหลายวัน → รวม
+            const totalActual = list.reduce((s, r) => s + (parseFloat(r.actual_sale) || 0), 0);
+            const totalPlan   = list.reduce((s, r) => s + (parseFloat(r.plan_sale)   || 0), 0);
+            const pct = totalPlan > 0 ? ((totalActual / totalPlan) * 100).toFixed(1) : "-";
+            const pctColor = totalPlan > 0 && totalActual >= totalPlan ? "var(--green)" : "var(--brand)";
+            return `
+              <div class="dash-today-card">
+                <div class="dtc-slot">${ico} ${slotLabel} <span style="color:var(--txt2);font-size:11px;font-weight:400">· ${list.length} วัน</span></div>
+                <div class="dtc-status" style="color:var(--green)">✅ รวมในช่วง</div>
+                <div class="dtc-actual">${fmt(totalActual)}</div>
+                <div class="dtc-plan">Plan รวม ${fmt(totalPlan)} · <span style="color:${pctColor};font-weight:700">${pct}%</span></div>
+              </div>`;
+          }
         }
 
         document.getElementById("dashTodayGrid").innerHTML =
-          cardHtml("🕓", "รอบ 16.00", r1600) +
-          cardHtml("🌙", "รอบสิ้นวัน", rEod);
+          cardHtml("🕓", "รอบ 16.00", r1600s) +
+          cardHtml("🌙", "รอบสิ้นวัน", rEods);
       }
 
       function renderDashMonthly(rows) {
