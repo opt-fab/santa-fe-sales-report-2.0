@@ -3463,9 +3463,18 @@ body { background: var(--bg); color: var(--txt); }
         document.getElementById("hdrBranch").style.display = "";
         // hdrActions ย้ายไป sidebar แล้ว — ไม่ต้องแสดง
         document.getElementById("hdrBranchName").textContent = S.branch;
-        document.getElementById("hdrBranchDm").textContent = "BZM: " + S.dm;
         document.getElementById("sidebarBranchName").textContent = S.branch;
-        document.getElementById("sidebarBranchDm").textContent = "BZM: " + S.dm;
+        // admin ไม่ต้องแสดง BZM
+        const isAdminUser = (S.code === "ADMIN");
+        const hdrDm = document.getElementById("hdrBranchDm");
+        const sbDm  = document.getElementById("sidebarBranchDm");
+        if (isAdminUser) {
+          if (hdrDm) hdrDm.style.display = "none";
+          if (sbDm)  sbDm.style.display  = "none";
+        } else {
+          if (hdrDm) { hdrDm.style.display = ""; hdrDm.textContent = "BZM: " + S.dm; }
+          if (sbDm)  { sbDm.style.display  = ""; sbDm.textContent  = "BZM: " + S.dm; }
+        }
         document.getElementById("mobNav").classList.add("visible");
         document.getElementById("hdrLogoutBtn").style.display = "";
         document.getElementById("deskSidebar").classList.remove("hidden");
