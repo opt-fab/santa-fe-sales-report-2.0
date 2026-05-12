@@ -1603,6 +1603,24 @@
         .hdr-logout-btn {
           display: inline-flex !important;  /* override global display:none */
         }
+        /* Test mode button in header (admin only) */
+        .hdr-test-btn {
+          margin-right: 6px;
+          padding: 5px 10px !important;
+          font-size: 12px !important;
+          background: #fef3c7 !important;
+          color: #92400e !important;
+          border: 1px solid #fde68a !important;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          border-radius: 8px;
+        }
+        .hdr-test-btn.on {
+          background: #fde68a !important;
+          color: #78350f !important;
+          border-color: #f59e0b !important;
+        }
 
         /* iOS date input fix */
         input[type="date"] {
@@ -2712,6 +2730,11 @@ body { background: var(--bg); color: var(--txt); }
         <button class="btn btn-sm btn-outline" onclick="showHistory()">🗂️ ประวัติ</button>
         <button class="btn btn-sm btn-danger" onclick="doLogout()">ออกจากระบบ</button>
       </div>
+      <!-- Test mode toggle (admin only) — อยู่ข้างปุ่มออกจากระบบ -->
+      <button class="btn btn-sm hdr-test-btn admin-only-nav" id="hdrTestModeBtn" onclick="toggleTestModeAdmin()" style="display:none" title="โหมดทดสอบ">
+        <span style="font-size:14px">🧪</span>
+        <span id="hdrTestModeStatus" style="font-weight:700">ทดสอบ</span>
+      </button>
       <button class="btn btn-sm btn-danger hdr-logout-btn" id="hdrLogoutBtn" onclick="doLogout()" style="display:none">ออกจากระบบ</button>
     </header>
 
@@ -3551,16 +3574,6 @@ body { background: var(--bg); color: var(--txt); }
         <button class="mob-nav-btn admin-only-nav" id="mnAdminZones" onclick="showAdmin('zones')" style="display:none">
           <span class="mob-nav-ico">🗺️</span>
           <span class="mob-nav-lbl">โซน</span>
-        </button>
-        <!-- Test mode (admin only) -->
-        <button class="mob-nav-btn admin-only-nav" id="mnTestMode" onclick="toggleTestModeAdmin()" style="display:none">
-          <span class="mob-nav-ico">🧪</span>
-          <span class="mob-nav-lbl"><span id="mnTestModeStatus">ทดสอบ</span></span>
-        </button>
-        <!-- Logout (เสมอ) -->
-        <button class="mob-nav-btn mob-nav-btn-danger" id="mnLogout" onclick="doLogout()">
-          <span class="mob-nav-ico">🚪</span>
-          <span class="mob-nav-lbl">ออก</span>
         </button>
       </div>
     </nav>
@@ -4901,12 +4914,15 @@ body { background: var(--bg); color: var(--txt); }
         [
           document.getElementById("testModeStatus"),
           document.getElementById("mdTestModeStatus"),
-          document.getElementById("mnTestModeStatus")
+          document.getElementById("hdrTestModeStatus")
         ].forEach(s => {
           if (!s) return;
           s.textContent = _testMode ? "ทดสอบ ✓" : "ทดสอบ";
           s.style.color = _testMode ? "var(--green)" : "";
         });
+        // toggle .on class บนปุ่มใน header
+        const hdrTb = document.getElementById("hdrTestModeBtn");
+        if (hdrTb) hdrTb.classList.toggle("on", _testMode);
         const btn = document.getElementById("testModeBtn");
         if (btn) {
           btn.style.background = _testMode ? "var(--brand-l)" : "";
