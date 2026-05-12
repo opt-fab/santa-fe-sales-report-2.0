@@ -3321,9 +3321,9 @@ body { background: var(--bg); color: var(--txt); }
           <div class="dash-page-sub" id="reportPageSub"></div>
         </div>
 
-        <!-- Controls bar -->
+        <!-- Period + filter (compact row) -->
         <div class="dash-section">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
             <!-- View type toggle -->
             <div style="display:inline-flex;background:#f1f5f9;border-radius:10px;padding:4px;gap:2px">
               <button id="reportViewMonthBtn" class="report-view-btn active" onclick="setReportView('month')"
@@ -3331,61 +3331,76 @@ body { background: var(--bg); color: var(--txt); }
               <button id="reportViewYearBtn" class="report-view-btn" onclick="setReportView('year')"
                       style="border:none;background:transparent;color:var(--txt2);font-weight:600;padding:7px 16px;border-radius:7px;cursor:pointer;font-size:13px">รายปี</button>
             </div>
-
-            <!-- Month picker (visible only in รายเดือน) -->
+            <!-- Month picker -->
             <div id="reportMonthNav" style="display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border-radius:10px;padding:6px 10px">
               <button class="btn btn-sm" onclick="reportPrevMonth()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">‹</button>
               <span id="reportMonthLabel" style="font-size:13px;font-weight:700;min-width:130px;text-align:center;color:var(--txt);background:#fff;padding:6px 14px;border-radius:6px;border:1px solid var(--bd)">—</span>
               <button class="btn btn-sm" onclick="reportNextMonth()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">›</button>
             </div>
-
-            <!-- Year picker (visible only in รายปี) -->
+            <!-- Year picker -->
             <div id="reportYearNav" style="display:none;align-items:center;gap:6px;background:#f1f5f9;border-radius:10px;padding:6px 10px">
               <button class="btn btn-sm" onclick="reportPrevYear()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">‹</button>
               <span id="reportYearLabel" style="font-size:13px;font-weight:700;min-width:90px;text-align:center;color:var(--txt);background:#fff;padding:6px 14px;border-radius:6px;border:1px solid var(--bd)">—</span>
               <button class="btn btn-sm" onclick="reportNextYear()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">›</button>
             </div>
-
             <!-- Branch filter -->
             <select id="reportBranchFilter" onchange="loadReport()"
-                    style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;min-width:200px"></select>
+                    style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;min-width:200px;margin-left:auto"></select>
+          </div>
 
-            <!-- Zoom controls -->
-            <div style="display:inline-flex;align-items:center;gap:4px;background:#f1f5f9;border-radius:10px;padding:4px;margin-left:auto">
-              <button class="btn btn-sm" onclick="reportZoomOut()" title="ซูมออก"
-                      style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">−</button>
-              <span id="reportZoomLabel" onclick="reportZoomReset()" title="คลิกเพื่อรีเซ็ต"
-                    style="font-size:12px;font-weight:700;min-width:50px;text-align:center;color:var(--txt);background:#fff;padding:7px 8px;border-radius:6px;cursor:pointer;user-select:none">100%</span>
-              <button class="btn btn-sm" onclick="reportZoomIn()" title="ซูมเข้า"
-                      style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">+</button>
-              <button class="btn btn-sm" onclick="reportZoomFit()" title="พอดีจอ (ไม่ต้องเลื่อน)"
-                      style="background:#fff;border:1px solid var(--bd);padding:7px 10px;font-size:12px;color:var(--txt);border-radius:6px;font-weight:700">พอดีจอ</button>
-            </div>
-
-            <!-- Open Google Sheet (รายงานหลัก) -->
+          <!-- Action buttons (เด่นๆ ตรงกลาง) -->
+          <div class="report-actions-row" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
             <a href="https://docs.google.com/spreadsheets/d/1GBrc4S2lSu40bMOelAHvEzRGf7EIBhFGOKSISa-EZRU/edit" target="_blank" rel="noopener"
-               class="btn btn-sm"
-               style="padding:8px 14px;font-size:13px;background:#0f9d58;color:#fff;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border-radius:8px;font-weight:700">
-              📊 เปิด Google Sheet
+               style="background:#0f9d58;color:#fff;padding:14px 28px;font-size:15px;font-weight:700;border-radius:12px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;box-shadow:0 2px 8px rgba(15,157,88,.25);transition:transform .12s">
+              <span style="font-size:20px">📊</span> เปิด Google Sheet
             </a>
-            <!-- Export to Excel (ดึงข้อมูลจากระบบ) -->
-            <button class="btn btn-brand btn-sm" onclick="exportReportExcel()" style="padding:8px 14px;font-size:13px">
-              ⬇️ ดึงข้อมูล (Excel)
+            <button onclick="exportReportExcel()"
+               style="background:var(--brand);color:#fff;padding:14px 28px;font-size:15px;font-weight:700;border-radius:12px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 2px 8px rgba(242,108,28,.25);transition:transform .12s">
+              <span style="font-size:20px">⬇️</span> ดาวน์โหลด Excel
             </button>
           </div>
 
-          <!-- Table (wrap with zoom container) -->
-          <div class="dash-card-wrap" id="reportScroller" style="overflow:auto;padding:0;max-height:75vh">
-            <div class="report-zoom-wrap" id="reportZoomWrap" style="zoom:1">
-              <table class="report-tbl" id="reportTable" style="width:max-content;min-width:100%;border-collapse:collapse;font-size:12px">
-                <thead id="reportTableHead"></thead>
-                <tbody id="reportTableBody"><tr><td style="padding:24px;text-align:center;color:#94a3b8">⏳ กำลังโหลด...</td></tr></tbody>
-              </table>
+          <!-- Summary cards: ภาพรวม -->
+          <div class="dash-sec-title" style="margin-bottom:10px;font-size:14px;color:var(--txt2);font-weight:700">ภาพรวม</div>
+          <div id="reportSummaryGrid" class="dash-stats-grid dash-stats-row" style="margin-bottom:24px">
+            <div class="dash-stat"><div class="ds-val">—</div><div class="ds-lbl">⏳ กำลังโหลด</div></div>
+          </div>
+
+          <!-- Top / Bottom BZM -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+            <div>
+              <div class="dash-sec-title" style="margin-bottom:8px;font-size:13px;color:var(--green);font-weight:700">🏆 BZM ทำได้ดีที่สุด</div>
+              <div id="reportTopBzm" class="dash-card-wrap" style="padding:8px">—</div>
+            </div>
+            <div>
+              <div class="dash-sec-title" style="margin-bottom:8px;font-size:13px;color:var(--red);font-weight:700">⚠️ BZM ที่ต้องเร่ง</div>
+              <div id="reportBottomBzm" class="dash-card-wrap" style="padding:8px">—</div>
+            </div>
+          </div>
+
+          <!-- Top / Bottom สาขา -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div>
+              <div class="dash-sec-title" style="margin-bottom:8px;font-size:13px;color:var(--green);font-weight:700">⭐ Top 5 สาขา</div>
+              <div id="reportTopBranches" class="dash-card-wrap" style="padding:8px">—</div>
+            </div>
+            <div>
+              <div class="dash-sec-title" style="margin-bottom:8px;font-size:13px;color:var(--red);font-weight:700">📉 Bottom 5 สาขา</div>
+              <div id="reportBottomBranches" class="dash-card-wrap" style="padding:8px">—</div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Report: responsive (stack 2-col grids on mobile) -->
+    <style>
+      @media (max-width: 720px) {
+        #sReport [style*="grid-template-columns:1fr 1fr"] {
+          grid-template-columns: 1fr !important;
+        }
+      }
+    </style>
 
     <!-- Report table styling (Google Sheet-style — โทนส้ม Santa Fe) -->
     <style>
@@ -4330,15 +4345,22 @@ body { background: var(--bg); color: var(--txt); }
             sub.textContent = "ข้อมูลทั้งปี " + (_reportYear + 543);
         }
 
-        document.getElementById("reportTableBody").innerHTML =
-          `<tr><td colspan="${REPORT_COLS.length}" style="padding:24px;text-align:center;color:#94a3b8">⏳ กำลังโหลด...</td></tr>`;
+        // loading state — clear summary + lists
+        const _setLoading = (msg, color) => {
+          const sg = document.getElementById("reportSummaryGrid");
+          if (sg) sg.innerHTML = `<div class="dash-stat"><div class="ds-val" style="color:${color||'#94a3b8'}">${msg}</div><div class="ds-lbl">&nbsp;</div></div>`.repeat(4);
+          ["reportTopBzm","reportBottomBzm","reportTopBranches","reportBottomBranches"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = `<div style="color:${color||'#94a3b8'};padding:12px;text-align:center">${msg}</div>`;
+          });
+        };
+        _setLoading("⏳ กำลังโหลด...");
 
         let _hist = null, _plan = null, _done = 0;
         function _onDone() {
           if (++_done < 2) return;
           if (!_hist || !_hist.ok) {
-            document.getElementById("reportTableBody").innerHTML =
-              `<tr><td colspan="${REPORT_COLS.length}" style="padding:24px;color:#dc2626;text-align:center">⚠️ โหลดไม่สำเร็จ</td></tr>`;
+            _setLoading("⚠️ โหลดไม่สำเร็จ", "#dc2626");
             return;
           }
           // นับจำนวนวันที่มีข้อมูล (รอบสิ้นวัน) เพื่อใช้ projection Month End
@@ -4475,27 +4497,41 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       function renderReport() {
-        const head = document.getElementById("reportTableHead");
-        const body = document.getElementById("reportTableBody");
-
-        // จัดกลุ่มเป็น header 2 ระดับ
-        const groups = [
-          { id:"id",    lbl:"",                    span:0 },
-          { id:"sale",  lbl:"Sale",                span:0 },
-          { id:"trans", lbl:"Trans",               span:0 },
-          { id:"cl",    lbl:"Customer & Labour",   span:0 },
-          { id:"prod",  lbl:"Productivity",        span:0 }
-        ];
-        REPORT_COLS.forEach(c => { const g = groups.find(x => x.id === c.g); if (g) g.span++; });
-        head.innerHTML =
-          `<tr class="report-grp-row">` +
-            groups.map(g => `<th colspan="${g.span}">${g.lbl}</th>`).join("") +
-          `</tr>` +
-          `<tr>` + REPORT_COLS.map(c => `<th>${c.lbl}</th>`).join("") + `</tr>`;
+        const summaryGrid = document.getElementById("reportSummaryGrid");
+        const topBzmEl    = document.getElementById("reportTopBzm");
+        const botBzmEl    = document.getElementById("reportBottomBzm");
+        const topBrEl     = document.getElementById("reportTopBranches");
+        const botBrEl     = document.getElementById("reportBottomBranches");
 
         if (!_reportRows.length) {
-          body.innerHTML = `<tr><td colspan="${REPORT_COLS.length}" style="padding:24px;text-align:center;color:#94a3b8">ไม่มีข้อมูล</td></tr>`;
+          if (summaryGrid) summaryGrid.innerHTML = `<div class="dash-stat"><div class="ds-val">—</div><div class="ds-lbl">ไม่มีข้อมูล</div></div>`;
+          [topBzmEl, botBzmEl, topBrEl, botBrEl].forEach(el => { if (el) el.innerHTML = `<div style="color:#94a3b8;padding:12px;text-align:center">ไม่มีข้อมูล</div>`; });
           return;
+        }
+
+        // คำนวณภาพรวม (total ทุกสาขา)
+        const total = sumReportRows(_reportRows, "รวม") || {};
+        const pctPlan = total.plan > 0 ? (total.actualEod / total.plan) * 100 : 0;
+        const pctColor = total.plan > 0 && total.actualEod >= total.plan ? "var(--green)" : "var(--brand)";
+
+        if (summaryGrid) {
+          summaryGrid.innerHTML = `
+            <div class="dash-stat">
+              <div class="ds-val">${fmt(total.plan)}</div>
+              <div class="ds-lbl">Plan Sale รวม</div>
+            </div>
+            <div class="dash-stat">
+              <div class="ds-val">${fmt(total.actualEod)} <span style="font-size:.55em;color:${pctColor};font-weight:700">(${pctPlan.toFixed(1)}%)</span></div>
+              <div class="ds-lbl">Actual (รอบสิ้นวัน)</div>
+            </div>
+            <div class="dash-stat">
+              <div class="ds-val">${fmt(total.monthEnd || 0)}</div>
+              <div class="ds-lbl">ยอดประมาณการปิด</div>
+            </div>
+            <div class="dash-stat">
+              <div class="ds-val">${(total.pctCol * 100).toFixed(1)}%</div>
+              <div class="ds-lbl">Labour %COL</div>
+            </div>`;
         }
 
         // จัดกลุ่มตาม BZM
@@ -4505,28 +4541,61 @@ body { background: var(--bg); color: var(--txt); }
           if (!byBzm[dm]) byBzm[dm] = [];
           byBzm[dm].push(r);
         });
-        const bzmList = Object.keys(byBzm).sort((a,b) => a.localeCompare(b, "th"));
+        const bzmRanks = Object.keys(byBzm).map(dm => {
+          const rows = byBzm[dm];
+          const sub = sumReportRows(rows, dm);
+          return {
+            dm,
+            count: rows.length,
+            plan: sub.plan,
+            actual: sub.actualEod,
+            pct: sub.pctPlan * 100
+          };
+        }).filter(b => b.plan > 0); // เฉพาะที่มี plan
+        // เรียงตาม % ของ plan
+        const byPct = bzmRanks.slice().sort((a, b) => b.pct - a.pct);
+        const top3 = byPct.slice(0, 3);
+        const bot3 = byPct.slice(-3).reverse();
 
-        function rowHtml(r, cls) {
-          return `<tr class="${cls}">` + REPORT_COLS.map(c =>
-            `<td class="${c.a === 'r' ? 'r' : c.a === 'c' ? 'c' : ''}">${fmtReportCell(r[c.k], c)}</td>`
-          ).join("") + `</tr>`;
+        function bzmRowHtml(b, isPositive) {
+          const cls = isPositive ? "color:var(--green)" : "color:var(--red)";
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid #f1f5f9">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(b.dm)}</div>
+              <div style="font-size:11px;color:var(--txt2)">${b.count} สาขา · Actual ${fmt(b.actual)}</div>
+            </div>
+            <div style="font-size:15px;font-weight:800;${cls};margin-left:10px">${b.pct.toFixed(1)}%</div>
+          </div>`;
         }
 
-        let html = "";
-        bzmList.forEach(dm => {
-          const rows = byBzm[dm].slice().sort((a,b) => String(a.branch_code).localeCompare(String(b.branch_code)));
-          // BZM header row (full-width)
-          html += `<tr class="report-bzm-hdr"><td colspan="${REPORT_COLS.length}">▸ BZM: ${escHtml(dm)} (${rows.length} สาขา)</td></tr>`;
-          rows.forEach(r => { html += rowHtml(r, "report-branch"); });
-          const sub = sumReportRows(rows, `รวม ${dm}`);
-          if (sub) html += rowHtml(sub, "report-bzm-sub");
-        });
-        const total = sumReportRows(_reportRows, "รวมทุกสาขา");
-        if (total) html += rowHtml(total, "report-total");
-        body.innerHTML = html;
-        // auto-fit ให้ตารางพอดีจอ (ไม่ต้องเลื่อน)
-        setTimeout(reportZoomFit, 30);
+        if (topBzmEl) topBzmEl.innerHTML = top3.length ? top3.map(b => bzmRowHtml(b, true)).join("") : `<div style="color:#94a3b8;padding:12px;text-align:center">—</div>`;
+        if (botBzmEl) botBzmEl.innerHTML = bot3.length ? bot3.map(b => bzmRowHtml(b, false)).join("") : `<div style="color:#94a3b8;padding:12px;text-align:center">—</div>`;
+
+        // Top/Bottom branches โดย % ของ plan
+        const brRanks = _reportRows.filter(r => r.plan > 0).map(r => ({
+          code: r.branch_code,
+          name: r.branch_name,
+          plan: r.plan,
+          actual: r.actualEod,
+          pct: r.pctPlan * 100
+        })).sort((a, b) => b.pct - a.pct);
+
+        const top5 = brRanks.slice(0, 5);
+        const bot5 = brRanks.slice(-5).reverse();
+
+        function branchRowHtml(b, isPositive) {
+          const cls = isPositive ? "color:var(--green)" : "color:var(--red)";
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid #f1f5f9">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12.5px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(b.name)}</div>
+              <div style="font-size:11px;color:var(--txt2)">Plan ${fmt(b.plan)} · Actual ${fmt(b.actual)}</div>
+            </div>
+            <div style="font-size:14px;font-weight:800;${cls};margin-left:10px">${b.pct.toFixed(1)}%</div>
+          </div>`;
+        }
+
+        if (topBrEl) topBrEl.innerHTML = top5.length ? top5.map(b => branchRowHtml(b, true)).join("") : `<div style="color:#94a3b8;padding:12px;text-align:center">—</div>`;
+        if (botBrEl) botBrEl.innerHTML = bot5.length ? bot5.map(b => branchRowHtml(b, false)).join("") : `<div style="color:#94a3b8;padding:12px;text-align:center">—</div>`;
       }
 
       /* Export ตารางปัจจุบันเป็น Excel ผ่าน SheetJS */
