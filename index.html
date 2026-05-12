@@ -3392,69 +3392,92 @@ body { background: var(--bg); color: var(--txt); }
       }
     </style>
 
-    <!-- Report table styling (อ่านง่าย — sticky branch name + zebra + key highlights) -->
+    <!-- Report table styling — contrast & hierarchy -->
     <style>
       .report-tbl thead tr { background: transparent !important; }
       .report-tbl { width: 100%; }
-      .report-tbl th, .report-tbl td { border:1px solid #e5d4c4; padding:5px 7px; white-space:nowrap; font-variant-numeric:tabular-nums; }
-      /* Sticky columns (รหัส + ชื่อสาขา) — pin left ขณะ scroll ขวา */
-      .report-tbl .sticky-col { position: sticky; left: 0; z-index: 2; box-shadow: 2px 0 0 #fb923c; }
-      .report-tbl thead .sticky-col { z-index: 3; }
+      .report-tbl th, .report-tbl td {
+        border: 1px solid #e2e8f0;
+        padding: 6px 8px;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      /* Sticky columns — pin left ขณะ scroll ขวา */
+      .report-tbl .sticky-col { position: sticky; left: 0; z-index: 2; background: inherit; }
+      .report-tbl thead .sticky-col { z-index: 4; }
       .report-tbl th.sticky-col:nth-child(2),
-      .report-tbl td.sticky-col:nth-child(2) { left: 56px; }
-      .report-tbl tbody tr:hover td { background: #fef3c7 !important; }
-      /* Group header (Sale / Trans / Customer & Labour / Productivity) — ส้มเข้ม + ขาว */
+      .report-tbl td.sticky-col:nth-child(2) { left: 60px; }
+      .report-tbl tr.report-branch .sticky-col { background: #fff; }
+      .report-tbl tr.report-branch:nth-of-type(even) .sticky-col { background: #f8fafc; }
+      .report-tbl tbody tr.report-branch:hover td { background: #fef3c7 !important; }
+      .report-tbl tbody tr.report-branch:hover .sticky-col { background: #fef3c7 !important; }
+
+      /* Group header — ส้มเข้ม Santa Fe + ขาว (ระบุหมวด) */
       .report-tbl thead tr.report-grp-row th {
         background: var(--brand) !important;
         color: #fff !important;
-        border-bottom: 2px solid var(--brand-d) !important;
-        font-size: 13px;
+        border: 1px solid var(--brand-d) !important;
+        font-size: 14px;
         font-weight: 800;
-        letter-spacing: .3px;
-        padding: 7px 8px;
+        letter-spacing: .5px;
+        padding: 10px 10px;
+        text-transform: uppercase;
       }
-      /* Sub-header (Plan Sale / Actual Sale / ...) — peach + ตัวเข้ม */
+      /* Sub-header — เทาอ่อน + ดำ (อ่านง่าย) */
       .report-tbl thead tr:not(.report-grp-row) th {
-        background: #ffd4ab !important;
-        color: #5c1a08 !important;
-        font-weight: 800;
+        background: #f1f5f9 !important;
+        color: #334155 !important;
+        font-weight: 700;
         text-align: center;
-        font-size: 11px;
-        border-bottom: 2px solid #fb923c !important;
-        padding: 6px 4px;
+        font-size: 11.5px;
+        border-bottom: 2px solid #cbd5e1 !important;
+        padding: 8px 6px;
       }
-      .report-tbl tbody td { font-size:11.5px; color:#1e293b; font-weight: 500; }
-      /* แถวสาขา — สลับสี ชัดขึ้น */
-      .report-tbl tr.report-branch td { background:#fffefc; }
-      .report-tbl tr.report-branch:nth-of-type(even) td { background:#fff5e8; }
-      /* BZM header row — แถบส้มน้ำตาล อ่านง่าย */
+      /* คอลัมน์ "%" สำคัญ → highlight */
+      .report-tbl thead tr:not(.report-grp-row) th.col-key { color: #c2410c !important; background: #fff7ed !important; }
+
+      /* Body — พื้นขาวสะอาด zebra ละมุน */
+      .report-tbl tbody td { font-size: 12px; color: #1e293b; font-weight: 500; }
+      .report-tbl tr.report-branch td { background: #fff; }
+      .report-tbl tr.report-branch:nth-of-type(even) td { background: #f8fafc; }
+      .report-tbl tr.report-branch td.col-key { background: #fffbeb; font-weight: 700; }
+
+      /* แบ่งกลุ่มด้วยเส้นแนวตั้งสีส้ม */
+      .report-tbl th.group-start,
+      .report-tbl td.group-start { border-left: 2px solid var(--brand) !important; }
+
+      /* BZM header — น้ำเงินเข้ม + ขาว (โดดเด่นจากตัวเลข) */
       .report-tbl tr.report-bzm-hdr td {
+        background: #1e40af !important;
+        color: #fff !important;
+        font-weight: 800;
+        font-size: 13px;
+        padding: 9px 14px;
+        letter-spacing: .3px;
+        border: 1px solid #1e3a8a !important;
+      }
+      /* Subtotal ต่อ BZM — เหลืองอ่อนใส (เห็นชัดว่าเป็นแถว "รวม") */
+      .report-tbl tr.report-bzm-sub td {
+        background: #fef3c7 !important;
+        color: #78350f !important;
+        font-weight: 800;
+        border-top: 2px solid #f59e0b !important;
+        border-bottom: 2px solid #f59e0b !important;
+      }
+      .report-tbl tr.report-bzm-sub .sticky-col { background: #fef3c7 !important; }
+      /* Grand total — ส้มเข้ม + ขาว (final stronger) */
+      .report-tbl tr.report-total td {
         background: #c2410c !important;
         color: #fff !important;
         font-weight: 800;
-        font-size: 12.5px;
-        border-top: 2px solid var(--brand-d) !important;
-        letter-spacing: .3px;
-        padding: 6px 10px;
-      }
-      /* Subtotal ต่อ BZM — peach เข้มกว่าแถวปกติ */
-      .report-tbl tr.report-bzm-sub td {
-        background: #fdba74 !important;
-        font-weight: 800;
-        color: #431407 !important;
-        border-bottom: 2px solid #fb923c !important;
-      }
-      /* Grand total — ส้มเข้ม + ขาว เด่นสุด */
-      .report-tbl tr.report-total td {
-        background: #9a3412 !important;
-        color: #fff !important;
-        font-weight: 800;
         border-top: 3px solid #7c2d12 !important;
-        font-size: 13px;
-        padding: 8px 8px;
+        font-size: 13.5px;
+        padding: 11px 8px;
       }
-      .report-tbl td.r { text-align:right }
-      .report-tbl td.c { text-align:center }
+      .report-tbl tr.report-total .sticky-col { background: #c2410c !important; }
+
+      .report-tbl td.r { text-align: right }
+      .report-tbl td.c { text-align: center }
       .report-view-btn.active { background:#fff !important; color:var(--brand) !important; }
       /* zoom wrapper — ใช้ transform เพื่อปรับขนาดตารางทั้งหมด */
       .report-zoom-wrap { transform-origin: top left; transition: transform .15s ease }
@@ -4499,12 +4522,24 @@ body { background: var(--bg); color: var(--txt); }
           { id:"prod",  lbl:"Productivity",        span:0 }
         ];
         REPORT_COLS.forEach(c => { const g = groups.find(x => x.id === c.g); if (g) g.span++; });
+        // คอลัมน์สำคัญ (highlight) + ตำแหน่ง first-col ของแต่ละกลุ่ม
+        const KEY_COLS = new Set(["pctPlan", "actualEod", "monthEnd"]);
+        const groupStart = new Set();
+        let prevG = null;
+        REPORT_COLS.forEach((c, i) => { if (c.g !== prevG) { groupStart.add(i); prevG = c.g; } });
+        function classFor(c, i) {
+          const cls = [];
+          if (i < 2) cls.push("sticky-col");
+          if (groupStart.has(i) && i > 0) cls.push("group-start");
+          if (KEY_COLS.has(c.k)) cls.push("col-key");
+          return cls.join(" ");
+        }
         head.innerHTML =
           `<tr class="report-grp-row">` +
-            groups.map(g => `<th colspan="${g.span}">${g.lbl}</th>`).join("") +
+            groups.map((g, gi) => `<th colspan="${g.span}" class="${gi > 0 ? 'group-start' : ''}">${g.lbl}</th>`).join("") +
           `</tr>` +
           `<tr>` + REPORT_COLS.map((c, i) =>
-            `<th class="${i < 2 ? 'sticky-col' : ''}">${c.lbl}</th>`
+            `<th class="${classFor(c, i)}">${c.lbl}</th>`
           ).join("") + `</tr>`;
 
         if (!_reportRows.length) {
@@ -4524,8 +4559,8 @@ body { background: var(--bg); color: var(--txt); }
         function rowHtml(r, cls) {
           return `<tr class="${cls}">` + REPORT_COLS.map((c, i) => {
             const align = c.a === "r" ? "r" : c.a === "c" ? "c" : "";
-            const sticky = i < 2 ? "sticky-col" : "";
-            // highlight key cells
+            const cellCls = classFor(c, i);
+            // highlight % per branch row
             let extra = "";
             if (c.k === "pctPlan" && cls === "report-branch") {
               const pct = parseFloat(r[c.k]) || 0;
@@ -4533,7 +4568,7 @@ body { background: var(--bg); color: var(--txt); }
               else if (pct >= 0.85) extra = "color:#ca8a04;font-weight:700";
               else if (pct > 0)     extra = "color:#dc2626;font-weight:700";
             }
-            return `<td class="${align} ${sticky}" style="${extra}">${fmtReportCell(r[c.k], c)}</td>`;
+            return `<td class="${align} ${cellCls}" style="${extra}">${fmtReportCell(r[c.k], c)}</td>`;
           }).join("") + `</tr>`;
         }
 
