@@ -2650,6 +2650,8 @@ body { background: var(--bg); color: var(--txt); }
 
   /* (1) Dashboard: single column stacked — ไม่มี "ขวาว่าง" */
   .dash-wrap { max-width: 1280px !important; margin: 0 auto !important; }
+  /* รายงานเต็มรูปแบบ — ใช้ความกว้างเต็มจอ ไม่จำกัด */
+  #sReport .dash-wrap { max-width: none !important; padding: 14px !important; }
   .dash-stats-row {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
@@ -3313,9 +3315,9 @@ body { background: var(--bg); color: var(--txt); }
      SCREEN: REPORT (รายงานเต็มรูปแบบ — admin/vp/bzm)
 ════════════════════════════════════════ -->
     <div id="sReport" class="screen">
-      <div class="dash-wrap" style="max-width:none">
+      <div class="dash-wrap" style="max-width:none;padding-left:14px;padding-right:14px">
         <div class="dash-page-hdr">
-          <h1 class="dash-page-title">📈 รายงานสรุปยอดขาย</h1>
+          <h1 class="dash-page-title">📈 รายงานเต็มรูปแบบ</h1>
           <div class="dash-page-sub" id="reportPageSub"></div>
         </div>
 
@@ -3377,19 +3379,56 @@ body { background: var(--bg); color: var(--txt); }
       </div>
     </div>
 
-    <!-- Report table styling -->
+    <!-- Report table styling (Google Sheet-style — โทนส้ม Santa Fe) -->
     <style>
-      /* override global thead (brand orange + white) — ตารางรายงานใช้สีของตัวเอง */
+      /* override global thead — ตารางรายงานใช้สีของตัวเอง */
       .report-tbl thead tr { background: transparent !important; }
-      .report-tbl thead th { color: var(--txt) !important; border-bottom: 1px solid #e5e7eb !important; }
-      .report-tbl th, .report-tbl td { border:1px solid #e5e7eb; padding:6px 8px; white-space:nowrap; font-variant-numeric:tabular-nums }
-      .report-tbl thead th { background:#f1f5f9 !important; font-weight:700; color:#1e293b !important; text-align:center; font-size:11.5px }
-      .report-tbl thead tr.report-grp-row th { background:#fbbf24 !important; color:#451a03 !important; border-bottom:2px solid #d97706 !important; font-size:13px; letter-spacing:.3px }
+      .report-tbl th, .report-tbl td { border:1px solid #e5d4c4; padding:6px 8px; white-space:nowrap; font-variant-numeric:tabular-nums }
+      /* Group header (Sale / Trans / Customer & Labour / Productivity) — ส้มเข้ม + ขาว */
+      .report-tbl thead tr.report-grp-row th {
+        background: var(--brand) !important;
+        color: #fff !important;
+        border-bottom: 2px solid var(--brand-d) !important;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: .3px;
+        padding: 8px 10px;
+      }
+      /* Sub-header (Plan Sale / Actual Sale / ...) — peach อ่อน + ตัวเข้ม */
+      .report-tbl thead tr:not(.report-grp-row) th {
+        background: #ffe5d0 !important;
+        color: #7c2d12 !important;
+        font-weight: 700;
+        text-align: center;
+        font-size: 11.5px;
+        border-bottom: 1px solid #fed7aa !important;
+      }
       .report-tbl tbody td { font-size:12px; color:#1e293b }
+      /* แถวสาขา — สลับสี (white / peach อ่อนสุด) */
       .report-tbl tr.report-branch td { background:#fff }
-      .report-tbl tr.report-bzm-sub td { background:#fef3c7; font-weight:700 }
-      .report-tbl tr.report-total td { background:#fde68a; font-weight:800; border-top:2px solid #d97706 }
-      .report-tbl tr.report-bzm-hdr td { background:#dbeafe; font-weight:700; color:#1e3a8a }
+      .report-tbl tr.report-branch:nth-of-type(even) td { background:#fffaf5 }
+      /* BZM header row — แถบส้มกลาง + ตัวอักษรน้ำตาลเข้ม */
+      .report-tbl tr.report-bzm-hdr td {
+        background: #fed7aa !important;
+        font-weight: 700;
+        color: #7c2d12;
+        font-size: 12.5px;
+        border-top: 2px solid var(--brand);
+      }
+      /* Subtotal ต่อ BZM — peach กลาง */
+      .report-tbl tr.report-bzm-sub td {
+        background: #ffd9b5 !important;
+        font-weight: 700;
+        color: #7c2d12;
+      }
+      /* Grand total — ส้มเข้ม + ขาว เหมือน group header */
+      .report-tbl tr.report-total td {
+        background: var(--brand) !important;
+        color: #fff !important;
+        font-weight: 800;
+        border-top: 3px solid var(--brand-d) !important;
+        font-size: 13px;
+      }
       .report-tbl td.r { text-align:right }
       .report-tbl td.c { text-align:center }
       .report-view-btn.active { background:#fff !important; color:var(--brand) !important; }
