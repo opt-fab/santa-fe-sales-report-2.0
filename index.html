@@ -891,6 +891,18 @@
         background: #fef2f2;
       }
 
+      .plan-row.holiday {
+        background: #fffbeb;
+        border-left: 3px solid #f59e0b;
+      }
+
+      .plan-holiday-name {
+        font-size: 11px;
+        color: #b45309;
+        font-weight: 600;
+        margin-left: 8px;
+      }
+
       .plan-day-num {
         font-size: 14px;
         font-weight: 700;
@@ -909,6 +921,11 @@
 
       .plan-day-name.sun {
         color: var(--red);
+        font-weight: 700;
+      }
+
+      .plan-day-name.holiday {
+        color: #b45309;
         font-weight: 700;
       }
 
@@ -2855,6 +2872,20 @@ body { background: var(--bg); color: var(--txt); }
           <div class="dash-card-wrap" style="padding:16px">
             <div style="position:relative;height:320px">
               <canvas id="dashChart"></canvas>
+            </div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px;font-size:11.5px;color:#64748b">
+              <span style="display:inline-flex;align-items:center;gap:5px">
+                <span style="width:14px;height:12px;background:rgba(59,130,246,.10);border:1px solid rgba(59,130,246,.5);border-radius:2px"></span>
+                เสาร์
+              </span>
+              <span style="display:inline-flex;align-items:center;gap:5px">
+                <span style="width:14px;height:12px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.5);border-radius:2px"></span>
+                อาทิตย์
+              </span>
+              <span style="display:inline-flex;align-items:center;gap:5px">
+                <span style="width:14px;height:12px;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.6);border-radius:2px"></span>
+                วันหยุดราชการ
+              </span>
             </div>
           </div>
         </div>
@@ -5035,16 +5066,18 @@ body { background: var(--bg); color: var(--txt); }
           actualMap[r.submit_date] = (actualMap[r.submit_date] || 0) + (parseFloat(r.actual_sale) || 0);
         });
 
-        // สะสมทีละวัน
+        // สะสมทีละวัน + เก็บประเภทวัน (เสาร์/อาทิตย์/วันหยุด) สำหรับไฮไลต์
         const labels = [];
         const cumPlan = [];
         const cumActual = [];
+        const dayMeta = []; // [{type:"weekday|saturday|sunday|holiday", name:""}]
         let pPlan = 0, pActual = 0;
         let hasAnyActual = false;
 
         for (let d = 1; d <= lastDay; d++) {
           const date = ym + "-" + String(d).padStart(2, "0");
           labels.push(String(d));
+          dayMeta.push(getDayType(date));
 
           pPlan += (_dashPlans[date] || 0);
           cumPlan.push(pPlan);
@@ -5059,6 +5092,34 @@ body { background: var(--bg); color: var(--txt); }
             cumActual.push(null);
           }
         }
+
+        // Plugin วาดแถบสีพื้นหลังสำหรับ เสาร์/อาทิตย์/วันหยุด
+        const weekendBandsPlugin = {
+          id: "weekendBands",
+          beforeDatasetsDraw(chart) {
+            const { ctx, chartArea, scales } = chart;
+            if (!chartArea || !scales || !scales.x) return;
+            const xScale = scales.x;
+            const { top, bottom } = chartArea;
+            const colors = {
+              saturday: "rgba(59,130,246,.10)",
+              sunday:   "rgba(239,68,68,.12)",
+              holiday:  "rgba(245,158,11,.18)"
+            };
+            const n = labels.length;
+            if (!n) return;
+            const pxFirst = xScale.getPixelForValue(0);
+            const pxLast  = xScale.getPixelForValue(n - 1);
+            const step = (n > 1) ? (pxLast - pxFirst) / (n - 1) : (chartArea.right - chartArea.left);
+            const halfW = step / 2;
+            dayMeta.forEach((t, i) => {
+              if (!t || t.type === "weekday") return;
+              const px = xScale.getPixelForValue(i);
+              ctx.fillStyle = colors[t.type] || "transparent";
+              ctx.fillRect(px - halfW, top, halfW * 2, bottom - top);
+            });
+          }
+        };
 
         // ถ้าไม่มี actual และไม่มี plan เลย → แสดงข้อความ
         if (!hasAnyActual && pPlan === 0) {
@@ -5097,6 +5158,7 @@ body { background: var(--bg); color: var(--txt); }
               }
             ]
           },
+          plugins: [weekendBandsPlugin],
           options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -5105,7 +5167,13 @@ body { background: var(--bg); color: var(--txt); }
               legend: { position: "top", labels: { font: { size: 12 }, boxWidth: 14 } },
               tooltip: {
                 callbacks: {
-                  title: (items) => `วันที่ ${items[0].label}`,
+                  title: (items) => {
+                    const i = items[0].dataIndex;
+                    const t = dayMeta[i];
+                    let s = `วันที่ ${items[0].label}`;
+                    if (t && t.name) s += ` · ${t.name}`;
+                    return s;
+                  },
                   label: (ctx) => {
                     if (ctx.parsed.y === null) return null;
                     return `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`;
@@ -5125,7 +5193,16 @@ body { background: var(--bg); color: var(--txt); }
             scales: {
               x: {
                 title: { display: true, text: "วันที่ของเดือน", font: { size: 11 }, color: "#64748b" },
-                ticks: { font: { size: 10 } },
+                ticks: {
+                  font: { size: 10 },
+                  color: (ctx) => {
+                    const t = dayMeta[ctx.index];
+                    if (!t) return "#64748b";
+                    if (t.type === "holiday" || t.type === "sunday") return "#dc2626";
+                    if (t.type === "saturday") return "#2563eb";
+                    return "#64748b";
+                  }
+                },
                 grid: { display: false }
               },
               y: {
@@ -5469,6 +5546,75 @@ body { background: var(--bg); color: var(--txt); }
         "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
       const TH_DAYS = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
 
+      /* วันหยุดราชการไทย (ตามประกาศ — แก้ไข/เพิ่มได้ตามปีและประกาศจริง) */
+      const THAI_HOLIDAYS = {
+        // 2025
+        "2025-01-01": "วันขึ้นปีใหม่",
+        "2025-02-12": "วันมาฆบูชา",
+        "2025-04-06": "วันจักรี",
+        "2025-04-07": "วันหยุดชดเชยวันจักรี",
+        "2025-04-14": "วันสงกรานต์",
+        "2025-04-15": "วันสงกรานต์",
+        "2025-05-01": "วันแรงงาน",
+        "2025-05-05": "วันฉัตรมงคล",
+        "2025-05-12": "วันวิสาขบูชา",
+        "2025-06-03": "วันเฉลิมพระราชินี",
+        "2025-07-10": "วันอาสาฬหบูชา",
+        "2025-07-28": "วันเฉลิม ร.10",
+        "2025-08-12": "วันแม่",
+        "2025-10-13": "วันคล้ายวันสวรรคต ร.9",
+        "2025-10-23": "วันปิยมหาราช",
+        "2025-12-05": "วันพ่อ",
+        "2025-12-10": "วันรัฐธรรมนูญ",
+        "2025-12-31": "วันสิ้นปี",
+        // 2026
+        "2026-01-01": "วันขึ้นปีใหม่",
+        "2026-01-02": "วันหยุดชดเชย",
+        "2026-03-03": "วันมาฆบูชา",
+        "2026-04-06": "วันจักรี",
+        "2026-04-13": "วันสงกรานต์",
+        "2026-04-14": "วันสงกรานต์",
+        "2026-04-15": "วันสงกรานต์",
+        "2026-05-01": "วันแรงงาน",
+        "2026-05-04": "วันฉัตรมงคล",
+        "2026-05-31": "วันวิสาขบูชา",
+        "2026-06-01": "วันหยุดชดเชยวิสาขบูชา",
+        "2026-06-03": "วันเฉลิมพระราชินี",
+        "2026-07-28": "วันเฉลิม ร.10",
+        "2026-07-29": "วันอาสาฬหบูชา",
+        "2026-07-30": "วันเข้าพรรษา",
+        "2026-08-12": "วันแม่",
+        "2026-10-13": "วันคล้ายวันสวรรคต ร.9",
+        "2026-10-23": "วันปิยมหาราช",
+        "2026-12-05": "วันพ่อ",
+        "2026-12-07": "วันหยุดชดเชย",
+        "2026-12-10": "วันรัฐธรรมนูญ",
+        "2026-12-31": "วันสิ้นปี",
+        // 2027
+        "2027-01-01": "วันขึ้นปีใหม่",
+        "2027-04-06": "วันจักรี",
+        "2027-04-13": "วันสงกรานต์",
+        "2027-04-14": "วันสงกรานต์",
+        "2027-04-15": "วันสงกรานต์",
+        "2027-05-01": "วันแรงงาน",
+        "2027-08-12": "วันแม่",
+        "2027-10-13": "วันคล้ายวันสวรรคต ร.9",
+        "2027-10-23": "วันปิยมหาราช",
+        "2027-12-05": "วันพ่อ",
+        "2027-12-10": "วันรัฐธรรมนูญ",
+        "2027-12-31": "วันสิ้นปี"
+      };
+
+      /* คืน { type, name } สำหรับ date "YYYY-MM-DD" */
+      function getDayType(ymd) {
+        if (THAI_HOLIDAYS[ymd]) return { type: "holiday", name: THAI_HOLIDAYS[ymd] };
+        const d = new Date(ymd + "T00:00:00");
+        const dow = d.getDay();
+        if (dow === 0) return { type: "sunday",   name: "วันอาทิตย์" };
+        if (dow === 6) return { type: "saturday", name: "วันเสาร์" };
+        return { type: "weekday", name: "" };
+      }
+
       function showPlan() {
         const now = new Date();
         _planYear = now.getFullYear();
@@ -5553,19 +5699,28 @@ body { background: var(--bg); color: var(--txt); }
 
           if (hasVal) { totalPlan += val; daysWithPlan++; }
 
+          const dayType = getDayType(dateStr);
+          const isHoliday = dayType.type === "holiday";
           const isSat = dow === 6, isSun = dow === 0;
-          let rowCls = "plan-row";
-          if (isToday) rowCls += " today";
-          else if (isSat) rowCls += " sat";
-          else if (isSun) rowCls += " sun";
 
-          const dayCls = "plan-day-name" + (isSat ? " sat" : isSun ? " sun" : "");
+          let rowCls = "plan-row";
+          if (isToday)       rowCls += " today";
+          else if (isHoliday) rowCls += " holiday";
+          else if (isSat)    rowCls += " sat";
+          else if (isSun)    rowCls += " sun";
+
+          let dayCls = "plan-day-name";
+          if (isHoliday)   dayCls += " holiday";
+          else if (isSat)  dayCls += " sat";
+          else if (isSun)  dayCls += " sun";
+
           const inpCls = hasVal ? "plan-inp has-val" : "plan-inp";
           const statusHtml = hasVal ? `<span class="plan-status ok">✓</span>` : `<span class="plan-status"></span>`;
+          const holidayLbl = isHoliday ? `<span class="plan-holiday-name">🎌 ${escHtml(dayType.name)}</span>` : "";
 
           html += `<div class="${rowCls}">
       <span class="plan-day-num">${d}</span>
-      <span class="${dayCls}">${TH_DAYS[dow]}</span>
+      <span class="${dayCls}">${TH_DAYS[dow]}${holidayLbl}</span>
       <input class="${inpCls}" id="pd_${dateStr}" type="text" inputmode="decimal"
         placeholder="0" value="${hasVal ? val : ""}"
         oninput="onPlanInput(this)" data-date="${dateStr}">
