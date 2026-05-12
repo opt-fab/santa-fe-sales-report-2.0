@@ -42,28 +42,18 @@ const BRANCHES_HEADERS = [
 ];
 
 // ════════════════════════════════════════════
-// PUSH — รับ POST จาก index.html (real-time)
+// PUSH — รับ POST จาก index.html → trigger full sync
+// (Supabase = source of truth → re-fetch ทั้ง table แม่นยำที่สุด)
 // ════════════════════════════════════════════
 function doPost(e) {
   try {
-    const p = e.parameter || {};
-    const action = p.action;
+    const action = (e.parameter || {}).action;
 
     if (action === "submit_sales") {
-      appendOrUpdateRow("Sales", SALES_HEADERS, p, ["branch_code", "submit_date", "submit_time_slot"]);
+      syncTable("sales_data", "Sales", SALES_HEADERS);
     }
     else if (action === "save_plan") {
-      // entries = JSON array [{date, plan_sale}, ...]
-      const entries = JSON.parse(p.entries || "[]");
-      entries.forEach(en => {
-        const row = {
-          branch_code: p.branch_code,
-          plan_date: en.date,
-          plan_amount: en.plan_sale,
-          updated_at: new Date().toISOString()
-        };
-        appendOrUpdateRow("Plan", PLAN_HEADERS, row, ["branch_code", "plan_date"]);
-      });
+      syncTable("plan_sale", "Plan", PLAN_HEADERS);
     }
     else {
       return _resp({ ok: false, error: "Unknown action: " + action });
@@ -85,44 +75,6 @@ function _resp(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
-}
-
-// Append row หรือ update ถ้ามี (ตาม keyCols)
-function appendOrUpdateRow(sheetName, headers, data, keyCols) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(sheetName);
-  if (!sheet) {
-    sheet = ss.insertSheet(sheetName);
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    sheet.getRange(1, 1, 1, headers.length)
-      .setBackground("#f26c1c").setFontColor("#fff").setFontWeight("bold");
-    sheet.setFrozenRows(1);
-  }
-
-  // หา row ที่ match keyCols (ถ้ามี → update, ถ้าไม่ → append)
-  const lastRow = sheet.getLastRow();
-  let foundRow = -1;
-  if (lastRow > 1 && keyCols && keyCols.length) {
-    const data2d = sheet.getRange(2, 1, lastRow - 1, headers.length).getValues();
-    for (let i = 0; i < data2d.length; i++) {
-      const match = keyCols.every(kc => {
-        const colIdx = headers.indexOf(kc);
-        return String(data2d[i][colIdx]) === String(data[kc]);
-      });
-      if (match) { foundRow = i + 2; break; }
-    }
-  }
-
-  const newRow = headers.map(h => {
-    const v = data[h];
-    return (v === undefined || v === null) ? "" : v;
-  });
-
-  if (foundRow > 0) {
-    sheet.getRange(foundRow, 1, 1, headers.length).setValues([newRow]);
-  } else {
-    sheet.appendRow(newRow);
-  }
 }
 
 // ════════════════════════════════════════════
