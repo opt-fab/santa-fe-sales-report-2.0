@@ -13,6 +13,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Chart.js for dashboard charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- SheetJS — Excel export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
       /* ── TOKENS ─────────────────────────────── */
       :root {
@@ -2522,6 +2524,10 @@ body { background: var(--bg); color: var(--txt); }
         <button class="desk-nav-btn" id="dnHistory" onclick="showHistory()">
           <span class="desk-nav-ico">🗂️</span>ประวัติ
         </button>
+        <!-- Full report (visible to admin/vp/bzm) -->
+        <button class="desk-nav-btn report-only-nav" id="dnReport" onclick="showReport()" style="display:none">
+          <span class="desk-nav-ico">📈</span>รายงานเต็มรูปแบบ
+        </button>
         <!-- Admin sub-menu (visible only when logged in as Admin) -->
         <button class="desk-nav-btn admin-only-nav" id="dnAdminBranches" onclick="showAdmin('branches')" style="display:none">
           <span class="desk-nav-ico">🏢</span>จัดการสาขา
@@ -2959,6 +2965,94 @@ body { background: var(--bg); color: var(--txt); }
     </div>
 
     <!-- ════════════════════════════════════════
+     SCREEN: REPORT (รายงานเต็มรูปแบบ — admin/vp/bzm)
+════════════════════════════════════════ -->
+    <div id="sReport" class="screen">
+      <div class="dash-wrap" style="max-width:none">
+        <div class="dash-page-hdr">
+          <h1 class="dash-page-title">📈 รายงานสรุปยอดขาย</h1>
+          <div class="dash-page-sub" id="reportPageSub"></div>
+        </div>
+
+        <!-- Controls bar -->
+        <div class="dash-section">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <!-- View type toggle -->
+            <div style="display:inline-flex;background:#f1f5f9;border-radius:10px;padding:4px;gap:2px">
+              <button id="reportViewMonthBtn" class="report-view-btn active" onclick="setReportView('month')"
+                      style="border:none;background:#fff;color:var(--brand);font-weight:700;padding:7px 16px;border-radius:7px;cursor:pointer;font-size:13px">รายเดือน</button>
+              <button id="reportViewYearBtn" class="report-view-btn" onclick="setReportView('year')"
+                      style="border:none;background:transparent;color:var(--txt2);font-weight:600;padding:7px 16px;border-radius:7px;cursor:pointer;font-size:13px">รายปี</button>
+            </div>
+
+            <!-- Month picker (visible only in รายเดือน) -->
+            <div id="reportMonthNav" style="display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border-radius:10px;padding:6px 10px">
+              <button class="btn btn-sm" onclick="reportPrevMonth()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">‹</button>
+              <span id="reportMonthLabel" style="font-size:13px;font-weight:700;min-width:130px;text-align:center;color:var(--txt);background:#fff;padding:6px 14px;border-radius:6px;border:1px solid var(--bd)">—</span>
+              <button class="btn btn-sm" onclick="reportNextMonth()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">›</button>
+            </div>
+
+            <!-- Year picker (visible only in รายปี) -->
+            <div id="reportYearNav" style="display:none;align-items:center;gap:6px;background:#f1f5f9;border-radius:10px;padding:6px 10px">
+              <button class="btn btn-sm" onclick="reportPrevYear()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">‹</button>
+              <span id="reportYearLabel" style="font-size:13px;font-weight:700;min-width:90px;text-align:center;color:var(--txt);background:#fff;padding:6px 14px;border-radius:6px;border:1px solid var(--bd)">—</span>
+              <button class="btn btn-sm" onclick="reportNextYear()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">›</button>
+            </div>
+
+            <!-- Branch filter -->
+            <select id="reportBranchFilter" onchange="loadReport()"
+                    style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;min-width:200px"></select>
+
+            <!-- Zoom controls -->
+            <div style="display:inline-flex;align-items:center;gap:4px;background:#f1f5f9;border-radius:10px;padding:4px;margin-left:auto">
+              <button class="btn btn-sm" onclick="reportZoomOut()" title="ซูมออก"
+                      style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">−</button>
+              <span id="reportZoomLabel" onclick="reportZoomReset()" title="คลิกเพื่อรีเซ็ต"
+                    style="font-size:12px;font-weight:700;min-width:50px;text-align:center;color:var(--txt);background:#fff;padding:7px 8px;border-radius:6px;cursor:pointer;user-select:none">100%</span>
+              <button class="btn btn-sm" onclick="reportZoomIn()" title="ซูมเข้า"
+                      style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">+</button>
+            </div>
+
+            <!-- Export button -->
+            <button class="btn btn-brand btn-sm" onclick="exportReportExcel()" style="padding:8px 16px;font-size:13px">
+              ⬇️ Export Excel
+            </button>
+          </div>
+
+          <!-- Table (wrap with zoom container) -->
+          <div class="dash-card-wrap" id="reportScroller" style="overflow:auto;padding:0;max-height:75vh">
+            <div class="report-zoom-wrap" id="reportZoomWrap" style="zoom:1">
+              <table class="report-tbl" id="reportTable" style="width:max-content;min-width:100%;border-collapse:collapse;font-size:12px">
+                <thead id="reportTableHead"></thead>
+                <tbody id="reportTableBody"><tr><td style="padding:24px;text-align:center;color:#94a3b8">⏳ กำลังโหลด...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report table styling -->
+    <style>
+      /* override global thead (brand orange + white) — ตารางรายงานใช้สีของตัวเอง */
+      .report-tbl thead tr { background: transparent !important; }
+      .report-tbl thead th { color: var(--txt) !important; border-bottom: 1px solid #e5e7eb !important; }
+      .report-tbl th, .report-tbl td { border:1px solid #e5e7eb; padding:6px 8px; white-space:nowrap; font-variant-numeric:tabular-nums }
+      .report-tbl thead th { background:#f1f5f9 !important; font-weight:700; color:#1e293b !important; text-align:center; font-size:11.5px }
+      .report-tbl thead tr.report-grp-row th { background:#fbbf24 !important; color:#451a03 !important; border-bottom:2px solid #d97706 !important; font-size:13px; letter-spacing:.3px }
+      .report-tbl tbody td { font-size:12px; color:#1e293b }
+      .report-tbl tr.report-branch td { background:#fff }
+      .report-tbl tr.report-bzm-sub td { background:#fef3c7; font-weight:700 }
+      .report-tbl tr.report-total td { background:#fde68a; font-weight:800; border-top:2px solid #d97706 }
+      .report-tbl tr.report-bzm-hdr td { background:#dbeafe; font-weight:700; color:#1e3a8a }
+      .report-tbl td.r { text-align:right }
+      .report-tbl td.c { text-align:center }
+      .report-view-btn.active { background:#fff !important; color:var(--brand) !important; }
+      /* zoom wrapper — ใช้ transform เพื่อปรับขนาดตารางทั้งหมด */
+      .report-zoom-wrap { transform-origin: top left; transition: transform .15s ease }
+    </style>
+
+    <!-- ════════════════════════════════════════
      SCREEN: ADMIN (เฉพาะ ADMIN เท่านั้น)
 ════════════════════════════════════════ -->
     <div id="sAdmin" class="screen">
@@ -3140,6 +3234,10 @@ body { background: var(--bg); color: var(--txt); }
       <button class="mob-nav-btn" id="mnHistory" onclick="showHistory()">
         <span class="mob-nav-ico">🗂️</span>
         <span class="mob-nav-lbl">ประวัติ</span>
+      </button>
+      <button class="mob-nav-btn report-only-nav" id="mnReport" onclick="showReport()" style="display:none">
+        <span class="mob-nav-ico">📈</span>
+        <span class="mob-nav-lbl">รายงาน</span>
       </button>
       <button class="mob-nav-btn" id="mnAdmin" onclick="showAdmin()" style="display:none">
         <span class="mob-nav-ico">👑</span>
@@ -3525,6 +3623,7 @@ body { background: var(--bg); color: var(--txt); }
           document.querySelectorAll(".mob-nav-btn, .desk-nav-btn").forEach(b => b.classList.remove("active"));
           // ซ่อน admin-only buttons (กันเห็นค้าง)
           document.querySelectorAll(".admin-only-nav").forEach(el => el.style.display = "none");
+          document.querySelectorAll(".report-only-nav").forEach(el => el.style.display = "none");
           const tmb = document.getElementById("testModeBtn"); if (tmb) tmb.style.display = "none";
           showScreen("sLogin");
         } catch (e) {
@@ -3607,6 +3706,11 @@ body { background: var(--bg); color: var(--txt); }
         const mnAdminBtn = document.getElementById("mnAdmin");
         if (mnAdminBtn) mnAdminBtn.style.display = isAdmin ? "flex" : "none";
 
+        // ปุ่ม "รายงานเต็มรูปแบบ": admin/vp/bzm
+        document.querySelectorAll(".report-only-nav").forEach(el => {
+          el.style.display = isMgmt ? "flex" : "none";
+        });
+
         // Refresh test mode banner (อาจถูก toggle จาก admin อื่นระหว่าง user offline)
         loadTestModeFromDB();
 
@@ -3630,6 +3734,439 @@ body { background: var(--bg); color: var(--txt); }
         showScreen("sDash");
         setMobTab("mnDash");
         loadDash();
+      }
+
+      /* ══════════════════════════════════════════════
+         FULL REPORT — รายเดือน/รายปี ต่อสาขา/BZM/ทุกสาขา
+         ใช้สูตรเดียวกับสเปรดชีต "พฤษภาคม 69"
+      ══════════════════════════════════════════════ */
+      let _reportView   = "month";        // "month" | "year"
+      let _reportMonth  = undefined;      // 0-11
+      let _reportYear   = undefined;      // ค.ศ.
+      let _reportRows   = [];             // aggregated rows per branch (ล่าสุด)
+      let _reportMeta   = { startDate:"", endDate:"", daysWithData:0, daysInPeriod:0 };
+      let _reportZoom   = 1.0;            // ขนาดตาราง (0.5 - 1.5)
+
+      function applyReportZoom() {
+        const wrap = document.getElementById("reportZoomWrap");
+        const lbl  = document.getElementById("reportZoomLabel");
+        if (wrap) {
+          // ใช้ CSS zoom (re-layout — scrollbar ปรับตามอัตโนมัติ)
+          wrap.style.zoom = _reportZoom;
+          // fallback ผ่าน transform สำหรับเบราว์เซอร์เก่า
+          wrap.style.transform = "";
+        }
+        if (lbl) lbl.textContent = Math.round(_reportZoom * 100) + "%";
+      }
+      function reportZoomIn()    { _reportZoom = Math.min(1.5, +(_reportZoom + 0.1).toFixed(2)); applyReportZoom(); }
+      function reportZoomOut()   { _reportZoom = Math.max(0.5, +(_reportZoom - 0.1).toFixed(2)); applyReportZoom(); }
+      function reportZoomReset() { _reportZoom = 1.0; applyReportZoom(); }
+
+      const REPORT_COLS = [
+        // key, label, group ('sale'|'trans'|'cl'|'prod'), align, computed?
+        { k:"branch_code",    lbl:"รหัส",            g:"id",    a:"c" },
+        { k:"branch_name",    lbl:"สาขา",            g:"id",    a:"l" },
+        { k:"plan",           lbl:"Plan Sale",       g:"sale",  a:"r" },
+        { k:"actual1600",     lbl:"Actual 16.00",    g:"sale",  a:"r" },
+        { k:"actualEod",      lbl:"Actual สิ้นวัน",   g:"sale",  a:"r" },
+        { k:"monthEnd",       lbl:"Month End",       g:"sale",  a:"r" },
+        { k:"pctPlan",        lbl:"%",               g:"sale",  a:"r", pct:true },
+        { k:"saleDineIn",     lbl:"Dine In",         g:"sale",  a:"r" },
+        { k:"saleTakeaway",   lbl:"Take away",       g:"sale",  a:"r" },
+        { k:"saleGrab",       lbl:"Grab",            g:"sale",  a:"r" },
+        { k:"saleLineman",    lbl:"Line Man",        g:"sale",  a:"r" },
+        { k:"saleShopee",     lbl:"Shopee Food",     g:"sale",  a:"r" },
+        { k:"saleDelivery",   lbl:"Total Delivery",  g:"sale",  a:"r" },
+        { k:"transTotal",     lbl:"Total",           g:"trans", a:"r" },
+        { k:"transDineIn",    lbl:"Dine In",         g:"trans", a:"r" },
+        { k:"transTakeaway",  lbl:"Take away",       g:"trans", a:"r" },
+        { k:"transGrab",      lbl:"Grab",            g:"trans", a:"r" },
+        { k:"transLineman",   lbl:"Line Man",        g:"trans", a:"r" },
+        { k:"transShopee",    lbl:"Shopee Food",     g:"trans", a:"r" },
+        { k:"transDelivery",  lbl:"Total Delivery",  g:"trans", a:"r" },
+        { k:"ticketAvg",      lbl:"Ticket Avg.",     g:"trans", a:"r" },
+        { k:"ticketDineIn",   lbl:"Ticket Dine In",  g:"trans", a:"r" },
+        { k:"ticketTakeaway", lbl:"Ticket Take away",g:"trans", a:"r" },
+        { k:"ticketDelivery", lbl:"Ticket Delivery", g:"trans", a:"r" },
+        { k:"customer",       lbl:"Customer",        g:"cl",    a:"r" },
+        { k:"customerAvg",    lbl:"Customer Avg.",   g:"cl",    a:"r" },
+        { k:"labourHour",     lbl:"Labour(hour)",    g:"cl",    a:"r" },
+        { k:"labourBaht",     lbl:"Labour(Baht)",    g:"cl",    a:"r" },
+        { k:"pctCol",         lbl:"%Col",            g:"cl",    a:"r", pct:true },
+        { k:"prodTrans",      lbl:"Productivity Trans", g:"prod", a:"r" },
+        { k:"prodSale",       lbl:"Productivity Sale",  g:"prod", a:"r" }
+      ];
+
+      function showReport() {
+        // gating: admin/vp/bzm เท่านั้น
+        if (!(S.role === "admin" || S.role === "vp" || S.role === "bzm")) {
+          showAlert("⛔", "ไม่มีสิทธิ์", "หน้านี้สำหรับ Admin / VP / BZM เท่านั้น");
+          return;
+        }
+        showScreen("sReport");
+        setMobTab("mnReport");
+        if (_reportMonth === undefined) {
+          const now = new Date();
+          _reportMonth = now.getMonth();
+          _reportYear  = now.getFullYear();
+        }
+        loadReport();
+      }
+
+      function setReportView(v) {
+        _reportView = v;
+        document.getElementById("reportViewMonthBtn").classList.toggle("active", v === "month");
+        document.getElementById("reportViewYearBtn").classList.toggle("active", v === "year");
+        document.getElementById("reportViewMonthBtn").style.background = (v === "month") ? "#fff" : "transparent";
+        document.getElementById("reportViewMonthBtn").style.color      = (v === "month") ? "var(--brand)" : "var(--txt2)";
+        document.getElementById("reportViewYearBtn").style.background  = (v === "year")  ? "#fff" : "transparent";
+        document.getElementById("reportViewYearBtn").style.color       = (v === "year")  ? "var(--brand)" : "var(--txt2)";
+        document.getElementById("reportMonthNav").style.display = (v === "month") ? "inline-flex" : "none";
+        document.getElementById("reportYearNav").style.display  = (v === "year")  ? "inline-flex" : "none";
+        loadReport();
+      }
+
+      function reportPrevMonth() {
+        if (--_reportMonth < 0) { _reportMonth = 11; _reportYear--; }
+        loadReport();
+      }
+      function reportNextMonth() {
+        if (++_reportMonth > 11) { _reportMonth = 0; _reportYear++; }
+        loadReport();
+      }
+      function reportPrevYear() { _reportYear--; loadReport(); }
+      function reportNextYear() { _reportYear++; loadReport(); }
+
+      function loadReport() {
+        // ตั้งค่า label
+        if (_reportView === "month") {
+          document.getElementById("reportMonthLabel").textContent =
+            TH_MONTHS[_reportMonth] + " " + (_reportYear + 543);
+        } else {
+          document.getElementById("reportYearLabel").textContent = "ปี " + (_reportYear + 543);
+        }
+
+        // ใช้ branch filter ของ report เอง (อิงจาก populateBranchFilter helper)
+        populateBranchFilter("reportBranchFilter");
+        const queryCodes = getQueryBranchCodes("reportBranchFilter");
+
+        // คำนวณช่วงวัน
+        let startDate, endDate, daysInPeriod;
+        if (_reportView === "month") {
+          const ym = _reportYear + "-" + String(_reportMonth + 1).padStart(2, "0");
+          const lastDay = new Date(_reportYear, _reportMonth + 1, 0).getDate();
+          startDate = ym + "-01";
+          endDate   = ym + "-" + String(lastDay).padStart(2, "0");
+          daysInPeriod = lastDay;
+        } else {
+          startDate = _reportYear + "-01-01";
+          endDate   = _reportYear + "-12-31";
+          daysInPeriod = ((new Date(_reportYear, 1, 29).getMonth() === 1) ? 366 : 365);
+        }
+
+        // subtitle
+        const sub = document.getElementById("reportPageSub");
+        if (sub) {
+          if (_reportView === "month")
+            sub.textContent = "ข้อมูลเดือน " + TH_MONTHS[_reportMonth] + " " + (_reportYear + 543);
+          else
+            sub.textContent = "ข้อมูลทั้งปี " + (_reportYear + 543);
+        }
+
+        document.getElementById("reportTableBody").innerHTML =
+          `<tr><td colspan="${REPORT_COLS.length}" style="padding:24px;text-align:center;color:#94a3b8">⏳ กำลังโหลด...</td></tr>`;
+
+        let _hist = null, _plan = null, _done = 0;
+        function _onDone() {
+          if (++_done < 2) return;
+          if (!_hist || !_hist.ok) {
+            document.getElementById("reportTableBody").innerHTML =
+              `<tr><td colspan="${REPORT_COLS.length}" style="padding:24px;color:#dc2626;text-align:center">⚠️ โหลดไม่สำเร็จ</td></tr>`;
+            return;
+          }
+          // นับจำนวนวันที่มีข้อมูล (รอบสิ้นวัน) เพื่อใช้ projection Month End
+          const eodDates = new Set();
+          (_hist.rows || []).forEach(r => {
+            if (r.submit_time_slot === "สิ้นวัน") eodDates.add(r.submit_date);
+          });
+          const daysWithData = eodDates.size;
+
+          _reportMeta = { startDate, endDate, daysInPeriod, daysWithData };
+          _reportRows = aggregateReport(_hist.rows || [], _plan && _plan.ok ? _plan.rows : []);
+          renderReport();
+        }
+
+        apiCall({ mode:"history", branch_codes:queryCodes, start_date:startDate, end_date:endDate },
+                function(res) { _hist = res; _onDone(); });
+        apiCall({ mode:"getPlan", branch_codes:queryCodes, start_date:startDate, end_date:endDate, raw:true },
+                function(res) { _plan = res; _onDone(); });
+      }
+
+      /* รวบรวมข้อมูลต่อสาขา (สูตรเดียวกับสเปรดชีต) */
+      function aggregateReport(historyRows, planRows) {
+        // map branch → aggregates
+        const m = {};
+        function ensure(bc) {
+          if (!m[bc]) {
+            const info = BRANCH_DM_MAP[bc] || {};
+            m[bc] = {
+              branch_code: bc,
+              branch_name: info.branch || bc,
+              dm:          info.dm || "—",
+              plan: 0, actual1600: 0, actualEod: 0,
+              saleDineIn: 0, saleTakeaway: 0, saleGrab: 0, saleLineman: 0, saleShopee: 0,
+              transTotal: 0, transDineIn: 0, transTakeaway: 0, transGrab: 0, transLineman: 0, transShopee: 0,
+              customer: 0, labourHour: 0, labourBaht: 0
+            };
+          }
+          return m[bc];
+        }
+
+        // Plan: รวมต่อสาขา (จาก plan_sale rows raw)
+        (planRows || []).forEach(r => {
+          const bc = r.branch_code;
+          if (!bc) return;
+          ensure(bc).plan += parseFloat(r.plan_amount) || 0;
+        });
+
+        // Sales: 16.00 → actual1600 / สิ้นวัน → actualEod + breakdowns
+        (historyRows || []).forEach(r => {
+          const a = ensure(r.branch_code);
+          const slot = r.submit_time_slot;
+          const actual = parseFloat(r.actual_sale) || 0;
+          if (slot === "16.00") {
+            a.actual1600 += actual;
+            return;
+          }
+          if (slot !== "สิ้นวัน") return;
+          a.actualEod      += actual;
+          a.saleDineIn     += parseFloat(r.sale_dine_in)    || 0;
+          a.saleTakeaway   += parseFloat(r.sale_take_away)  || 0;
+          a.saleGrab       += parseFloat(r.sale_grab)       || 0;
+          a.saleLineman    += parseFloat(r.sale_lineman)    || 0;
+          a.saleShopee     += parseFloat(r.sale_shopeefood) || 0;
+          a.transTotal     += parseInt(r.total_trans)       || 0;
+          a.transDineIn    += parseInt(r.trans_dine_in)     || 0;
+          a.transTakeaway  += parseInt(r.trans_take_away)   || 0;
+          a.transGrab      += parseInt(r.trans_grab)        || 0;
+          a.transLineman   += parseInt(r.trans_lineman)     || 0;
+          a.transShopee    += parseInt(r.trans_shopeefood)  || 0;
+          a.customer       += parseInt(r.customer)          || 0;
+          a.labourHour     += parseFloat(r.labour_hour)     || 0;
+          a.labourBaht     += parseFloat(r.labour_baht)     || 0;
+        });
+
+        // คำนวณ projection Month End + derived columns
+        const meta = _reportMeta;
+        const projFactor = (meta.daysWithData > 0) ? (meta.daysInPeriod / meta.daysWithData) : 0;
+
+        return Object.values(m).map(a => {
+          const saleDelivery  = a.saleGrab + a.saleLineman + a.saleShopee;
+          const transDelivery = a.transGrab + a.transLineman + a.transShopee;
+          return {
+            ...a,
+            saleDelivery, transDelivery,
+            monthEnd:       projFactor > 0 ? a.actualEod * projFactor : 0,
+            pctPlan:        a.plan > 0 ? a.actualEod / a.plan : 0,
+            ticketAvg:      a.transTotal     > 0 ? a.actualEod  / a.transTotal     : 0,
+            ticketDineIn:   a.transDineIn    > 0 ? a.saleDineIn / a.transDineIn    : 0,
+            ticketTakeaway: a.transTakeaway  > 0 ? a.saleTakeaway / a.transTakeaway: 0,
+            ticketDelivery: transDelivery    > 0 ? saleDelivery / transDelivery    : 0,
+            customerAvg:    a.transTotal     > 0 ? a.customer   / a.transTotal     : 0,
+            pctCol:         a.actualEod      > 0 ? a.labourBaht / a.actualEod      : 0,
+            prodTrans:      a.labourHour     > 0 ? a.transTotal / a.labourHour     : 0,
+            prodSale:       a.labourHour     > 0 ? a.actualEod  / a.labourHour     : 0
+          };
+        });
+      }
+
+      /* รวมหลายแถวเข้าด้วยกัน (สำหรับ subtotal/grand total) — คำนวณ derived ใหม่ */
+      function sumReportRows(rows, label) {
+        if (!rows.length) return null;
+        const t = { branch_code:"", branch_name:label || "รวม", dm:"" };
+        const sumKeys = ["plan","actual1600","actualEod","saleDineIn","saleTakeaway","saleGrab","saleLineman","saleShopee",
+                         "transTotal","transDineIn","transTakeaway","transGrab","transLineman","transShopee",
+                         "customer","labourHour","labourBaht"];
+        sumKeys.forEach(k => { t[k] = rows.reduce((s,r) => s + (parseFloat(r[k])||0), 0); });
+        const meta = _reportMeta;
+        const projFactor = (meta.daysWithData > 0) ? (meta.daysInPeriod / meta.daysWithData) : 0;
+        t.saleDelivery  = t.saleGrab + t.saleLineman + t.saleShopee;
+        t.transDelivery = t.transGrab + t.transLineman + t.transShopee;
+        t.monthEnd      = projFactor > 0 ? t.actualEod * projFactor : 0;
+        t.pctPlan       = t.plan > 0 ? t.actualEod / t.plan : 0;
+        t.ticketAvg     = t.transTotal     > 0 ? t.actualEod  / t.transTotal     : 0;
+        t.ticketDineIn  = t.transDineIn    > 0 ? t.saleDineIn / t.transDineIn    : 0;
+        t.ticketTakeaway= t.transTakeaway  > 0 ? t.saleTakeaway / t.transTakeaway: 0;
+        t.ticketDelivery= t.transDelivery  > 0 ? t.saleDelivery / t.transDelivery: 0;
+        t.customerAvg   = t.transTotal     > 0 ? t.customer   / t.transTotal     : 0;
+        t.pctCol        = t.actualEod      > 0 ? t.labourBaht / t.actualEod      : 0;
+        t.prodTrans     = t.labourHour     > 0 ? t.transTotal / t.labourHour     : 0;
+        t.prodSale      = t.labourHour     > 0 ? t.actualEod  / t.labourHour     : 0;
+        return t;
+      }
+
+      function fmtReportCell(val, col) {
+        if (col.k === "branch_code" || col.k === "branch_name") return escHtml(val || "");
+        const n = parseFloat(val);
+        if (!isFinite(n) || n === 0) return col.pct ? "0.00%" : "0";
+        if (col.pct) return (n * 100).toFixed(2) + "%";
+        // ticket/customer avg / productivity → ทศนิยม 2
+        if (["ticketAvg","ticketDineIn","ticketTakeaway","ticketDelivery","customerAvg","prodTrans","prodSale"].includes(col.k)) {
+          return n.toFixed(2);
+        }
+        return fmt(n);
+      }
+
+      function renderReport() {
+        const head = document.getElementById("reportTableHead");
+        const body = document.getElementById("reportTableBody");
+
+        // จัดกลุ่มเป็น header 2 ระดับ
+        const groups = [
+          { id:"id",    lbl:"",                    span:0 },
+          { id:"sale",  lbl:"Sale",                span:0 },
+          { id:"trans", lbl:"Trans",               span:0 },
+          { id:"cl",    lbl:"Customer & Labour",   span:0 },
+          { id:"prod",  lbl:"Productivity",        span:0 }
+        ];
+        REPORT_COLS.forEach(c => { const g = groups.find(x => x.id === c.g); if (g) g.span++; });
+        head.innerHTML =
+          `<tr class="report-grp-row">` +
+            groups.map(g => `<th colspan="${g.span}">${g.lbl}</th>`).join("") +
+          `</tr>` +
+          `<tr>` + REPORT_COLS.map(c => `<th>${c.lbl}</th>`).join("") + `</tr>`;
+
+        if (!_reportRows.length) {
+          body.innerHTML = `<tr><td colspan="${REPORT_COLS.length}" style="padding:24px;text-align:center;color:#94a3b8">ไม่มีข้อมูล</td></tr>`;
+          return;
+        }
+
+        // จัดกลุ่มตาม BZM
+        const byBzm = {};
+        _reportRows.forEach(r => {
+          const dm = r.dm || "—";
+          if (!byBzm[dm]) byBzm[dm] = [];
+          byBzm[dm].push(r);
+        });
+        const bzmList = Object.keys(byBzm).sort((a,b) => a.localeCompare(b, "th"));
+
+        function rowHtml(r, cls) {
+          return `<tr class="${cls}">` + REPORT_COLS.map(c =>
+            `<td class="${c.a === 'r' ? 'r' : c.a === 'c' ? 'c' : ''}">${fmtReportCell(r[c.k], c)}</td>`
+          ).join("") + `</tr>`;
+        }
+
+        let html = "";
+        bzmList.forEach(dm => {
+          const rows = byBzm[dm].slice().sort((a,b) => String(a.branch_code).localeCompare(String(b.branch_code)));
+          // BZM header row (full-width)
+          html += `<tr class="report-bzm-hdr"><td colspan="${REPORT_COLS.length}">▸ BZM: ${escHtml(dm)} (${rows.length} สาขา)</td></tr>`;
+          rows.forEach(r => { html += rowHtml(r, "report-branch"); });
+          const sub = sumReportRows(rows, `รวม ${dm}`);
+          if (sub) html += rowHtml(sub, "report-bzm-sub");
+        });
+        const total = sumReportRows(_reportRows, "รวมทุกสาขา");
+        if (total) html += rowHtml(total, "report-total");
+        body.innerHTML = html;
+      }
+
+      /* Export ตารางปัจจุบันเป็น Excel ผ่าน SheetJS */
+      function exportReportExcel() {
+        if (!_reportRows.length) {
+          showAlert("⚠️", "ไม่มีข้อมูล", "กรุณาโหลดรายงานก่อน Export");
+          return;
+        }
+        if (typeof XLSX === "undefined") {
+          showAlert("❌", "Export ไม่สำเร็จ", "ไม่พบ XLSX library");
+          return;
+        }
+
+        // จัดกลุ่มตาม BZM เหมือนตาราง
+        const byBzm = {};
+        _reportRows.forEach(r => {
+          const dm = r.dm || "—";
+          if (!byBzm[dm]) byBzm[dm] = [];
+          byBzm[dm].push(r);
+        });
+        const bzmList = Object.keys(byBzm).sort((a,b) => a.localeCompare(b, "th"));
+
+        // Header 2 ระดับ
+        const groups = [
+          { id:"id",    lbl:"" },
+          { id:"sale",  lbl:"Sale" },
+          { id:"trans", lbl:"Trans" },
+          { id:"cl",    lbl:"Customer & Labour" },
+          { id:"prod",  lbl:"Productivity" }
+        ];
+        const row1 = [];
+        groups.forEach(g => {
+          const cnt = REPORT_COLS.filter(c => c.g === g.id).length;
+          row1.push(g.lbl);
+          for (let i = 1; i < cnt; i++) row1.push("");
+        });
+        const row2 = REPORT_COLS.map(c => c.lbl);
+
+        function rowToArr(r) {
+          return REPORT_COLS.map(c => {
+            const v = r[c.k];
+            if (c.k === "branch_code" || c.k === "branch_name") return v || "";
+            const n = parseFloat(v);
+            if (!isFinite(n)) return 0;
+            return c.pct ? n : n; // เก็บเป็นทศนิยม percent เป็น 0-1 ไว้ format ทีหลัง
+          });
+        }
+
+        const aoa = [row1, row2];
+        bzmList.forEach(dm => {
+          const rows = byBzm[dm].slice().sort((a,b) => String(a.branch_code).localeCompare(String(b.branch_code)));
+          aoa.push([`▸ BZM: ${dm} (${rows.length} สาขา)`]);
+          rows.forEach(r => aoa.push(rowToArr(r)));
+          const sub = sumReportRows(rows, `รวม ${dm}`);
+          if (sub) aoa.push(rowToArr(sub));
+        });
+        const total = sumReportRows(_reportRows, "รวมทุกสาขา");
+        if (total) aoa.push(rowToArr(total));
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        // Merge cells สำหรับ row1 (group header)
+        ws["!merges"] = ws["!merges"] || [];
+        let col = 0;
+        groups.forEach(g => {
+          const cnt = REPORT_COLS.filter(c => c.g === g.id).length;
+          if (cnt > 1) ws["!merges"].push({ s:{ r:0, c:col }, e:{ r:0, c:col + cnt - 1 } });
+          col += cnt;
+        });
+
+        // ตั้ง percent format สำหรับคอลัมน์ pct
+        const pctColIdx = REPORT_COLS.map((c,i) => c.pct ? i : -1).filter(i => i >= 0);
+        Object.keys(ws).forEach(addr => {
+          if (addr[0] === "!") return;
+          const m = addr.match(/^([A-Z]+)([0-9]+)$/);
+          if (!m) return;
+          const cIdx = colLetterToIdx(m[1]);
+          const rIdx = parseInt(m[2]) - 1;
+          if (rIdx < 2) return;
+          if (pctColIdx.includes(cIdx) && typeof ws[addr].v === "number") ws[addr].z = "0.00%";
+          else if (typeof ws[addr].v === "number") ws[addr].z = "#,##0.00";
+        });
+
+        const wb = XLSX.utils.book_new();
+        const tabName = _reportView === "month"
+          ? `${TH_MONTHS[_reportMonth]} ${(_reportYear + 543)}`
+          : `ปี ${(_reportYear + 543)}`;
+        XLSX.utils.book_append_sheet(wb, ws, tabName.slice(0, 31));
+
+        const fname = _reportView === "month"
+          ? `santafe-report-${_reportYear}-${String(_reportMonth+1).padStart(2,"0")}.xlsx`
+          : `santafe-report-${_reportYear}-year.xlsx`;
+        XLSX.writeFile(wb, fname);
+      }
+
+      function colLetterToIdx(s) {
+        let n = 0;
+        for (let i = 0; i < s.length; i++) n = n * 26 + (s.charCodeAt(i) - 64);
+        return n - 1;
       }
 
       /* ══════════════════════════════════════════════
