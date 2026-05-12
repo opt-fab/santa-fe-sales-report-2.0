@@ -6319,12 +6319,14 @@ body { background: var(--bg); color: var(--txt); }
             ? `${(lbVal / actual * 100).toFixed(1)}%`
             : dash;
 
-          // dd-mm-yyyy (พ.ศ.)
+          // วันที่เต็ม: "12 พฤษภาคม 2569"
           const dateDMY = (() => {
             if (!r.submit_date) return "-";
             const [y, m, d] = String(r.submit_date).split("-");
             if (!y || !m || !d) return r.submit_date;
-            return `${d}-${m}-${parseInt(y)+543}`;
+            const mi = parseInt(m) - 1;
+            const month = (TH_MONTHS && TH_MONTHS[mi]) ? TH_MONTHS[mi] : m;
+            return `${parseInt(d)} ${month} ${parseInt(y)+543}`;
           })();
 
           // Table row
