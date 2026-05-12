@@ -2853,6 +2853,24 @@ body { background: var(--bg); color: var(--txt); }
           </div>
         </div>
 
+        <!-- ───────── SECTION 1B: สรุปตามกลุ่ม BZM (admin/vp/bzm เห็น) ───────── -->
+        <div class="dash-section" id="dashBzmGroupSection" style="display:none;margin-top:32px">
+          <h2 class="dash-section-h">สรุปยอดขายตามกลุ่ม BZM <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(รอบสิ้นวัน)</span></h2>
+          <div class="dash-card-wrap" style="overflow-x:auto">
+            <table class="dash-tbl" id="dashBzmGroupTable">
+              <thead><tr>
+                <th>BZM</th>
+                <th style="text-align:center">สาขา</th>
+                <th style="text-align:right">Plan</th>
+                <th style="text-align:right">Actual (%)</th>
+                <th style="text-align:right">Trans</th>
+                <th style="text-align:right">Labour Baht (%)</th>
+              </tr></thead>
+              <tbody id="dashBzmGroupBody"><tr><td colspan="6" style="color:#94a3b8;padding:16px;text-align:center">⏳ กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- ───────── SECTION 2: สรุปตามช่วงวันที่ ───────── -->
         <div class="dash-section" style="margin-top:32px">
           <h2 class="dash-section-h">สรุปตามช่วงวันที่</h2>
@@ -3263,9 +3281,76 @@ body { background: var(--bg); color: var(--txt); }
       const LS_NAME = "sf2_name";
 
       /* ════════════════════════════════════════════
+         SPECIAL USERS (6-digit codes) — admin / vp / bzm
+         - admin : full access (Kanpon)
+         - vp    : dashboard + history of ALL branches (read-only)
+         - bzm   : dashboard + history of branches in their zone (read-only)
+      ════════════════════════════════════════════ */
+      const SPECIAL_USERS = {
+        "601183": { role: "admin", name: "Kanpon" },
+        "480808": { role: "vp",    name: "VP. Santa Fe" },
+        "490033": { role: "bzm",   name: "นิรุต เจริญศิลป์",        dm: "นิรุต เจริญศิลป์ (พี่รุต)" },
+        "570998": { role: "bzm",   name: "นพชัย จันทร์รุ่ง",         dm: "นพชัย จันทร์รุ่ง (พี่นพ)" },
+        "500759": { role: "bzm",   name: "พัทธดนย์ วัฒนายุทธ",      dm: "พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)" },
+        "510620": { role: "bzm",   name: "สีวิกา สังข์ด้วง",          dm: "สีวิกา สังข์ด้วง (พี่เจี๊ยบ)" },
+        "520532": { role: "bzm",   name: "ศุกร์แสง วัฒนาฟุ้งเจริญ",   dm: "ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)" },
+        "601338": { role: "bzm",   name: "อนุรักษ์ สอนภักดี",         dm: "อนุรักษ์ สอนภักดี (พี่เอ็ม)" }
+      };
+
+      /* แปลง special-user code → state object (ใช้ตอน login + restore session) */
+      function _stateFromSpecialUser(code, su) {
+        if (su.role === "admin") {
+          return { code: "ADMIN", branch: su.name, dm: "", role: "admin" };
+        }
+        if (su.role === "vp") {
+          return { code: "_VP_" + code, branch: su.name, dm: "", role: "vp" };
+        }
+        return { code: "_BZM_" + code, branch: su.name, dm: su.dm, role: "bzm" };
+      }
+
+      /* สิทธิ์การมองเห็น branches: null = ทุกสาขา / array = จำกัด */
+      function getAllowedBranchCodes() {
+        if (S.role === "bzm") {
+          return Object.keys(BRANCH_DM_MAP).filter(c => BRANCH_DM_MAP[c].dm === S.dm);
+        }
+        if (S.role === "admin" || S.role === "vp") return null;
+        return [S.code];
+      }
+
+      /* รวบรวม unique BZM list (เฉพาะที่อยู่ใน BRANCH_DM_MAP) */
+      function getUniqueBzmList() {
+        const set = new Set();
+        Object.keys(BRANCH_DM_MAP).forEach(c => {
+          const dm = BRANCH_DM_MAP[c] && BRANCH_DM_MAP[c].dm;
+          if (dm) set.add(dm);
+        });
+        return Array.from(set).sort((a, b) => a.localeCompare(b, "th"));
+      }
+
+      /* คืน array ของ branch codes ที่จะใช้ใน query (null = ไม่กรอง)
+         รองรับ filter value: "ALL" | "BZM:<dm>" | "<branch_code>" */
+      function getQueryBranchCodes(selectId) {
+        const allowed = getAllowedBranchCodes();
+        const sel = selectId ? document.getElementById(selectId) : null;
+        const v = (sel && sel.value) ? sel.value : "ALL";
+        if (v === "ALL") return allowed;
+        if (typeof v === "string" && v.indexOf("BZM:") === 0) {
+          const dm = v.slice(4);
+          const codes = Object.keys(BRANCH_DM_MAP).filter(c => BRANCH_DM_MAP[c].dm === dm);
+          // ถ้า role จำกัด → intersect
+          if (Array.isArray(allowed)) {
+            const s = new Set(allowed);
+            return codes.filter(c => s.has(c));
+          }
+          return codes;
+        }
+        return [v];
+      }
+
+      /* ════════════════════════════════════════════
          STATE
       ════════════════════════════════════════════ */
-      let S = { code: "", branch: "", dm: "" };
+      let S = { code: "", branch: "", dm: "", role: "" };
       let _pendingPayload = null;
       let _editRow = null;
       let _currentPlan   = 0;  // Plan Sale ที่ดึงจาก DB สำหรับวันที่ที่เลือก
@@ -3277,10 +3362,15 @@ body { background: var(--bg); color: var(--txt); }
       ════════════════════════════════════════════ */
       (function init() {
         const savedCode = localStorage.getItem(LS_CODE);
-        if (savedCode && BRANCH_DM_MAP[savedCode]) {
-          const info = BRANCH_DM_MAP[savedCode];
-          S = { code: savedCode, branch: info.branch, dm: info.dm };
-          enterApp();
+        if (savedCode) {
+          if (SPECIAL_USERS[savedCode]) {
+            S = _stateFromSpecialUser(savedCode, SPECIAL_USERS[savedCode]);
+            enterApp();
+          } else if (BRANCH_DM_MAP[savedCode]) {
+            const info = BRANCH_DM_MAP[savedCode];
+            S = { code: savedCode, branch: info.branch, dm: info.dm, role: "branch" };
+            enterApp();
+          }
         }
         document.getElementById("submit_date").value = todayStr();
         const savedName = localStorage.getItem(LS_NAME);
@@ -3374,7 +3464,6 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       let _loginMode = 'branch'; // 'branch' | 'admin'
-      const ADMIN_PASS = "601183"; // รหัส Admin 6 หลัก — เปลี่ยนได้ตามต้องการ
 
       function switchLoginTab(mode) {
         _loginMode = mode;
@@ -3397,17 +3486,20 @@ body { background: var(--bg); color: var(--txt); }
 
       function doLogin() {
         if (_loginMode === 'admin') {
-          if (getAdminCode() !== ADMIN_PASS) {
-            showAlert('❌', 'รหัสผ่านไม่ถูกต้อง', 'กรุณาตรวจสอบรหัสผ่าน Admin อีกครั้ง'); return;
+          const code = getAdminCode();
+          const su = SPECIAL_USERS[code];
+          if (!su) {
+            showAlert('❌', 'รหัสผ่านไม่ถูกต้อง', 'ไม่พบบัญชีนี้ในระบบ'); return;
           }
-          S = { code: 'ADMIN', branch: 'Admin', dm: 'Admin' };
-          enterApp();
+          S = _stateFromSpecialUser(code, su);
+          localStorage.setItem(LS_CODE, code);
+          showAlert('👋', 'ยินดีต้อนรับ!', su.name, enterApp);
           return;
         }
         const code = getLoginCode();
         const info = BRANCH_DM_MAP[code];
         if (!info) { showAlert('❌', 'รหัสไม่ถูกต้อง', 'ไม่พบรหัสสาขา ' + code); return; }
-        S = { code: code, branch: info.branch, dm: info.dm };
+        S = { code: code, branch: info.branch, dm: info.dm, role: "branch" };
         localStorage.setItem(LS_CODE, code);
         showAlert('👋', 'ยินดีต้อนรับ!', info.branch, enterApp);
       }
@@ -3415,7 +3507,7 @@ body { background: var(--bg); color: var(--txt); }
       function doLogout() {
         try {
           localStorage.removeItem(LS_CODE);
-          S = { code: "", branch: "", dm: "" };
+          S = { code: "", branch: "", dm: "", role: "" };
           if (_branchOtp && _branchOtp.fill) _branchOtp.fill("");
           if (_adminOtp  && _adminOtp.fill)  _adminOtp.fill("");
           [0, 1, 2, 3].forEach(i => { const e = document.getElementById("lc" + i); if (e) { e.value = ""; e.classList.remove("filled"); } });
@@ -3464,13 +3556,22 @@ body { background: var(--bg); color: var(--txt); }
         // hdrActions ย้ายไป sidebar แล้ว — ไม่ต้องแสดง
         document.getElementById("hdrBranchName").textContent = S.branch;
         document.getElementById("sidebarBranchName").textContent = S.branch;
-        // admin ไม่ต้องแสดง BZM
-        const isAdminUser = (S.code === "ADMIN");
+
+        const isAdmin = (S.role === "admin");
+        const isVP    = (S.role === "vp");
+        const isBZM   = (S.role === "bzm");
+        const isMgmt  = isAdmin || isVP || isBZM;
+
+        // admin/vp ไม่ต้องแสดง BZM; bzm แสดง "โซน BZM: <ชื่อ>"
         const hdrDm = document.getElementById("hdrBranchDm");
         const sbDm  = document.getElementById("sidebarBranchDm");
-        if (isAdminUser) {
+        if (isAdmin || isVP) {
           if (hdrDm) hdrDm.style.display = "none";
           if (sbDm)  sbDm.style.display  = "none";
+        } else if (isBZM) {
+          const label = "โซน BZM";
+          if (hdrDm) { hdrDm.style.display = ""; hdrDm.textContent = label; }
+          if (sbDm)  { sbDm.style.display  = ""; sbDm.textContent  = label; }
         } else {
           if (hdrDm) { hdrDm.style.display = ""; hdrDm.textContent = "BZM: " + S.dm; }
           if (sbDm)  { sbDm.style.display  = ""; sbDm.textContent  = "BZM: " + S.dm; }
@@ -3482,23 +3583,24 @@ body { background: var(--bg); color: var(--txt); }
         const savedName = localStorage.getItem(LS_NAME);
         if (savedName) document.getElementById("submitter_name").value = savedName;
 
-        // Admin-only UI: test mode, admin nav. Hide form/plan for admin.
-        const isAdmin = (S.code === "ADMIN");
+        // Test mode label (on form page) — admin only
         const testLbl = document.getElementById("testModeLabel");
         if (testLbl) testLbl.style.display = isAdmin ? "inline-flex" : "none";
 
-        // ซ่อน "ส่งยอดขาย" สำหรับ admin (admin ไม่กรอกฟอร์ม)
-        // แต่ Plan Sale ยังเห็นอยู่ — admin เลือกสาขาแล้วแก้ Plan ได้
-        ["dnForm"].forEach(id => {
+        // ซ่อน "ส่งยอดขาย" สำหรับทุก management role (admin/vp/bzm)
+        ["dnForm", "mnForm"].forEach(id => {
           const el = document.getElementById(id);
-          if (el) el.style.display = isAdmin ? "none" : "flex";
-        });
-        ["mnForm"].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.style.display = isAdmin ? "none" : "flex";
+          if (el) el.style.display = isMgmt ? "none" : "flex";
         });
 
-        // แสดงปุ่ม Admin ทุกตัวใน sidebar เฉพาะ admin
+        // Plan Sale: branch + admin เท่านั้น (vp/bzm = read-only ดูยอดอย่างเดียว)
+        const hidePlan = isVP || isBZM;
+        ["dnPlan", "mnPlan"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = hidePlan ? "none" : "flex";
+        });
+
+        // ปุ่ม Admin sidebar + test mode toggle: admin เท่านั้น
         document.querySelectorAll(".admin-only-nav").forEach(el => {
           el.style.display = isAdmin ? "flex" : "none";
         });
@@ -3975,7 +4077,8 @@ body { background: var(--bg); color: var(--txt); }
       let _dashRows  = [];          // cache rows for date picker re-render
       let _dashMonth = undefined;   // 0-11
       let _dashYear  = undefined;
-      let _dashPlans = {};          // { "yyyy-mm-dd": amount }
+      let _dashPlans = {};          // { "yyyy-mm-dd": amount } — total ต่อวัน (รวมทุกสาขา)
+      let _dashPlanByBranch = {};   // { branch_code: total } — สำหรับสรุปต่อ BZM
 
       function dashPrevMonth() {
         if (--_dashMonth < 0) { _dashMonth = 11; _dashYear--; }
@@ -3992,21 +4095,48 @@ body { background: var(--bg); color: var(--txt); }
         loadDash();
       }
 
-      /* ─ Populate admin branch filter dropdown ─ */
+      /* ─ Populate branch filter dropdown (admin/vp/bzm เห็น dropdown) ─
+         รายการ: ทุกสาขา → กลุ่ม BZM → รายสาขา */
       function populateBranchFilter(selectId) {
         const sel = document.getElementById(selectId);
-        if (!sel || S.code !== "ADMIN") return null;
+        if (!sel) return null;
+        // branch user → ไม่ต้องเลือก (เห็นเฉพาะของตัวเอง)
+        if (S.role === "branch") { sel.style.display = "none"; return S.code; }
         sel.style.display = "inline-block";
+        const allowed = getAllowedBranchCodes(); // null=ทุกสาขา / array=จำกัด
+        const codes = (allowed === null ? Object.keys(BRANCH_DM_MAP) : allowed.slice()).sort();
+
+        // นับสาขาต่อ BZM (เฉพาะที่อยู่ในขอบเขต)
+        const codeSet = new Set(codes);
+        const bzmCounts = {};
+        codes.forEach(c => {
+          const dm = BRANCH_DM_MAP[c] && BRANCH_DM_MAP[c].dm;
+          if (dm) bzmCounts[dm] = (bzmCounts[dm] || 0) + 1;
+        });
+        const bzmList = Object.keys(bzmCounts).sort((a, b) => a.localeCompare(b, "th"));
+
+        // BZM role: ดูเฉพาะกลุ่มตัวเองอยู่แล้ว → ไม่ต้องโชว์ตัวเลือกกลุ่ม BZM
+        const showBzmOptions = (S.role === "admin" || S.role === "vp") && bzmList.length > 1;
+
         const current = sel.value || "ALL";
-        const codes = Object.keys(BRANCH_DM_MAP).sort();
-        sel.innerHTML = `<option value="ALL">— ทุกสาขา (${codes.length}) —</option>` +
-          codes.map(c => `<option value="${c}">${escHtml(BRANCH_DM_MAP[c].branch || c)}</option>`).join("");
+        let html = `<option value="ALL">— ทุกสาขา (${codes.length}) —</option>`;
+        if (showBzmOptions) {
+          html += `<optgroup label="กลุ่ม BZM">` +
+            bzmList.map(dm => `<option value="BZM:${escHtml(dm)}">โซน BZM: ${escHtml(dm)} (${bzmCounts[dm]})</option>`).join("") +
+            `</optgroup>`;
+          html += `<optgroup label="รายสาขา">` +
+            codes.map(c => `<option value="${c}">${escHtml(BRANCH_DM_MAP[c].branch || c)}</option>`).join("") +
+            `</optgroup>`;
+        } else {
+          html += codes.map(c => `<option value="${c}">${escHtml(BRANCH_DM_MAP[c].branch || c)}</option>`).join("");
+        }
+        sel.innerHTML = html;
         sel.value = current;
         return sel.value;
       }
 
       function getEffectiveBranchCode(selectId) {
-        if (S.code !== "ADMIN") return S.code;
+        if (S.role === "branch") return S.code;
         const sel = document.getElementById(selectId);
         return (sel && sel.value) ? sel.value : "ALL";
       }
@@ -4019,9 +4149,9 @@ body { background: var(--bg); color: var(--txt); }
           _dashYear  = now.getFullYear();
         }
 
-        // Admin: populate branch filter + resolve effective branch code
+        // Admin/VP/BZM: populate branch filter + resolve scope
         populateBranchFilter("dashBranchFilter");
-        const effectiveCode = getEffectiveBranchCode("dashBranchFilter");
+        const queryCodes = getQueryBranchCodes("dashBranchFilter"); // array | null
 
         // คำนวณช่วงวันของเดือนที่เลือก
         const ym = _dashYear + "-" + String(_dashMonth + 1).padStart(2, "0");
@@ -4034,7 +4164,12 @@ body { background: var(--bg); color: var(--txt); }
         document.getElementById("dashMonthTitle").textContent = "สรุปรายเดือน";
 
         const sub = document.getElementById("dashPageSub");
-        if (sub) sub.textContent = S.branch + (S.dm ? "  ·  BZM: " + S.dm : "");
+        if (sub) {
+          if (S.role === "admin")      sub.textContent = "Admin · ภาพรวมทั้งระบบ";
+          else if (S.role === "vp")    sub.textContent = S.branch + " · ภาพรวมทั้งระบบ";
+          else if (S.role === "bzm")   sub.textContent = "โซน BZM: " + S.dm;
+          else                         sub.textContent = S.branch + (S.dm ? "  ·  BZM: " + S.dm : "");
+        }
 
         // Loading state
         document.getElementById("dashTodayGrid").innerHTML =
@@ -4069,12 +4204,20 @@ body { background: var(--bg); color: var(--txt); }
               `<tr><td colspan="5" style="color:#dc2626;padding:16px">⚠️ โหลดไม่สำเร็จ</td></tr>`;
             return;
           }
-          // Build plan lookup จากตาราง plan_sale (authoritative)
-          const planByDate = {};
+          // Build plan lookups จาก raw plan_sale rows (มี branch_code)
+          const planByDate = {};        // total plan ต่อวัน (รวมทุกสาขา) — ใช้กับ chart
+          const planByBranchTotal = {}; // ผลรวม plan ต่อสาขา (ทั้งเดือน) — ใช้กับ BZM groups
           if (_plan && _plan.ok && Array.isArray(_plan.rows)) {
-            _plan.rows.forEach(r => { planByDate[r.date] = parseFloat(r.plan_sale) || 0; });
+            _plan.rows.forEach(r => {
+              const d = r.plan_date;
+              const bc = r.branch_code;
+              const amt = parseFloat(r.plan_amount) || 0;
+              planByDate[d] = (planByDate[d] || 0) + amt;
+              if (bc) planByBranchTotal[bc] = (planByBranchTotal[bc] || 0) + amt;
+            });
           }
           _dashPlans = planByDate;
+          _dashPlanByBranch = planByBranchTotal;
 
           // Merge: ใช้ plan จากตาราง plan_sale แทน plan_sale ที่ฝังในแถว (แม่นยำกว่า)
           _dashRows = (_hist.rows || []).map(r => ({
@@ -4087,11 +4230,12 @@ body { background: var(--bg); color: var(--txt); }
           renderDashRange(_dashRows, dFrom.value, dTo.value);
           renderDashMonthly(_dashRows);
           renderDashRecent(_dashRows);
+          renderDashBzmGroups(_dashRows);
         }
 
-        apiCall({ mode:"history", branch_code:effectiveCode, start_date:startDate, end_date:endDate },
+        apiCall({ mode:"history", branch_codes:queryCodes, start_date:startDate, end_date:endDate },
                 function(res) { _hist = res; _onDone(); });
-        apiCall({ mode:"getPlan", branch_code:effectiveCode, year_month:ym },
+        apiCall({ mode:"getPlan", branch_codes:queryCodes, year_month:ym, raw:true },
                 function(res) { _plan = res; _onDone(); });
       }
 
@@ -4205,6 +4349,97 @@ body { background: var(--bg); color: var(--txt); }
           </div>`;
       }
 
+      /* ─── สรุปยอดขายตามกลุ่ม BZM ─── */
+      function renderDashBzmGroups(rows) {
+        const section = document.getElementById("dashBzmGroupSection");
+        if (!section) return;
+
+        // แสดงเฉพาะ admin/vp/bzm ที่เลือก "ทุกสาขา"
+        const isMgmt = (S.role === "admin" || S.role === "vp" || S.role === "bzm");
+        const sel = document.getElementById("dashBranchFilter");
+        const isAll = !sel || !sel.value || sel.value === "ALL";
+        if (!isMgmt || !isAll) { section.style.display = "none"; return; }
+
+        // BZM = bzm → กลุ่มของตัวเองกลุ่มเดียว ไม่แตกเป็นหลายกลุ่ม → ซ่อน
+        if (S.role === "bzm") { section.style.display = "none"; return; }
+
+        section.style.display = "";
+
+        // รวบรวม actual/trans/labour ต่อกลุ่ม BZM จาก rows สิ้นวัน
+        const eodRows = (rows || []).filter(r => r.submit_time_slot === "สิ้นวัน");
+        const groups = {}; // dm → { actual, trans, labourBaht, branches:Set }
+        eodRows.forEach(r => {
+          const info = BRANCH_DM_MAP[r.branch_code];
+          if (!info) return;
+          const dm = info.dm || "—";
+          if (!groups[dm]) groups[dm] = { actual:0, trans:0, labourBaht:0, branches:new Set() };
+          groups[dm].actual     += parseFloat(r.actual_sale) || 0;
+          groups[dm].trans      += parseInt(r.total_trans)   || 0;
+          groups[dm].labourBaht += parseFloat(r.labour_baht) || 0;
+          groups[dm].branches.add(r.branch_code);
+        });
+
+        // Plan ต่อกลุ่ม BZM = รวมทุกสาขาในกลุ่ม (จาก _dashPlanByBranch)
+        const planByDm = {};
+        const branchCountByDm = {};
+        Object.keys(BRANCH_DM_MAP).forEach(c => {
+          const dm = BRANCH_DM_MAP[c].dm || "—";
+          planByDm[dm] = (planByDm[dm] || 0) + (_dashPlanByBranch[c] || 0);
+          branchCountByDm[dm] = (branchCountByDm[dm] || 0) + 1;
+        });
+
+        // รวม dm ทั้งหมดที่เกี่ยวข้อง (อาจมี dm ที่ยังไม่ส่งยอด แต่มี plan)
+        const allDms = new Set([...Object.keys(groups), ...Object.keys(planByDm)]);
+        const dmList = Array.from(allDms).sort((a,b) => a.localeCompare(b, "th"));
+
+        if (!dmList.length) {
+          document.getElementById("dashBzmGroupBody").innerHTML =
+            `<tr><td colspan="6" style="color:#94a3b8;padding:16px;text-align:center">ยังไม่มีข้อมูล</td></tr>`;
+          return;
+        }
+
+        // แถวข้อมูล + แถวรวม
+        let totalActual = 0, totalPlan = 0, totalTrans = 0, totalLabour = 0, totalBranches = 0;
+        const rowsHtml = dmList.map(dm => {
+          const g = groups[dm] || { actual:0, trans:0, labourBaht:0, branches:new Set() };
+          const plan = planByDm[dm] || 0;
+          const submitted = g.branches.size;
+          const totalBr  = branchCountByDm[dm] || submitted;
+          const pct      = plan > 0 ? ((g.actual / plan) * 100).toFixed(1) + "%" : "-";
+          const pctColor = plan > 0 && g.actual >= plan ? "var(--green)" : "var(--red)";
+          const labPct   = g.actual > 0 ? ((g.labourBaht / g.actual) * 100).toFixed(1) + "%" : "-";
+
+          totalActual    += g.actual;
+          totalPlan      += plan;
+          totalTrans     += g.trans;
+          totalLabour    += g.labourBaht;
+          totalBranches  += totalBr;
+
+          return `<tr>
+            <td>${escHtml(dm)}</td>
+            <td style="text-align:center;font-variant-numeric:tabular-nums">${submitted}/${totalBr}</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(plan)}</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(g.actual)} <span style="color:${pctColor};font-weight:700">(${pct})</span></td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(g.trans)}</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(g.labourBaht)} <span style="color:var(--txt2)">(${labPct})</span></td>
+          </tr>`;
+        }).join("");
+
+        const totalPct = totalPlan > 0 ? ((totalActual / totalPlan) * 100).toFixed(1) + "%" : "-";
+        const totalPctColor = totalPlan > 0 && totalActual >= totalPlan ? "var(--green)" : "var(--red)";
+        const totalLabPct = totalActual > 0 ? ((totalLabour / totalActual) * 100).toFixed(1) + "%" : "-";
+        const totalRow = `<tr style="background:#f8fafc;font-weight:700">
+          <td>รวมทุกกลุ่ม</td>
+          <td style="text-align:center;font-variant-numeric:tabular-nums">${totalBranches}</td>
+          <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(totalPlan)}</td>
+          <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(totalActual)} <span style="color:${totalPctColor}">(${totalPct})</span></td>
+          <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(totalTrans)}</td>
+          <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(totalLabour)} <span style="color:var(--txt2)">(${totalLabPct})</span></td>
+        </tr>`;
+
+        document.getElementById("dashBzmGroupBody").innerHTML = rowsHtml + totalRow;
+      }
+
       function renderDashRecent(rows) {
         const eodRows = rows.filter(r => r.submit_time_slot === "สิ้นวัน");
 
@@ -4257,10 +4492,10 @@ body { background: var(--bg); color: var(--txt); }
         const lastDay = new Date(_dashYear, _dashMonth + 1, 0).getDate();
         const today = todayStr();
 
-        // จัดข้อมูลตามวันที่
+        // จัดข้อมูลตามวันที่ (กรณีเห็นหลายสาขาในวันเดียวกัน → ผลรวม)
         const actualMap = {};
         eodRows.forEach(r => {
-          actualMap[r.submit_date] = parseFloat(r.actual_sale) || 0;
+          actualMap[r.submit_date] = (actualMap[r.submit_date] || 0) + (parseFloat(r.actual_sale) || 0);
         });
 
         // สะสมทีละวัน
@@ -4889,9 +5124,9 @@ body { background: var(--bg); color: var(--txt); }
         document.getElementById("histTableContent").innerHTML = loading;
         document.getElementById("histCardsContent").innerHTML = loading;
 
-        // Admin: populate branch filter + resolve effective branch code
+        // Admin/VP/BZM: populate branch filter + resolve scope
         populateBranchFilter("histBranchFilter");
-        const effectiveCode = getEffectiveBranchCode("histBranchFilter");
+        const queryCodes = getQueryBranchCodes("histBranchFilter"); // array | null
 
         const since = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
         const until = todayStr();
@@ -4920,9 +5155,9 @@ body { background: var(--bg); color: var(--txt); }
           renderHistory(merged);
         }
 
-        apiCall({ mode:"history", branch_code:effectiveCode, start_date:since, end_date:until },
+        apiCall({ mode:"history", branch_codes:queryCodes, start_date:since, end_date:until },
                 function(res) { _hist = res; _onDone(); });
-        apiCall({ mode:"getPlan", branch_code:effectiveCode, start_date:since, end_date:until },
+        apiCall({ mode:"getPlan", branch_codes:queryCodes, start_date:since, end_date:until },
                 function(res) { _plan = res; _onDone(); });
       }
 
@@ -5211,8 +5446,14 @@ body { background: var(--bg); color: var(--txt); }
           /* ─────── HISTORY ─────── */
           if (mode === "history") {
             let q = sb.from("sales_data").select("*");
-            // ถ้า branch_code = "ALL" หรือว่าง / "ADMIN" → ไม่กรอง (สำหรับ admin ดูข้อมูลทุกสาขา)
-            if (params.branch_code && params.branch_code !== "ALL" && params.branch_code !== "ADMIN") {
+            // branch_codes (array) takes precedence: null=ไม่กรอง / [c]=eq / [c1,c2,...]=in
+            if (Array.isArray(params.branch_codes)) {
+              if (params.branch_codes.length === 0) {
+                cb({ ok: true, rows: [] }); return; // explicit empty scope
+              }
+              if (params.branch_codes.length === 1) q = q.eq("branch_code", params.branch_codes[0]);
+              else q = q.in("branch_code", params.branch_codes);
+            } else if (params.branch_code && params.branch_code !== "ALL" && params.branch_code !== "ADMIN") {
               q = q.eq("branch_code", params.branch_code);
             }
 
@@ -5301,8 +5542,14 @@ body { background: var(--bg); color: var(--txt); }
 
           /* ─────── GET PLAN ─────── */
           if (mode === "getPlan") {
-            let q = sb.from("plan_sale").select("plan_date, plan_amount");
-            if (params.branch_code && params.branch_code !== "ALL" && params.branch_code !== "ADMIN") {
+            // raw=true → คืน rows มี branch_code (สำหรับ aggregate per BZM)
+            const selectCols = params.raw ? "branch_code, plan_date, plan_amount" : "plan_date, plan_amount";
+            let q = sb.from("plan_sale").select(selectCols);
+            if (Array.isArray(params.branch_codes)) {
+              if (params.branch_codes.length === 0) { cb({ ok: true, rows: [] }); return; }
+              if (params.branch_codes.length === 1) q = q.eq("branch_code", params.branch_codes[0]);
+              else q = q.in("branch_code", params.branch_codes);
+            } else if (params.branch_code && params.branch_code !== "ALL" && params.branch_code !== "ADMIN") {
               q = q.eq("branch_code", params.branch_code);
             }
 
@@ -5321,6 +5568,11 @@ body { background: var(--bg); color: var(--txt); }
 
             const { data, error } = await q;
             if (error) { cb({ ok: false, error: error.message }); return; }
+            // raw=true → คืนแถวเดิม (มี branch_code) สำหรับ aggregate ต่อสาขา
+            if (params.raw) {
+              cb({ ok: true, rows: data || [] });
+              return;
+            }
             // shape ให้ตรงกับ GAS: rows = [{date, plan_sale}]
             // ถ้า admin (multi-branch) อาจมี plan ของหลายสาขาในวันเดียวกัน → รวม (sum)
             const acc = {};
