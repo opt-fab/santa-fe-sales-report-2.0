@@ -19,8 +19,8 @@
 // ════════════════════════════════════════════
 // CONFIG
 // ════════════════════════════════════════════
-const SUPABASE_URL = "https://jvsjrqjrzdiujhxtahho.supabase.co";
-const SUPABASE_KEY = "sb_publishable_c0-2mEMzgunEQQAsT6n4XQ_fVW38Cwx";
+const SUPABASE_URL = "https://zroqklbobvixyohfaimc.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpyb3FrbGJvYnZpeHlvaGZhaW1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTUzNjMsImV4cCI6MjA5NDIzMTM2M30.BSwbqeQ1jsyvATpOkJ-wV04TGZacagaNpj6S4fPC-J4";
 
 // Header ของแต่ละ sheet (ลำดับคอลัมน์)
 const SALES_HEADERS = [
