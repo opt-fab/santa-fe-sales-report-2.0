@@ -3207,10 +3207,15 @@ body { background: var(--bg); color: var(--txt); }
           <!-- หัวข้อ (ซ้าย) + ปุ่มเลื่อนเดือน (ขวา) -->
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
             <h2 class="dash-section-h" id="dashMonthTitle" style="margin:0">สรุปรายเดือน</h2>
-            <div class="dash-month-nav" style="display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border-radius:10px;padding:6px 10px;margin-left:auto">
-              <button class="btn btn-sm" onclick="dashPrevMonth()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">‹</button>
+            <!-- Toggle รายเดือน / รายวัน -->
+            <div class="dash-view-toggle" style="display:inline-flex;background:#f1f5f9;border-radius:10px;padding:3px;margin-left:auto">
+              <button id="dashViewDaily"   onclick="setDashViewMode('daily')"   style="background:var(--brand);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer">รายวัน</button>
+              <button id="dashViewMonthly" onclick="setDashViewMode('monthly')" style="background:transparent;color:#475569;border:none;padding:6px 14px;border-radius:8px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer">รายเดือน</button>
+            </div>
+            <div class="dash-month-nav" style="display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border-radius:10px;padding:6px 10px">
+              <button class="btn btn-sm" onclick="dashPrevPeriod()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">‹</button>
               <span id="dashMonthLabel" style="font-size:13px;font-weight:700;min-width:130px;text-align:center;color:var(--txt);background:#fff;padding:6px 14px;border-radius:6px;border:1px solid var(--bd)">—</span>
-              <button class="btn btn-sm" onclick="dashNextMonth()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">›</button>
+              <button class="btn btn-sm" onclick="dashNextPeriod()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">›</button>
             </div>
           </div>
           <!-- 4 stat cards -->
@@ -3263,7 +3268,7 @@ body { background: var(--bg); color: var(--txt); }
 
         <!-- ───────── ANALYTICS B: ยอดขายแยกตามช่องทาง ───────── -->
         <div class="dash-section" id="dashChannelSection" style="margin-top:32px;display:none">
-          <h2 class="dash-section-h">ยอดขายแยกตามช่องทาง <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(รอบสิ้นวัน · เดือนนี้)</span></h2>
+          <h2 class="dash-section-h">ยอดขายแยกตามช่องทาง <span id="dashChannelSub" style="font-weight:400;font-size:0.7em;color:var(--txt2)">(รอบสิ้นวัน · เดือนนี้)</span></h2>
           <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;align-items:start;background:#fff;border:1px solid var(--bd);border-radius:12px;padding:16px">
             <div style="height:240px;position:relative;min-width:0">
               <canvas id="dashChannelChart"></canvas>
@@ -3283,7 +3288,7 @@ body { background: var(--bg); color: var(--txt); }
 
         <!-- ───────── ANALYTICS C: เปรียบเทียบเดือนนี้ vs เดือนก่อน ───────── -->
         <div class="dash-section" id="dashCompareSection" style="margin-top:32px;display:none">
-          <h2 class="dash-section-h">เปรียบเทียบเดือนนี้ vs เดือนก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale รายวัน · รอบสิ้นวัน)</span></h2>
+          <h2 class="dash-section-h" id="dashCompareTitle">เปรียบเทียบเดือนนี้ vs เดือนก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale รายวัน · รอบสิ้นวัน)</span></h2>
           <div style="background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px">
             <div style="height:260px;position:relative">
               <canvas id="dashCompareChart"></canvas>
@@ -3294,7 +3299,7 @@ body { background: var(--bg); color: var(--txt); }
 
         <!-- ───────── ANALYTICS A: Top / Bottom 10 สาขา ───────── -->
         <div class="dash-section" id="dashRankingSection" style="margin-top:32px;display:none">
-          <h2 class="dash-section-h">อันดับสาขา <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(% ของ Plan · รอบสิ้นวัน · เดือนนี้)</span></h2>
+          <h2 class="dash-section-h">อันดับสาขา <span id="dashRankingSub" style="font-weight:400;font-size:0.7em;color:var(--txt2)">(% ของ Plan · รอบสิ้นวัน · เดือนนี้)</span></h2>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
             <div>
               <div style="font-weight:700;color:#15803d;margin-bottom:6px;font-size:14px">🏆 Top 10 — ทำได้สูงสุด</div>
@@ -3327,7 +3332,7 @@ body { background: var(--bg); color: var(--txt); }
 
         <!-- ───────── ANALYTICS D: Heatmap วันในสัปดาห์ × สาขา ───────── -->
         <div class="dash-section" id="dashHeatmapSection" style="margin-top:32px;display:none">
-          <h2 class="dash-section-h">Heatmap ยอดขายเฉลี่ยตามวันในสัปดาห์ <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(เดือนนี้)</span></h2>
+          <h2 class="dash-section-h">Heatmap ยอดขายเฉลี่ยตามวันในสัปดาห์ <span id="dashHeatmapSub" style="font-weight:400;font-size:0.7em;color:var(--txt2)">(เดือนนี้)</span></h2>
           <div class="dash-card-wrap" style="background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;overflow-x:auto">
             <table id="dashHeatmapTable" style="border-collapse:collapse;width:100%;min-width:600px;font-size:12.5px">
               <thead>
@@ -3367,7 +3372,7 @@ body { background: var(--bg); color: var(--txt); }
 
         <!-- ───────── SECTION 3: 30 วันล่าสุด ───────── -->
         <div class="dash-section" style="margin-top:14px">
-          <h2 class="dash-section-h" style="margin-bottom:8px;text-align:center">30 วันล่าสุด <span style="font-weight:400;font-size:0.85em;color:var(--txt2)">(รอบสิ้นวัน)</span></h2>
+          <h2 class="dash-section-h" id="dashRecentTitle" style="margin-bottom:8px;text-align:center">30 วันล่าสุด <span style="font-weight:400;font-size:0.85em;color:var(--txt2)">(รอบสิ้นวัน)</span></h2>
           <div class="dash-card-wrap">
             <table class="dash-tbl">
               <thead><tr>
@@ -5408,6 +5413,32 @@ body { background: var(--bg); color: var(--txt); }
         _dashYear  = now.getFullYear();
         loadDash();
       }
+      // เลื่อน period ตาม view mode (daily=เดือน, monthly=ปี)
+      function dashPrevPeriod() {
+        if (_dashViewMode === "monthly") { _dashYear--; loadDash(); }
+        else dashPrevMonth();
+      }
+      function dashNextPeriod() {
+        if (_dashViewMode === "monthly") { _dashYear++; loadDash(); }
+        else dashNextMonth();
+      }
+      // toggle รายวัน / รายเดือน
+      let _dashViewMode = "daily"; // "daily" | "monthly"
+      function setDashViewMode(mode) {
+        if (mode !== "daily" && mode !== "monthly") return;
+        if (_dashViewMode === mode) return;
+        _dashViewMode = mode;
+        // ปรับ style ปุ่ม toggle
+        const dBtn = document.getElementById("dashViewDaily");
+        const mBtn = document.getElementById("dashViewMonthly");
+        if (dBtn && mBtn) {
+          dBtn.style.background = (mode === "daily")   ? "var(--brand)" : "transparent";
+          dBtn.style.color      = (mode === "daily")   ? "#fff" : "#475569";
+          mBtn.style.background = (mode === "monthly") ? "var(--brand)" : "transparent";
+          mBtn.style.color      = (mode === "monthly") ? "#fff" : "#475569";
+        }
+        loadDash();
+      }
 
       /* ─ Populate branch filter dropdown (admin/vp/bzm เห็น dropdown) ─
          รายการ: ทุกสาขา → กลุ่ม BZM → รายสาขา */
@@ -5481,15 +5512,25 @@ body { background: var(--bg); color: var(--txt); }
         populateBranchFilter("dashBranchFilter");
         const queryCodes = getQueryBranchCodes("dashBranchFilter"); // array | null
 
-        // คำนวณช่วงวันของเดือนที่เลือก
-        const ym = _dashYear + "-" + String(_dashMonth + 1).padStart(2, "0");
-        const startDate = ym + "-01";
-        const lastDay   = new Date(_dashYear, _dashMonth + 1, 0).getDate();
-        const endDate   = ym + "-" + String(lastDay).padStart(2, "0");
+        // คำนวณช่วงวันที่ตาม view mode
+        const isMonthly = (_dashViewMode === "monthly");
+        let startDate, endDate, ym;
+        if (isMonthly) {
+          startDate = _dashYear + "-01-01";
+          endDate   = _dashYear + "-12-31";
+          ym = null; // ไม่ใช้ใน monthly mode (getPlan ใช้ start/end แทน)
+        } else {
+          ym = _dashYear + "-" + String(_dashMonth + 1).padStart(2, "0");
+          startDate = ym + "-01";
+          const lastDay = new Date(_dashYear, _dashMonth + 1, 0).getDate();
+          endDate = ym + "-" + String(lastDay).padStart(2, "0");
+        }
 
-        // อัพเดท label เดือน (อยู่ในกล่อง picker เท่านั้น — title ไม่ใส่เดือน)
-        document.getElementById("dashMonthLabel").textContent = TH_MONTHS[_dashMonth] + " " + (_dashYear + 543);
-        document.getElementById("dashMonthTitle").textContent = "สรุปรายเดือน";
+        // Label + title
+        document.getElementById("dashMonthLabel").textContent = isMonthly
+          ? ("ปี " + (_dashYear + 543))
+          : (TH_MONTHS[_dashMonth] + " " + (_dashYear + 543));
+        document.getElementById("dashMonthTitle").textContent = isMonthly ? "สรุปรายปี" : "สรุปรายเดือน";
 
         const sub = document.getElementById("dashPageSub");
         if (sub) {
@@ -5523,12 +5564,20 @@ body { background: var(--bg); color: var(--txt); }
         dFrom.min = dTo.min = startDate;
         dFrom.max = dTo.max = endDate;
 
-        // คำนวณช่วงเดือนก่อนหน้า (สำหรับ Section C: เปรียบเทียบ)
-        const prevDate = new Date(_dashYear, _dashMonth - 1, 1);
-        const prevYm = prevDate.getFullYear() + "-" + String(prevDate.getMonth() + 1).padStart(2, "0");
-        const prevStart = prevYm + "-01";
-        const prevLastDay = new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 0).getDate();
-        const prevEnd = prevYm + "-" + String(prevLastDay).padStart(2, "0");
+        // คำนวณช่วงก่อนหน้า (สำหรับ Section C: เปรียบเทียบ)
+        // daily mode → เดือนก่อน, monthly mode → ปีก่อน
+        let prevDate, prevStart, prevEnd;
+        if (isMonthly) {
+          prevDate = new Date(_dashYear - 1, 0, 1);
+          prevStart = (_dashYear - 1) + "-01-01";
+          prevEnd   = (_dashYear - 1) + "-12-31";
+        } else {
+          prevDate = new Date(_dashYear, _dashMonth - 1, 1);
+          const prevYm = prevDate.getFullYear() + "-" + String(prevDate.getMonth() + 1).padStart(2, "0");
+          prevStart = prevYm + "-01";
+          const prevLastDay = new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 0).getDate();
+          prevEnd = prevYm + "-" + String(prevLastDay).padStart(2, "0");
+        }
 
         // Fetch parallel: history + plans + prev-month history
         let _hist = null, _plan = null, _prevHist = null, _done = 0;
@@ -5575,8 +5624,11 @@ body { background: var(--bg); color: var(--txt); }
 
         apiCall({ mode:"history", branch_codes:queryCodes, start_date:startDate, end_date:endDate },
                 function(res) { _hist = res; _onDone(); });
-        apiCall({ mode:"getPlan", branch_codes:queryCodes, year_month:ym, raw:true },
-                function(res) { _plan = res; _onDone(); });
+        // getPlan: ใช้ year_month เมื่อ daily, ใช้ date range เมื่อ monthly
+        const planParams = isMonthly
+          ? { mode:"getPlan", branch_codes:queryCodes, start_date:startDate, end_date:endDate, raw:true }
+          : { mode:"getPlan", branch_codes:queryCodes, year_month:ym, raw:true };
+        apiCall(planParams, function(res) { _plan = res; _onDone(); });
         apiCall({ mode:"history", branch_codes:queryCodes, start_date:prevStart, end_date:prevEnd },
                 function(res) { _prevHist = res; _onDone(); });
       }
@@ -5804,33 +5856,62 @@ body { background: var(--bg); color: var(--txt); }
 
       function renderDashRecent(rows) {
         const eodRows = rows.filter(r => r.submit_time_slot === "สิ้นวัน");
-
-        // เรียงวันที่จากน้อย → มาก (เก่า → ใหม่) เพื่อให้กราฟดูธรรมชาติ
         const sorted = eodRows.slice().sort((a, b) =>
           String(a.submit_date).localeCompare(String(b.submit_date))
         );
-
-        // วาดกราฟ
         renderDashChart(sorted);
 
+        const titleEl = document.getElementById("dashRecentTitle");
+        const tbody = document.getElementById("dashRecentBody");
+
         if (!sorted.length) {
-          document.getElementById("dashRecentBody").innerHTML =
-            `<tr><td colspan="5" style="color:#94a3b8;padding:16px 0;text-align:center">ยังไม่มีข้อมูลรอบสิ้นวัน</td></tr>`;
+          if (titleEl) titleEl.innerHTML = (_dashViewMode === "monthly" ? "สรุป 12 เดือน" : "30 วันล่าสุด") +
+            ` <span style="font-weight:400;font-size:0.85em;color:var(--txt2)">(รอบสิ้นวัน)</span>`;
+          tbody.innerHTML = `<tr><td colspan="5" style="color:#94a3b8;padding:16px 0;text-align:center">ยังไม่มีข้อมูลรอบสิ้นวัน</td></tr>`;
           return;
         }
 
-        // ตาราง: วันที่ | Plan | Actual(%) | Labour(Hour) | Labour(บาท)/%
-        // เรียง: ใหม่สุดอยู่บน
-        document.getElementById("dashRecentBody").innerHTML = sorted.slice().reverse().map(r => {
+        if (_dashViewMode === "monthly") {
+          if (titleEl) titleEl.innerHTML = `สรุปยอดรายเดือน <span style="font-weight:400;font-size:0.85em;color:var(--txt2)">(รอบสิ้นวัน · ปี ${_dashYear + 543})</span>`;
+          // aggregate per YYYY-MM
+          const byMonth = {};
+          sorted.forEach(r => {
+            const m = r.submit_date.slice(0, 7); // YYYY-MM
+            if (!byMonth[m]) byMonth[m] = { plan: 0, actual: 0, lh: 0, lb: 0 };
+            byMonth[m].plan   += parseFloat(r.plan_sale)   || 0;
+            byMonth[m].actual += parseFloat(r.actual_sale) || 0;
+            byMonth[m].lh     += parseFloat(r.labour_hour) || 0;
+            byMonth[m].lb     += parseFloat(r.labour_baht) || 0;
+          });
+          const months = Object.keys(byMonth).sort().reverse();
+          tbody.innerHTML = months.map(m => {
+            const g = byMonth[m];
+            const mNum = parseInt(m.split("-")[1]) - 1;
+            const lbl = TH_MONTHS[mNum] + " " + (parseInt(m.split("-")[0]) + 543);
+            const pct      = g.plan > 0 ? ((g.actual / g.plan) * 100).toFixed(1) + "%" : "-";
+            const pctColor = g.plan > 0 && g.actual >= g.plan ? "var(--green)" : "var(--red)";
+            const labPct   = g.actual > 0 ? ((g.lb / g.actual) * 100).toFixed(1) + "%" : "-";
+            return `<tr>
+              <td style="white-space:nowrap">${lbl}</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(g.plan)}</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(g.actual)} <span style="color:${pctColor};font-weight:700">(${pct})</span></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(g.lh)}</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(g.lb)} <span style="color:var(--txt2)">(${labPct})</span></td>
+            </tr>`;
+          }).join("");
+          return;
+        }
+
+        // daily mode (เดิม)
+        if (titleEl) titleEl.innerHTML = `30 วันล่าสุด <span style="font-weight:400;font-size:0.85em;color:var(--txt2)">(รอบสิ้นวัน)</span>`;
+        tbody.innerHTML = sorted.slice().reverse().map(r => {
           const plan = parseFloat(r.plan_sale) || 0;
           const actual = parseFloat(r.actual_sale) || 0;
           const lh = parseFloat(r.labour_hour) || 0;
           const lb = parseFloat(r.labour_baht) || 0;
-
           const pct      = plan > 0 ? ((actual / plan) * 100).toFixed(1) + "%" : "-";
           const pctColor = plan > 0 && actual >= plan ? "var(--green)" : "var(--red)";
           const labPct   = actual > 0 ? ((lb / actual) * 100).toFixed(1) + "%" : "-";
-
           return `<tr>
             <td style="white-space:nowrap">${fmtThaiDate(r.submit_date)}</td>
             <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(plan)}</td>
@@ -5841,13 +5922,56 @@ body { background: var(--bg); color: var(--txt); }
         }).join("");
       }
 
-      /* ─── Dashboard Chart — ยอดสะสมรายวัน (cumulative line) ─── */
+      /* ─── Dashboard Chart — daily mode: cumulative line / monthly mode: 12-bar ─── */
       let _dashChartInstance = null;
       function renderDashChart(eodRows) {
         const ctx = document.getElementById("dashChart");
         if (!ctx) return;
-
         if (_dashChartInstance) { _dashChartInstance.destroy(); _dashChartInstance = null; }
+
+        // ─── Monthly mode: bar chart 12 เดือน (Plan vs Actual) ───
+        if (_dashViewMode === "monthly") {
+          const planByMonth = new Array(12).fill(0);
+          const actualByMonth = new Array(12).fill(0);
+          // Plan: ใช้ _dashPlans (key = YYYY-MM-DD) sum ต่อเดือน
+          Object.keys(_dashPlans).forEach(d => {
+            const [y, m] = d.split("-");
+            if (parseInt(y) === _dashYear) planByMonth[parseInt(m) - 1] += _dashPlans[d];
+          });
+          eodRows.forEach(r => {
+            const [y, m] = r.submit_date.split("-");
+            if (parseInt(y) === _dashYear) actualByMonth[parseInt(m) - 1] += parseFloat(r.actual_sale) || 0;
+          });
+          if (planByMonth.every(v => v === 0) && actualByMonth.every(v => v === 0)) {
+            ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
+            return;
+          }
+          _dashChartInstance = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: TH_MONTHS.map(m => m.slice(0, 3)),
+              datasets: [
+                { label: "Plan",   data: planByMonth,   backgroundColor: "rgba(148,163,184,0.5)", borderColor: "#94a3b8", borderWidth: 1 },
+                { label: "Actual", data: actualByMonth, backgroundColor: "rgba(242,108,28,0.7)", borderColor: "#f26c1c", borderWidth: 1 }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: "index", intersect: false },
+              plugins: {
+                legend: { position: "top", labels: { font: { size: 12 }, boxWidth: 14 } },
+                tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toLocaleString()}` } }
+              },
+              scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                y: { beginAtZero: true, ticks: { font: { size: 10 }, callback: (v) => v >= 1000 ? (v/1000).toFixed(0) + "k" : v }, grid: { color: "rgba(0,0,0,.06)" } }
+              }
+            }
+          });
+          return;
+        }
+
 
         // ใช้เดือนที่เลือกตอนนี้
         const ym = _dashYear + "-" + String(_dashMonth + 1).padStart(2, "0");
@@ -6027,6 +6151,10 @@ body { background: var(--bg); color: var(--txt); }
       function renderDashChannel(rows) {
         const section = document.getElementById("dashChannelSection");
         if (!section) return;
+        const sub = document.getElementById("dashChannelSub");
+        if (sub) sub.textContent = (_dashViewMode === "monthly")
+          ? `(รอบสิ้นวัน · ปี ${_dashYear + 543})`
+          : `(รอบสิ้นวัน · ${TH_MONTHS[_dashMonth]} ${_dashYear + 543})`;
         const eod = (rows || []).filter(r => r.submit_time_slot === "สิ้นวัน");
         const totals = CHANNEL_DEFS.map(c => ({
           ...c,
@@ -6090,26 +6218,43 @@ body { background: var(--bg); color: var(--txt); }
         const section = document.getElementById("dashCompareSection");
         if (!section) return;
         section.style.display = "";
+        const monthly = (_dashViewMode === "monthly");
+        const titleEl = document.getElementById("dashCompareTitle");
+        if (titleEl) titleEl.innerHTML = monthly
+          ? `เปรียบเทียบปีนี้ vs ปีก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale รายเดือน · รอบสิ้นวัน)</span>`
+          : `เปรียบเทียบเดือนนี้ vs เดือนก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale รายวัน · รอบสิ้นวัน)</span>`;
 
         const curMap = {}, prevMap = {};
         (curRows || []).filter(r => r.submit_time_slot === "สิ้นวัน").forEach(r => {
-          const day = parseInt(r.submit_date.split("-")[2]);
-          curMap[day] = (curMap[day] || 0) + (parseFloat(r.actual_sale) || 0);
+          const key = monthly
+            ? (parseInt(r.submit_date.split("-")[1]) - 1)  // 0..11
+            : parseInt(r.submit_date.split("-")[2]);       // 1..31
+          curMap[key] = (curMap[key] || 0) + (parseFloat(r.actual_sale) || 0);
         });
         (prevRows || []).filter(r => r.submit_time_slot === "สิ้นวัน").forEach(r => {
-          const day = parseInt(r.submit_date.split("-")[2]);
-          prevMap[day] = (prevMap[day] || 0) + (parseFloat(r.actual_sale) || 0);
+          const key = monthly
+            ? (parseInt(r.submit_date.split("-")[1]) - 1)
+            : parseInt(r.submit_date.split("-")[2]);
+          prevMap[key] = (prevMap[key] || 0) + (parseFloat(r.actual_sale) || 0);
         });
 
-        const curLastDay = new Date(curY, curM + 1, 0).getDate();
-        const prevLastDay = new Date(prevDateObj.getFullYear(), prevDateObj.getMonth() + 1, 0).getDate();
-        const maxDay = Math.max(curLastDay, prevLastDay);
         const labels = [];
         const curArr = [], prevArr = [];
-        for (let d = 1; d <= maxDay; d++) {
-          labels.push(String(d));
-          curArr.push(d <= curLastDay ? (curMap[d] || 0) : null);
-          prevArr.push(d <= prevLastDay ? (prevMap[d] || 0) : null);
+        if (monthly) {
+          for (let m = 0; m < 12; m++) {
+            labels.push(TH_MONTHS[m].slice(0, 3));
+            curArr.push(curMap[m] || 0);
+            prevArr.push(prevMap[m] || 0);
+          }
+        } else {
+          const curLastDay = new Date(curY, curM + 1, 0).getDate();
+          const prevLastDay = new Date(prevDateObj.getFullYear(), prevDateObj.getMonth() + 1, 0).getDate();
+          const maxDay = Math.max(curLastDay, prevLastDay);
+          for (let d = 1; d <= maxDay; d++) {
+            labels.push(String(d));
+            curArr.push(d <= curLastDay ? (curMap[d] || 0) : null);
+            prevArr.push(d <= prevLastDay ? (prevMap[d] || 0) : null);
+          }
         }
 
         const curTotal = Object.values(curMap).reduce((s, v) => s + v, 0);
@@ -6118,15 +6263,17 @@ body { background: var(--bg); color: var(--txt); }
         const diffPct = prevTotal > 0 ? (diff / prevTotal * 100) : 0;
         const arrow = diff >= 0 ? "▲" : "▼";
         const color = diff >= 0 ? "#15803d" : "#dc2626";
+        const curWord = monthly ? "ปีนี้" : "เดือนนี้";
+        const prevWord = monthly ? "ปีก่อน" : "เดือนก่อน";
         document.getElementById("dashCompareSummary").innerHTML =
-          `<span><b>เดือนนี้:</b> ${fmt(curTotal)}</span>` +
-          `<span><b>เดือนก่อน:</b> ${fmt(prevTotal)}</span>` +
+          `<span><b>${curWord}:</b> ${fmt(curTotal)}</span>` +
+          `<span><b>${prevWord}:</b> ${fmt(prevTotal)}</span>` +
           `<span style="color:${color};font-weight:700">${arrow} ${fmt(Math.abs(diff))} (${diffPct.toFixed(1)}%)</span>`;
 
         const canvas = document.getElementById("dashCompareChart");
         if (_dashCompareChart) { _dashCompareChart.destroy(); _dashCompareChart = null; }
-        const curLbl  = TH_MONTHS[curM] + " " + (curY + 543);
-        const prevLbl = TH_MONTHS[prevDateObj.getMonth()] + " " + (prevDateObj.getFullYear() + 543);
+        const curLbl  = monthly ? ("ปี " + (curY + 543)) : (TH_MONTHS[curM] + " " + (curY + 543));
+        const prevLbl = monthly ? ("ปี " + (prevDateObj.getFullYear() + 543)) : (TH_MONTHS[prevDateObj.getMonth()] + " " + (prevDateObj.getFullYear() + 543));
         _dashCompareChart = new Chart(canvas, {
           type: "line",
           data: {
@@ -6186,6 +6333,10 @@ body { background: var(--bg); color: var(--txt); }
       function renderDashRanking(rows, planByBranchTotal) {
         const section = document.getElementById("dashRankingSection");
         if (!section) return;
+        const sub = document.getElementById("dashRankingSub");
+        if (sub) sub.textContent = (_dashViewMode === "monthly")
+          ? `(% ของ Plan · รอบสิ้นวัน · ปี ${_dashYear + 543})`
+          : `(% ของ Plan · รอบสิ้นวัน · ${TH_MONTHS[_dashMonth]} ${_dashYear + 543})`;
         // เฉพาะ admin/vp/bzm + filter = ALL (เปรียบเทียบหลายสาขา)
         const isMgmt = (S.role === "admin" || S.role === "vp" || S.role === "bzm");
         const sel = document.getElementById("dashBranchFilter");
@@ -6240,6 +6391,10 @@ body { background: var(--bg); color: var(--txt); }
       function renderDashHeatmap(rows) {
         const section = document.getElementById("dashHeatmapSection");
         if (!section) return;
+        const sub = document.getElementById("dashHeatmapSub");
+        if (sub) sub.textContent = (_dashViewMode === "monthly")
+          ? `(ปี ${_dashYear + 543})`
+          : `(${TH_MONTHS[_dashMonth]} ${_dashYear + 543})`;
         const isMgmt = (S.role === "admin" || S.role === "vp" || S.role === "bzm");
         const sel = document.getElementById("dashBranchFilter");
         const isAll = !sel || !sel.value || sel.value === "ALL";
