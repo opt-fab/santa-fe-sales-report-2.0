@@ -5370,12 +5370,26 @@ body { background: var(--bg); color: var(--txt); }
         return (sel && sel.value) ? sel.value : "ALL";
       }
 
-      function loadDash() {
+      async function loadDash() {
         // init month เป็นเดือนปัจจุบันถ้ายังไม่มี
         if (_dashMonth === undefined) {
           const now = new Date();
           _dashMonth = now.getMonth();
           _dashYear  = now.getFullYear();
+          // ในโหมด test data → jump ไปเดือนล่าสุดที่มีข้อมูล (test data ไม่ใช่เดือนปัจจุบัน)
+          if (_useTestData) {
+            try {
+              const { data } = await sb.from(_salesTbl())
+                .select("submit_date")
+                .order("submit_date", { ascending: false })
+                .limit(1);
+              if (data && data.length && data[0].submit_date) {
+                const [y, m] = data[0].submit_date.split("-");
+                _dashYear  = parseInt(y);
+                _dashMonth = parseInt(m) - 1;
+              }
+            } catch (err) { console.warn("[dash test-mode latest]", err); }
+          }
         }
 
         // Admin/VP/BZM: populate branch filter + resolve scope
