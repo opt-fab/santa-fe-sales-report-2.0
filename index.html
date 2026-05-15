@@ -2799,6 +2799,9 @@ body { background: var(--bg); color: var(--txt); }
         <button class="desk-nav-btn admin-only-nav" id="dnAdminZones" onclick="showAdmin('zones')" style="display:none">
           <span class="desk-nav-ico">🗺️</span>โซน BZM
         </button>
+        <button class="desk-nav-btn admin-only-nav" id="dnAdminImport" onclick="showAdmin('import')" style="display:none">
+          <span class="desk-nav-ico">📥</span>นำเข้าข้อมูล
+        </button>
       </nav>
       <div class="desk-nav-sep"></div>
 
@@ -2864,6 +2867,9 @@ body { background: var(--bg); color: var(--txt); }
         </button>
         <button class="md-nav-btn admin-only-nav" id="mdAdminZones" onclick="showAdmin('zones'); closeMobDrawer()" style="display:none">
           <span class="md-nav-ico">🗺️</span><span class="md-nav-lbl">โซน BZM</span>
+        </button>
+        <button class="md-nav-btn admin-only-nav" id="mdAdminImport" onclick="showAdmin('import'); closeMobDrawer()" style="display:none">
+          <span class="md-nav-ico">📥</span><span class="md-nav-lbl">นำเข้าข้อมูล</span>
         </button>
       </nav>
 
@@ -3393,6 +3399,7 @@ body { background: var(--bg); color: var(--txt); }
           <button class="admin-tab active" data-tab="branches"  onclick="adminSwitchTab('branches')">🏢 จัดการสาขา</button>
           <button class="admin-tab"        data-tab="bzms"      onclick="adminSwitchTab('bzms')">👤 จัดการ BZM</button>
           <button class="admin-tab"        data-tab="zones"     onclick="adminSwitchTab('zones')">🗺️ โซน BZM</button>
+          <button class="admin-tab"        data-tab="import"    onclick="adminSwitchTab('import')">📥 นำเข้าข้อมูล</button>
           <button class="btn btn-sm" onclick="adminTabReload()" style="background:#f1f5f9;color:#475569;margin-left:auto;margin-bottom:6px">🔄 รีเฟรช</button>
         </div>
 
@@ -3462,6 +3469,50 @@ body { background: var(--bg); color: var(--txt); }
               <input type="text" id="adminZoneOutSearch" placeholder="🔍 ค้นหา..." oninput="renderAdminZone()"
                      style="width:100%;background:var(--bg-2);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;font-family:inherit;font-size:12px;margin-bottom:8px;outline:none">
               <div id="adminZoneOut" style="max-height:380px;overflow-y:auto"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Tab: Import Excel → sales_data ── -->
+        <div class="admin-tab-pane" data-tab="import" style="display:none">
+          <div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;line-height:1.6">
+            <strong>📥 นำเข้าข้อมูลยอดขายเดิมจากไฟล์ Excel</strong><br>
+            • ไฟล์ต้องอยู่ในรูปแบบเดียวกับเทมเพลต (ชีตแรก: row 1 header, row 2 = ชื่อคอลัมน์)<br>
+            • คอลัมน์ที่ต้องมี: <code>สาขา</code>, <code>วันที่</code>, <code>ช่วงเวลา (16/สิ้นวัน)</code>, <code>Plan Sale</code>, <code>Actual Sale</code>, ฯลฯ<br>
+            • การ Import จะใช้ <strong>upsert</strong> (ถ้ามี branch+date+slot ซ้ำ → อัปเดตทับ)<br>
+            • แถวที่ slot ว่างหรือสาขาไม่มีจะถูก<strong>ข้าม</strong>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+            <input type="file" id="adminImportFile" accept=".xlsx,.xls" onchange="adminImportPreview()"
+                   style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px">
+            <button class="btn btn-brand" id="adminImportConfirmBtn" onclick="adminImportConfirm()" disabled
+                    style="font-size:13px;opacity:.5;cursor:not-allowed">🚀 เริ่มนำเข้า</button>
+            <button class="btn btn-outline" onclick="adminImportReset()" style="font-size:13px">ยกเลิก/เริ่มใหม่</button>
+          </div>
+
+          <div id="adminImportSummary" style="display:none;background:#f1f5f9;border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;line-height:1.7"></div>
+
+          <div id="adminImportProgress" style="display:none;background:#fff;border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:14px">
+            <div style="font-weight:700;margin-bottom:8px;font-size:13px">⏳ กำลังนำเข้า...</div>
+            <div style="background:#f1f5f9;border-radius:6px;height:18px;overflow:hidden;position:relative">
+              <div id="adminImportBar" style="background:linear-gradient(90deg,#f26c1c,#fbbf24);height:100%;width:0%;transition:width .2s"></div>
+            </div>
+            <div id="adminImportProgressText" style="margin-top:6px;font-size:12px;color:var(--txt2);text-align:center">0 / 0</div>
+          </div>
+
+          <div id="adminImportPreviewWrap" style="display:none">
+            <div style="font-weight:700;margin-bottom:8px;font-size:13px">ตัวอย่าง 10 แถวแรก</div>
+            <div class="dash-card-wrap" style="overflow-x:auto">
+              <table class="dash-tbl" style="min-width:900px;font-size:12px">
+                <thead><tr>
+                  <th>สาขา</th><th>วันที่</th><th>รอบ</th>
+                  <th style="text-align:right">Plan</th><th style="text-align:right">Actual</th>
+                  <th style="text-align:right">Trans</th><th style="text-align:right">Customer</th>
+                  <th style="text-align:right">Labour ชม.</th><th style="text-align:right">Labour ฿</th>
+                </tr></thead>
+                <tbody id="adminImportPreviewBody"></tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -3579,6 +3630,10 @@ body { background: var(--bg); color: var(--txt); }
         <button class="mob-nav-btn admin-only-nav" id="mnAdminZones" onclick="showAdmin('zones')" style="display:none">
           <span class="mob-nav-ico">🗺️</span>
           <span class="mob-nav-lbl">โซน</span>
+        </button>
+        <button class="mob-nav-btn admin-only-nav" id="mnAdminImport" onclick="showAdmin('import')" style="display:none">
+          <span class="mob-nav-ico">📥</span>
+          <span class="mob-nav-lbl">นำเข้า</span>
         </button>
       </div>
     </nav>
@@ -4119,17 +4174,18 @@ body { background: var(--bg); color: var(--txt); }
         const tabMap = {
           branches: "dnAdminBranches",
           bzms:     "dnAdminBzms",
-          zones:    "dnAdminZones"
+          zones:    "dnAdminZones",
+          import:   "dnAdminImport"
         };
         document.querySelectorAll(".mob-nav-btn, .desk-nav-btn, .md-nav-btn").forEach(b => b.classList.remove("active"));
         const dn = document.getElementById(tabMap[tab] || "dnAdminBranches");
         if (dn) dn.classList.add("active");
         // sync bottom nav (mn-*)
-        const mnMap = { branches: "mnAdminBranches", bzms: "mnAdminBzms", zones: "mnAdminZones" };
+        const mnMap = { branches: "mnAdminBranches", bzms: "mnAdminBzms", zones: "mnAdminZones", import: "mnAdminImport" };
         const mn = document.getElementById(mnMap[tab] || "mnAdminBranches");
         if (mn) mn.classList.add("active");
         // sync drawer (md-*)
-        const mdMap = { branches: "mdAdminBranches", bzms: "mdAdminBzms", zones: "mdAdminZones" };
+        const mdMap = { branches: "mdAdminBranches", bzms: "mdAdminBzms", zones: "mdAdminZones", import: "mdAdminImport" };
         const md = document.getElementById(mdMap[tab] || "mdAdminBranches");
         if (md) md.classList.add("active");
         adminSwitchTab(tab || _adminCurrentTab || "branches");
@@ -4145,10 +4201,209 @@ body { background: var(--bg); color: var(--txt); }
         if (tab === "branches") loadAdminBranches();
         else if (tab === "bzms") loadAdminBzms();
         else if (tab === "zones") loadAdminZones();
+        else if (tab === "import") adminImportReset();
       }
 
       function adminTabReload() {
         adminSwitchTab(_adminCurrentTab);
+      }
+
+      /* ══════════════════════════════════════════════
+         ADMIN: Import Excel → sales_data (browser-side)
+         ใช้ XLSX (loaded via CDN) + Supabase client เดียวกัน
+      ══════════════════════════════════════════════ */
+      let _adminImportRows = []; // parsed + ready to upsert
+
+      function _xlDateToISO(serial) {
+        if (typeof serial !== "number" || !isFinite(serial)) return null;
+        const d = new Date(Date.UTC(1899, 11, 30) + serial * 86400000);
+        return d.toISOString().slice(0, 10);
+      }
+      function _impNum(v) {
+        if (v === null || v === undefined || v === "") return 0;
+        const n = parseFloat(String(v).replace(/,/g, ""));
+        return isFinite(n) ? n : 0;
+      }
+      function _impInt(v) { return Math.round(_impNum(v)); }
+      function _impSlot(v) {
+        if (v === 16 || v === "16" || v === "16.00") return "16.00";
+        if (v === "สิ้นวัน") return "สิ้นวัน";
+        return null;
+      }
+      function _impBranch(s) {
+        if (!s) return { code: null, name: null };
+        const m = String(s).trim().match(/^(\d+)\s+(.+)$/);
+        if (m) return { code: m[1], name: m[2].trim() };
+        return { code: null, name: String(s).trim() };
+      }
+      function _impMapRow(r) {
+        const slot = _impSlot(r[3]);
+        const date = _xlDateToISO(r[2]);
+        const branch = _impBranch(r[1]);
+        if (!slot || !date || !branch.code) return null;
+        return {
+          branch_code: branch.code,
+          branch_name: branch.name,
+          district_manager: r[0] || null,
+          submitter_name: r[31] || null,
+          submit_date: date,
+          submit_time_slot: slot,
+          plan_sale: _impNum(r[4]),
+          actual_sale: _impNum(r[5]),
+          sale_dine_in: _impNum(r[7]),
+          sale_take_away: _impNum(r[8]),
+          sale_grab: _impNum(r[9]),
+          sale_lineman: _impNum(r[10]),
+          sale_shopeefood: _impNum(r[11]),
+          total_trans: _impInt(r[13]),
+          trans_dine_in: _impInt(r[14]),
+          trans_take_away: _impInt(r[15]),
+          trans_grab: _impInt(r[16]),
+          trans_lineman: _impInt(r[17]),
+          trans_shopeefood: _impInt(r[18]),
+          customer: _impInt(r[24]),
+          labour_hour: _impNum(r[26]),
+          labour_baht: _impNum(r[27])
+        };
+      }
+
+      function adminImportReset() {
+        _adminImportRows = [];
+        const f = document.getElementById("adminImportFile");
+        if (f) f.value = "";
+        ["adminImportSummary", "adminImportPreviewWrap", "adminImportProgress"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = "none";
+        });
+        const btn = document.getElementById("adminImportConfirmBtn");
+        if (btn) { btn.disabled = true; btn.style.opacity = ".5"; btn.style.cursor = "not-allowed"; }
+      }
+
+      function adminImportPreview() {
+        const file = document.getElementById("adminImportFile").files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, { type: "array" });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+            const dataRows = rows.slice(2);
+            const mapped = [];
+            const seen = new Set();
+            let skipped = 0, dupInFile = 0;
+            for (const r of dataRows) {
+              const m = _impMapRow(r);
+              if (!m) { skipped++; continue; }
+              const key = `${m.branch_code}|${m.submit_date}|${m.submit_time_slot}`;
+              if (seen.has(key)) { dupInFile++; continue; }
+              seen.add(key);
+              mapped.push(m);
+            }
+            _adminImportRows = mapped;
+
+            // unique branches preview count
+            const branchSet = new Set(mapped.map(r => r.branch_code));
+
+            // Summary
+            const sumEl = document.getElementById("adminImportSummary");
+            sumEl.innerHTML =
+              `📄 <strong>${escHtml(file.name)}</strong> · ${rows.length.toLocaleString()} แถวรวม header<br>` +
+              `✅ พร้อม Import: <strong>${mapped.length.toLocaleString()}</strong> แถว · ${branchSet.size} สาขา<br>` +
+              `⏭️ ข้าม: ${skipped.toLocaleString()} (slot/date/branch ไม่ครบ) · ${dupInFile.toLocaleString()} (ซ้ำในไฟล์)`;
+            sumEl.style.display = "block";
+
+            // Preview 10 first rows
+            const previewBody = document.getElementById("adminImportPreviewBody");
+            previewBody.innerHTML = mapped.slice(0, 10).map(r => `<tr>
+              <td>${escHtml(r.branch_name || r.branch_code)}</td>
+              <td>${r.submit_date}</td>
+              <td style="text-align:center">${r.submit_time_slot}</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(r.plan_sale)}</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(r.actual_sale)}</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(r.total_trans)}</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(r.customer)}</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(r.labour_hour)}</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(r.labour_baht)}</td>
+            </tr>`).join("");
+            document.getElementById("adminImportPreviewWrap").style.display = "block";
+
+            const btn = document.getElementById("adminImportConfirmBtn");
+            if (mapped.length > 0) {
+              btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer";
+            } else {
+              btn.disabled = true; btn.style.opacity = ".5"; btn.style.cursor = "not-allowed";
+            }
+          } catch (err) {
+            showAlert("❌", "อ่านไฟล์ไม่ได้", err.message || String(err));
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      async function adminImportConfirm() {
+        if (!_adminImportRows.length) return;
+        const total = _adminImportRows.length;
+        // build unique branch list for upsert
+        const branchMap = {};
+        _adminImportRows.forEach(r => {
+          if (!branchMap[r.branch_code]) branchMap[r.branch_code] = {
+            branch_code: r.branch_code,
+            branch_name: r.branch_name,
+            district_manager: r.district_manager || "ไม่ระบุ"
+          };
+        });
+        const branches = Object.values(branchMap);
+
+        showConfirm(
+          "📥", `นำเข้า ${total.toLocaleString()} แถว เข้า sales_data?`,
+          `จะ upsert ${branches.length} สาขา + ${total.toLocaleString()} แถวยอดขาย\n` +
+          `(แถวที่ branch+date+slot ซ้ำกับของเดิม → อัปเดตทับ)`,
+          async function() {
+            const btn = document.getElementById("adminImportConfirmBtn");
+            btn.disabled = true; btn.style.opacity = ".5"; btn.style.cursor = "not-allowed";
+            document.getElementById("adminImportProgress").style.display = "block";
+
+            // 1. branches first
+            const { error: bErr } = await sb.from("branches")
+              .upsert(branches, { onConflict: "branch_code" });
+            if (bErr) {
+              showAlert("❌", "Upsert branches ไม่สำเร็จ", bErr.message);
+              btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer";
+              return;
+            }
+
+            // 2. sales batched
+            const BATCH = 500;
+            let done = 0;
+            for (let i = 0; i < total; i += BATCH) {
+              const chunk = _adminImportRows.slice(i, i + BATCH);
+              const { error } = await sb.from("sales_data")
+                .upsert(chunk, { onConflict: "branch_code,submit_date,submit_time_slot" });
+              if (error) {
+                showAlert("❌", `Batch ${i}-${i+chunk.length} ผิดพลาด`, error.message);
+                btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer";
+                return;
+              }
+              done += chunk.length;
+              const pct = (done / total * 100).toFixed(0);
+              document.getElementById("adminImportBar").style.width = pct + "%";
+              document.getElementById("adminImportProgressText").textContent =
+                `${done.toLocaleString()} / ${total.toLocaleString()} (${pct}%)`;
+            }
+
+            // Trigger sheet sync (re-fetch sales_data)
+            try { pushToSheet("submit_sales", { _import: true }); } catch (_) {}
+
+            // Refresh in-memory branch map
+            try { await loadBranchesFromSupabase(); } catch (_) {}
+
+            showAlert("✅", "นำเข้าสำเร็จ", `Import ${done.toLocaleString()} แถว เข้า sales_data เรียบร้อย\nGoogle Sheet จะ sync ภายใน 1 นาที`);
+            adminImportReset();
+          },
+          { btnText: "เริ่มนำเข้า" }
+        );
       }
 
       async function loadAdminBranches() {
