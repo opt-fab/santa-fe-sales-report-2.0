@@ -3262,7 +3262,14 @@ body { background: var(--bg); color: var(--txt); }
 
         <!-- ───────── ANALYTICS C: เปรียบเทียบเดือนนี้ vs เดือนก่อน ───────── -->
         <div class="dash-section" id="dashCompareSection" style="margin-top:32px;display:none">
-          <h2 class="dash-section-h" id="dashCompareTitle">เปรียบเทียบเดือนนี้ vs เดือนก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale รายวัน · รอบสิ้นวัน)</span></h2>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+            <h2 class="dash-section-h" id="dashCompareTitle" style="margin:0">เปรียบเทียบเดือนนี้ vs เดือนก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale · รอบสิ้นวัน)</span></h2>
+            <!-- Toggle รายวัน / ยอดสะสม (เห็นเฉพาะ monthly + yearly mode) -->
+            <div id="dashCompareModeToggle" class="dash-view-toggle" style="display:inline-flex;background:#f1f5f9;border-radius:10px;padding:3px;margin-left:auto">
+              <button id="dashCompareModeCum"   onclick="setDashCompareMode('cumulative')" style="background:var(--brand);color:#fff;border:none;padding:5px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">ยอดสะสม</button>
+              <button id="dashCompareModeDaily" onclick="setDashCompareMode('daily')"      style="background:transparent;color:#475569;border:none;padding:5px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">รายวัน</button>
+            </div>
+          </div>
           <div style="background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px">
             <div style="height:260px;position:relative">
               <canvas id="dashCompareChart"></canvas>
@@ -5803,18 +5810,46 @@ body { background: var(--bg); color: var(--txt); }
 
       /* ════════════════════════════════════════════
          ANALYTICS C — เปรียบเทียบเดือนนี้ vs เดือนก่อน (dual line)
+         + Toggle รายวัน / ยอดสะสม (cumulative) — default = cumulative
       ════════════════════════════════════════════ */
       let _dashCompareChart = null;
+      let _dashCompareMode = "cumulative"; // "cumulative" | "daily"
+      let _dashCompareCache = null;        // เก็บ rows+meta สำหรับ re-render ตอน toggle
+      function setDashCompareMode(m) {
+        if (m !== "cumulative" && m !== "daily") return;
+        if (_dashCompareMode === m) return;
+        _dashCompareMode = m;
+        const cum = document.getElementById("dashCompareModeCum");
+        const dl  = document.getElementById("dashCompareModeDaily");
+        if (cum && dl) {
+          cum.style.background = (m === "cumulative") ? "var(--brand)" : "transparent";
+          cum.style.color      = (m === "cumulative") ? "#fff" : "#475569";
+          dl.style.background  = (m === "daily")      ? "var(--brand)" : "transparent";
+          dl.style.color       = (m === "daily")      ? "#fff" : "#475569";
+        }
+        if (_dashCompareCache) {
+          const c = _dashCompareCache;
+          renderDashCompare(c.curRows, c.prevRows, c.curY, c.curM, c.prevDateObj);
+        }
+      }
       function renderDashCompare(curRows, prevRows, curY, curM, prevDateObj) {
+        _dashCompareCache = { curRows, prevRows, curY, curM, prevDateObj };
         const section = document.getElementById("dashCompareSection");
         if (!section) return;
         section.style.display = "";
         const mode = _dashViewMode; // "daily" | "monthly" | "yearly"
+        const cum  = _dashCompareMode === "cumulative" && mode !== "daily"; // daily mode → ไม่มี cumulative
+        // ซ่อน toggle ใน view daily (เพราะมีจุดเดียว สะสมไม่มีความหมาย)
+        const toggle = document.getElementById("dashCompareModeToggle");
+        if (toggle) toggle.style.display = (mode === "daily") ? "none" : "inline-flex";
+
         const titleEl = document.getElementById("dashCompareTitle");
+        const granularity = mode === "yearly" ? "รายเดือน" : (mode === "monthly" ? "รายวัน" : "");
+        const cumWord = cum ? " · ยอดสะสม" : "";
         const titleByMode = {
           daily:   `เปรียบเทียบวันนี้ vs เมื่อวาน <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale · รอบสิ้นวัน)</span>`,
-          monthly: `เปรียบเทียบเดือนนี้ vs เดือนก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale รายวัน · รอบสิ้นวัน)</span>`,
-          yearly:  `เปรียบเทียบปีนี้ vs ปีก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale รายเดือน · รอบสิ้นวัน)</span>`
+          monthly: `เปรียบเทียบเดือนนี้ vs เดือนก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale ${granularity}${cumWord} · รอบสิ้นวัน)</span>`,
+          yearly:  `เปรียบเทียบปีนี้ vs ปีก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale ${granularity}${cumWord} · รอบสิ้นวัน)</span>`
         };
         if (titleEl) titleEl.innerHTML = titleByMode[mode];
 
@@ -5837,22 +5872,37 @@ body { background: var(--bg); color: var(--txt); }
         // build labels + arrays
         const labels = [];
         const curArr = [], prevArr = [];
+        let curRun = 0, prevRun = 0; // for cumulative
         if (mode === "yearly") {
           for (let m = 0; m < 12; m++) {
             labels.push(TH_MONTHS[m].slice(0, 3));
-            curArr.push(curMap[m] || 0);
-            prevArr.push(prevMap[m] || 0);
+            const cv = curMap[m] || 0, pv = prevMap[m] || 0;
+            if (cum) { curRun += cv; prevRun += pv; curArr.push(curRun); prevArr.push(prevRun); }
+            else     { curArr.push(cv); prevArr.push(pv); }
           }
         } else if (mode === "monthly") {
           const curLastDay = new Date(curY, curM + 1, 0).getDate();
           const prevLastDay = new Date(prevDateObj.getFullYear(), prevDateObj.getMonth() + 1, 0).getDate();
           const maxDay = Math.max(curLastDay, prevLastDay);
+          const today = todayStr();
+          const curYM = curY + "-" + String(curM + 1).padStart(2, "0");
           for (let d = 1; d <= maxDay; d++) {
             labels.push(String(d));
-            curArr.push(d <= curLastDay ? (curMap[d] || 0) : null);
-            prevArr.push(d <= prevLastDay ? (prevMap[d] || 0) : null);
+            const cv = curMap[d] || 0, pv = prevMap[d] || 0;
+            if (cum) {
+              // cumulative: เดือนปัจจุบัน หยุดที่ "วันนี้" ถ้ายังไม่ถึงสิ้นเดือน
+              const dateStr = curYM + "-" + String(d).padStart(2, "0");
+              const isFutureCur = d > curLastDay || dateStr > today;
+              curRun += cv;
+              prevRun += pv;
+              curArr.push(isFutureCur ? null : curRun);
+              prevArr.push(d <= prevLastDay ? prevRun : null);
+            } else {
+              curArr.push(d <= curLastDay ? cv : null);
+              prevArr.push(d <= prevLastDay ? pv : null);
+            }
           }
-        } else { // daily
+        } else { // daily — 2 bars
           labels.push(fmtThaiDate(_dashDay));
           curArr.push(curMap[0] || 0);
           prevArr.push(prevMap[0] || 0);
@@ -5896,10 +5946,10 @@ body { background: var(--bg); color: var(--txt); }
                     label: curLbl,
                     data: curArr,
                     borderColor: "#f26c1c",
-                    backgroundColor: "rgba(242,108,28,0.10)",
+                    backgroundColor: cum ? "rgba(242,108,28,0.18)" : "rgba(242,108,28,0.10)",
                     borderWidth: 2.5,
-                    fill: false,
-                    tension: 0.2,
+                    fill: cum,
+                    tension: cum ? 0.1 : 0.2,
                     pointRadius: 0,
                     pointHoverRadius: 5,
                     spanGaps: false
@@ -5910,9 +5960,9 @@ body { background: var(--bg); color: var(--txt); }
                     borderColor: "#64748b",
                     backgroundColor: "rgba(100,116,139,0.08)",
                     borderWidth: 2,
-                    borderDash: [5, 4],
+                    borderDash: cum ? [4, 3] : [5, 4],
                     fill: false,
-                    tension: 0.2,
+                    tension: cum ? 0.1 : 0.2,
                     pointRadius: 0,
                     pointHoverRadius: 5,
                     spanGaps: false
