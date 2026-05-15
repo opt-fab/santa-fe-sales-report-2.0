@@ -4272,8 +4272,7 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       function adminImportDownloadTemplate() {
-        // สร้าง template Excel แบบ 2-row header เหมือนไฟล์ที่ระบบรับ
-        // row 1 = section label (sale / Trans), row 2 = ชื่อคอลัมน์, row 3 = ตัวอย่าง
+        // เทมเพลตเปล่า — 2 แถว header (รูปแบบที่ระบบ parse) + 1 แถวว่างพร้อมกรอก
         const sectionRow = [
           null, null, null, null,
           "sale", null, null, null, null, null, null, null, null,
@@ -4289,44 +4288,17 @@ body { background: var(--bg); color: var(--txt); }
           "Customer", "Customer Avg.", "Labour(hour)", "Labour(Baht)", "%Col",
           "Productivity Trans", "Productivity Sale", "คนลงข้อมูล", "Brand"
         ];
-        // ตัวอย่าง 2 แถว — รอบ 16.00 + สิ้นวัน ของวันเดียวกัน
-        const todayISO = todayStr();
-        // แปลง ISO → Excel serial (Date.UTC(1899,11,30) base)
-        const baseMs = Date.UTC(1899, 11, 30);
-        const dayMs  = 86400000;
-        const serial = Math.round((new Date(todayISO + "T00:00:00Z").getTime() - baseMs) / dayMs);
-        const ex1 = [
-          "นพชัย จันทร์รุ่ง (พี่นพ)", "5001 แฟชั่น ไอส์แลนด์", serial, 16,
-          50000, 25000, 0.5,
-          0, 0, 0, 0, 0, 0,
-          0, 0, 0, 0, 0, 0, null,
-          null, null, null, null,
-          0, null, 0, 0, null, null, null,
-          "ชื่อผู้กรอก", "Santa fe"
-        ];
-        const ex2 = [
-          "นพชัย จันทร์รุ่ง (พี่นพ)", "5001 แฟชั่น ไอส์แลนด์", serial, "สิ้นวัน",
-          50000, 48500, 0.97,
-          20000, 10000, 5000, 8500, 5000, 18500,
-          250, 100, 50, 30, 40, 30, 200,
-          194, 200, 200, 185,
-          240, 200, 50, 5000, 0.10, 5, 970,
-          "ชื่อผู้กรอก", "Santa fe"
-        ];
+        // 1 แถวว่าง — ใส่ null ทั้งบรรทัด ให้ user กรอก
+        const emptyRow = new Array(headerRow.length).fill(null);
+        const ws = XLSX.utils.aoa_to_sheet([sectionRow, headerRow, emptyRow]);
 
-        const ws = XLSX.utils.aoa_to_sheet([sectionRow, headerRow, ex1, ex2]);
         // กำหนดความกว้างคอลัมน์ให้อ่านง่าย
         ws["!cols"] = headerRow.map((h, i) => {
-          if (i === 1) return { wch: 28 }; // สาขา
-          if (i === 0) return { wch: 22 }; // BZM
+          if (i === 0) return { wch: 22 };  // BZM
+          if (i === 1) return { wch: 28 };  // สาขา
           if (i === 31) return { wch: 16 }; // คนลงข้อมูล
           return { wch: 13 };
         });
-        // formatวันที่
-        const dateCellAddr = "C3"; XLSX.utils.encode_cell({ c: 2, r: 2 });
-        if (ws[dateCellAddr]) { ws[dateCellAddr].z = "yyyy-mm-dd"; ws[dateCellAddr].t = "n"; }
-        const dateCellAddr2 = "C4";
-        if (ws[dateCellAddr2]) { ws[dateCellAddr2].z = "yyyy-mm-dd"; ws[dateCellAddr2].t = "n"; }
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "ใส่สูตร");
