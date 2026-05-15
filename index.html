@@ -3264,10 +3264,12 @@ body { background: var(--bg); color: var(--txt); }
         <div class="dash-section" id="dashCompareSection" style="margin-top:32px;display:none">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
             <h2 class="dash-section-h" id="dashCompareTitle" style="margin:0">เปรียบเทียบเดือนนี้ vs เดือนก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale · รอบสิ้นวัน)</span></h2>
-            <!-- Toggle รายวัน / ยอดสะสม (เห็นเฉพาะ monthly + yearly mode) -->
-            <div id="dashCompareModeToggle" class="dash-view-toggle" style="display:inline-flex;background:#f1f5f9;border-radius:10px;padding:3px;margin-left:auto">
+            <!-- Toggle 4 มุม: ยอดสะสม / รายวัน / ส่วนต่าง / Projection -->
+            <div id="dashCompareModeToggle" class="dash-view-toggle" style="display:inline-flex;background:#f1f5f9;border-radius:10px;padding:3px;margin-left:auto;flex-wrap:wrap">
               <button id="dashCompareModeCum"   onclick="setDashCompareMode('cumulative')" style="background:var(--brand);color:#fff;border:none;padding:5px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">ยอดสะสม</button>
               <button id="dashCompareModeDaily" onclick="setDashCompareMode('daily')"      style="background:transparent;color:#475569;border:none;padding:5px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">รายวัน</button>
+              <button id="dashCompareModeDiff"  onclick="setDashCompareMode('diff')"       style="background:transparent;color:#475569;border:none;padding:5px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">ส่วนต่าง</button>
+              <button id="dashCompareModeProj"  onclick="setDashCompareMode('projection')" style="background:transparent;color:#475569;border:none;padding:5px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Projection</button>
             </div>
           </div>
           <div style="background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px">
@@ -5813,20 +5815,24 @@ body { background: var(--bg); color: var(--txt); }
          + Toggle รายวัน / ยอดสะสม (cumulative) — default = cumulative
       ════════════════════════════════════════════ */
       let _dashCompareChart = null;
-      let _dashCompareMode = "cumulative"; // "cumulative" | "daily"
+      let _dashCompareMode = "cumulative"; // "cumulative" | "daily" | "diff" | "projection"
       let _dashCompareCache = null;        // เก็บ rows+meta สำหรับ re-render ตอน toggle
+      const _DASH_COMPARE_BTNS = {
+        cumulative: "dashCompareModeCum",
+        daily:      "dashCompareModeDaily",
+        diff:       "dashCompareModeDiff",
+        projection: "dashCompareModeProj"
+      };
       function setDashCompareMode(m) {
-        if (m !== "cumulative" && m !== "daily") return;
+        if (!_DASH_COMPARE_BTNS[m]) return;
         if (_dashCompareMode === m) return;
         _dashCompareMode = m;
-        const cum = document.getElementById("dashCompareModeCum");
-        const dl  = document.getElementById("dashCompareModeDaily");
-        if (cum && dl) {
-          cum.style.background = (m === "cumulative") ? "var(--brand)" : "transparent";
-          cum.style.color      = (m === "cumulative") ? "#fff" : "#475569";
-          dl.style.background  = (m === "daily")      ? "var(--brand)" : "transparent";
-          dl.style.color       = (m === "daily")      ? "#fff" : "#475569";
-        }
+        Object.keys(_DASH_COMPARE_BTNS).forEach(k => {
+          const btn = document.getElementById(_DASH_COMPARE_BTNS[k]);
+          if (!btn) return;
+          btn.style.background = (k === m) ? "var(--brand)" : "transparent";
+          btn.style.color      = (k === m) ? "#fff" : "#475569";
+        });
         if (_dashCompareCache) {
           const c = _dashCompareCache;
           renderDashCompare(c.curRows, c.prevRows, c.curY, c.curM, c.prevDateObj);
@@ -5837,28 +5843,18 @@ body { background: var(--bg); color: var(--txt); }
         const section = document.getElementById("dashCompareSection");
         if (!section) return;
         section.style.display = "";
-        const mode = _dashViewMode; // "daily" | "monthly" | "yearly"
-        const cum  = _dashCompareMode === "cumulative" && mode !== "daily"; // daily mode → ไม่มี cumulative
-        // ซ่อน toggle ใน view daily (เพราะมีจุดเดียว สะสมไม่มีความหมาย)
+        const vmode = _dashViewMode;          // "daily" | "monthly" | "yearly"
+        const cmode = _dashCompareMode;       // "cumulative" | "daily" | "diff" | "projection"
+        // ใน view daily ไม่มี cumulative/diff/projection (เพราะมีจุดเดียว) → toggle ซ่อน
         const toggle = document.getElementById("dashCompareModeToggle");
-        if (toggle) toggle.style.display = (mode === "daily") ? "none" : "inline-flex";
-
-        const titleEl = document.getElementById("dashCompareTitle");
-        const granularity = mode === "yearly" ? "รายเดือน" : (mode === "monthly" ? "รายวัน" : "");
-        const cumWord = cum ? " · ยอดสะสม" : "";
-        const titleByMode = {
-          daily:   `เปรียบเทียบวันนี้ vs เมื่อวาน <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale · รอบสิ้นวัน)</span>`,
-          monthly: `เปรียบเทียบเดือนนี้ vs เดือนก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale ${granularity}${cumWord} · รอบสิ้นวัน)</span>`,
-          yearly:  `เปรียบเทียบปีนี้ vs ปีก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale ${granularity}${cumWord} · รอบสิ้นวัน)</span>`
-        };
-        if (titleEl) titleEl.innerHTML = titleByMode[mode];
+        if (toggle) toggle.style.display = (vmode === "daily") ? "none" : "inline-flex";
 
         // aggregate per bucket
         const curMap = {}, prevMap = {};
         const bucketOf = (dateStr) => {
-          if (mode === "yearly")  return parseInt(dateStr.split("-")[1]) - 1; // 0..11
-          if (mode === "monthly") return parseInt(dateStr.split("-")[2]);     // 1..31
-          return 0; // daily → single bucket
+          if (vmode === "yearly")  return parseInt(dateStr.split("-")[1]) - 1; // 0..11
+          if (vmode === "monthly") return parseInt(dateStr.split("-")[2]);     // 1..31
+          return 0;
         };
         (curRows || []).filter(r => r.submit_time_slot === "สิ้นวัน").forEach(r => {
           const k = bucketOf(r.submit_date);
@@ -5869,125 +5865,231 @@ body { background: var(--bg); color: var(--txt); }
           prevMap[k] = (prevMap[k] || 0) + (parseFloat(r.actual_sale) || 0);
         });
 
-        // build labels + arrays
-        const labels = [];
-        const curArr = [], prevArr = [];
-        let curRun = 0, prevRun = 0; // for cumulative
-        if (mode === "yearly") {
+        // ── คำนวณ daily + cumulative + diff + projection arrays สำหรับ vmode != daily ──
+        const labels = [], curDaily = [], prevDaily = [], curCum = [], prevCum = [];
+        let curRun = 0, prevRun = 0;
+        let nBuckets = 0, lastCurBucketIdx = -1; // ใช้คำนวณ projection
+        const todayStrVal = todayStr();
+        if (vmode === "yearly") {
+          nBuckets = 12;
+          const todayMonth = new Date().getMonth();
+          const isCurYear  = (_dashYear === new Date().getFullYear());
           for (let m = 0; m < 12; m++) {
             labels.push(TH_MONTHS[m].slice(0, 3));
             const cv = curMap[m] || 0, pv = prevMap[m] || 0;
-            if (cum) { curRun += cv; prevRun += pv; curArr.push(curRun); prevArr.push(prevRun); }
-            else     { curArr.push(cv); prevArr.push(pv); }
+            curRun += cv; prevRun += pv;
+            // ปีปัจจุบัน → ตัดที่เดือนปัจจุบัน (อนาคต = null)
+            const isFutureCur = isCurYear && m > todayMonth;
+            curDaily.push(isFutureCur ? null : cv);
+            curCum.push(isFutureCur ? null : curRun);
+            prevDaily.push(pv);
+            prevCum.push(prevRun);
+            if (!isFutureCur && cv > 0) lastCurBucketIdx = m;
           }
-        } else if (mode === "monthly") {
+        } else if (vmode === "monthly") {
           const curLastDay = new Date(curY, curM + 1, 0).getDate();
           const prevLastDay = new Date(prevDateObj.getFullYear(), prevDateObj.getMonth() + 1, 0).getDate();
-          const maxDay = Math.max(curLastDay, prevLastDay);
-          const today = todayStr();
+          nBuckets = Math.max(curLastDay, prevLastDay);
           const curYM = curY + "-" + String(curM + 1).padStart(2, "0");
-          for (let d = 1; d <= maxDay; d++) {
+          for (let d = 1; d <= nBuckets; d++) {
             labels.push(String(d));
             const cv = curMap[d] || 0, pv = prevMap[d] || 0;
-            if (cum) {
-              // cumulative: เดือนปัจจุบัน หยุดที่ "วันนี้" ถ้ายังไม่ถึงสิ้นเดือน
-              const dateStr = curYM + "-" + String(d).padStart(2, "0");
-              const isFutureCur = d > curLastDay || dateStr > today;
-              curRun += cv;
-              prevRun += pv;
-              curArr.push(isFutureCur ? null : curRun);
-              prevArr.push(d <= prevLastDay ? prevRun : null);
-            } else {
-              curArr.push(d <= curLastDay ? cv : null);
-              prevArr.push(d <= prevLastDay ? pv : null);
-            }
+            const dateStr = curYM + "-" + String(d).padStart(2, "0");
+            const isFutureCur = d > curLastDay || dateStr > todayStrVal;
+            curRun += cv; prevRun += pv;
+            curDaily.push(isFutureCur ? null : cv);
+            curCum.push(isFutureCur ? null : curRun);
+            prevDaily.push(d <= prevLastDay ? pv : null);
+            prevCum.push(d <= prevLastDay ? prevRun : null);
+            if (!isFutureCur && cv > 0) lastCurBucketIdx = d - 1;
           }
-        } else { // daily — 2 bars
-          labels.push(fmtThaiDate(_dashDay));
-          curArr.push(curMap[0] || 0);
-          prevArr.push(prevMap[0] || 0);
         }
+
+        // ── Diff array (curCum - prevCum) — null ที่ไหน prev null ก็ null ──
+        const diffArr = curCum.map((c, i) => {
+          const p = prevCum[i];
+          return (c === null || p === null) ? null : (c - p);
+        });
+
+        // ── Projection: extend curCum จาก lastCurBucketIdx → จบ ด้วย avg daily pace ──
+        const projArr = new Array(nBuckets).fill(null);
+        if (cmode === "projection" && lastCurBucketIdx >= 0 && nBuckets > 0) {
+          const elapsed = lastCurBucketIdx + 1; // จำนวน bucket ที่ผ่านมาแล้ว
+          const lastVal = curCum[lastCurBucketIdx];
+          const pace    = lastVal / elapsed;
+          projArr[lastCurBucketIdx] = lastVal; // anchor
+          for (let i = lastCurBucketIdx + 1; i < nBuckets; i++) {
+            projArr[i] = lastVal + pace * (i - lastCurBucketIdx);
+          }
+        }
+
+        // ── Title + summary ──
+        const titleEl = document.getElementById("dashCompareTitle");
+        const granularity = vmode === "yearly" ? "รายเดือน" : "รายวัน";
+        const cmodeLbl = { cumulative: "ยอดสะสม", daily: "รายวัน", diff: "ส่วนต่าง", projection: "Projection" }[cmode];
+        const subText = (vmode === "daily")
+          ? "(Actual Sale · รอบสิ้นวัน)"
+          : `(Actual Sale ${granularity} · ${cmodeLbl} · รอบสิ้นวัน)`;
+        const titleByVMode = {
+          daily:   `เปรียบเทียบวันนี้ vs เมื่อวาน <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">${subText}</span>`,
+          monthly: `เปรียบเทียบเดือนนี้ vs เดือนก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">${subText}</span>`,
+          yearly:  `เปรียบเทียบปีนี้ vs ปีก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">${subText}</span>`
+        };
+        if (titleEl) titleEl.innerHTML = titleByVMode[vmode];
 
         const curTotal = Object.values(curMap).reduce((s, v) => s + v, 0);
         const prevTotal = Object.values(prevMap).reduce((s, v) => s + v, 0);
-        const diff = curTotal - prevTotal;
-        const diffPct = prevTotal > 0 ? (diff / prevTotal * 100) : 0;
-        const arrow = diff >= 0 ? "▲" : "▼";
-        const color = diff >= 0 ? "#15803d" : "#dc2626";
-        const wordCur  = { daily: "วันนี้",  monthly: "เดือนนี้", yearly: "ปีนี้"   }[mode];
-        const wordPrev = { daily: "เมื่อวาน", monthly: "เดือนก่อน", yearly: "ปีก่อน" }[mode];
-        document.getElementById("dashCompareSummary").innerHTML =
-          `<span><b>${wordCur}:</b> ${fmt(curTotal)}</span>` +
+        const diffTotal = curTotal - prevTotal;
+        const diffPct = prevTotal > 0 ? (diffTotal / prevTotal * 100) : 0;
+        const arrow = diffTotal >= 0 ? "▲" : "▼";
+        const tColor = diffTotal >= 0 ? "#15803d" : "#dc2626";
+        const wordCur  = { daily: "วันนี้",  monthly: "เดือนนี้", yearly: "ปีนี้"   }[vmode];
+        const wordPrev = { daily: "เมื่อวาน", monthly: "เดือนก่อน", yearly: "ปีก่อน" }[vmode];
+        let summary = `<span><b>${wordCur}:</b> ${fmt(curTotal)}</span>` +
           `<span><b>${wordPrev}:</b> ${fmt(prevTotal)}</span>` +
-          `<span style="color:${color};font-weight:700">${arrow} ${fmt(Math.abs(diff))} (${diffPct.toFixed(1)}%)</span>`;
+          `<span style="color:${tColor};font-weight:700">${arrow} ${fmt(Math.abs(diffTotal))} (${diffPct.toFixed(1)}%)</span>`;
+        if (cmode === "projection" && lastCurBucketIdx >= 0 && nBuckets > 0) {
+          const projected = projArr[nBuckets - 1];
+          if (projected !== null) {
+            summary += `<span style="color:#7c3aed;font-weight:700">📈 คาดสิ้น${vmode === "yearly" ? "ปี" : "เดือน"}: ${fmt(projected)}</span>`;
+          }
+        }
+        document.getElementById("dashCompareSummary").innerHTML = summary;
 
+        // ── Chart setup ──
         const canvas = document.getElementById("dashCompareChart");
         if (_dashCompareChart) { _dashCompareChart.destroy(); _dashCompareChart = null; }
-        const prevDayStr = (mode === "daily" && prevDateObj)
+
+        // labels + names สำหรับ legend
+        const prevDayStr = (vmode === "daily" && prevDateObj)
           ? prevDateObj.getFullYear() + "-" + String(prevDateObj.getMonth()+1).padStart(2,"0") + "-" + String(prevDateObj.getDate()).padStart(2,"0")
           : null;
-        const curLbl  = mode === "daily" ? fmtThaiDate(_dashDay)
-                      : (mode === "yearly" ? ("ปี " + (curY + 543))
+        const curLbl  = vmode === "daily" ? fmtThaiDate(_dashDay)
+                      : (vmode === "yearly" ? ("ปี " + (curY + 543))
                       : (TH_MONTHS[curM] + " " + (curY + 543)));
-        const prevLbl = mode === "daily" ? fmtThaiDate(prevDayStr)
-                      : (mode === "yearly" ? ("ปี " + (prevDateObj.getFullYear() + 543))
+        const prevLbl = vmode === "daily" ? fmtThaiDate(prevDayStr)
+                      : (vmode === "yearly" ? ("ปี " + (prevDateObj.getFullYear() + 543))
                       : (TH_MONTHS[prevDateObj.getMonth()] + " " + (prevDateObj.getFullYear() + 543)));
-        _dashCompareChart = new Chart(canvas, {
-          type: mode === "daily" ? "bar" : "line",
-          data: {
-            labels,
-            datasets: mode === "daily"
-              ? [
-                  { label: curLbl,  data: curArr,  backgroundColor: "rgba(242,108,28,0.7)",  borderColor: "#f26c1c", borderWidth: 1 },
-                  { label: prevLbl, data: prevArr, backgroundColor: "rgba(100,116,139,0.5)", borderColor: "#64748b", borderWidth: 1 }
-                ]
-              : [
-                  {
-                    label: curLbl,
-                    data: curArr,
-                    borderColor: "#f26c1c",
-                    backgroundColor: cum ? "rgba(242,108,28,0.18)" : "rgba(242,108,28,0.10)",
-                    borderWidth: 2.5,
-                    fill: cum,
-                    tension: cum ? 0.1 : 0.2,
-                    pointRadius: 0,
-                    pointHoverRadius: 5,
-                    spanGaps: false
-                  },
-                  {
-                    label: prevLbl,
-                    data: prevArr,
-                    borderColor: "#64748b",
-                    backgroundColor: "rgba(100,116,139,0.08)",
-                    borderWidth: 2,
-                    borderDash: cum ? [4, 3] : [5, 4],
-                    fill: false,
-                    tension: cum ? 0.1 : 0.2,
-                    pointRadius: 0,
-                    pointHoverRadius: 5,
-                    spanGaps: false
-                  }
-                ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: "index", intersect: false },
-            plugins: {
-              legend: { position: "top", labels: { font: { size: 12 }, boxWidth: 14 } },
-              tooltip: {
-                callbacks: {
-                  label: (ctx) => ctx.parsed.y === null ? null
-                    : `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`
-                }
-              }
+
+        // ── Daily view (1 bucket per period) → bars ──
+        if (vmode === "daily") {
+          _dashCompareChart = new Chart(canvas, {
+            type: "bar",
+            data: {
+              labels: [fmtThaiDate(_dashDay)],
+              datasets: [
+                { label: curLbl,  data: [curMap[0] || 0],  backgroundColor: "rgba(242,108,28,0.7)",  borderColor: "#f26c1c", borderWidth: 1 },
+                { label: prevLbl, data: [prevMap[0] || 0], backgroundColor: "rgba(100,116,139,0.5)", borderColor: "#64748b", borderWidth: 1 }
+              ]
             },
-            scales: {
-              x: { title: { display: mode !== "daily", text: mode === "yearly" ? "เดือน" : "วันที่", font: { size: 11 }, color: "#64748b" }, ticks: { font: { size: 10 } }, grid: { display: false } },
-              y: { beginAtZero: true, ticks: { font: { size: 10 }, callback: (v) => v >= 1000 ? (v/1000).toFixed(0) + "k" : v }, grid: { color: "rgba(0,0,0,.06)" } }
+            options: _compareChartOpts(false)
+          });
+          return;
+        }
+
+        // ── Diff view: single line/area, color split at 0 ──
+        if (cmode === "diff") {
+          _dashCompareChart = new Chart(canvas, {
+            type: "line",
+            data: {
+              labels,
+              datasets: [{
+                label: `ส่วนต่าง (${wordCur} - ${wordPrev})`,
+                data: diffArr,
+                borderColor: "#0f766e",
+                borderWidth: 2.5,
+                tension: 0.15,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                spanGaps: false,
+                fill: { target: { value: 0 }, above: "rgba(21,128,61,0.18)", below: "rgba(220,38,38,0.18)" },
+                segment: {
+                  borderColor: (ctx) => {
+                    const y0 = ctx.p0.parsed.y, y1 = ctx.p1.parsed.y;
+                    if (y0 === null || y1 === null) return "#0f766e";
+                    return (y1 >= 0) ? "#15803d" : "#dc2626";
+                  }
+                }
+              }]
+            },
+            options: _compareChartOpts(true, vmode)
+          });
+          return;
+        }
+
+        // ── Cumulative + Projection + Daily (line) views ──
+        const useCum = (cmode === "cumulative" || cmode === "projection");
+        const curData  = useCum ? curCum  : curDaily;
+        const prevData = useCum ? prevCum : prevDaily;
+        const datasets = [
+          {
+            label: curLbl,
+            data: curData,
+            borderColor: "#f26c1c",
+            backgroundColor: useCum ? "rgba(242,108,28,0.18)" : "rgba(242,108,28,0.10)",
+            borderWidth: 2.5,
+            fill: useCum,
+            tension: useCum ? 0.1 : 0.2,
+            pointRadius: 0, pointHoverRadius: 5, spanGaps: false
+          },
+          {
+            label: prevLbl,
+            data: prevData,
+            borderColor: "#64748b",
+            backgroundColor: "rgba(100,116,139,0.08)",
+            borderWidth: 2,
+            borderDash: useCum ? [4, 3] : [5, 4],
+            fill: false,
+            tension: useCum ? 0.1 : 0.2,
+            pointRadius: 0, pointHoverRadius: 5, spanGaps: false
+          }
+        ];
+        if (cmode === "projection") {
+          datasets.push({
+            label: "พยากรณ์ตาม pace",
+            data: projArr,
+            borderColor: "#7c3aed",
+            backgroundColor: "rgba(124,58,237,0.08)",
+            borderWidth: 2,
+            borderDash: [3, 3],
+            fill: false,
+            tension: 0.1,
+            pointRadius: 0, pointHoverRadius: 5, spanGaps: false
+          });
+        }
+        _dashCompareChart = new Chart(canvas, {
+          type: "line",
+          data: { labels, datasets },
+          options: _compareChartOpts(true, vmode)
+        });
+      }
+
+      function _compareChartOpts(hasXTitle, vmode) {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: { position: "top", labels: { font: { size: 12 }, boxWidth: 14 } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ctx.parsed.y === null ? null
+                  : `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: !!hasXTitle, text: vmode === "yearly" ? "เดือน" : "วันที่", font: { size: 11 }, color: "#64748b" },
+              ticks: { font: { size: 10 } },
+              grid: { display: false }
+            },
+            y: {
+              ticks: { font: { size: 10 }, callback: (v) => Math.abs(v) >= 1000 ? (v/1000).toFixed(0) + "k" : v },
+              grid: { color: "rgba(0,0,0,.06)" }
             }
           }
-        });
+        };
       }
 
       /* ════════════════════════════════════════════
