@@ -2080,50 +2080,106 @@ body { background: var(--bg); color: var(--txt); }
 .card-body { padding: 16px 18px; }
 
 /* ─── LOGIN — Apple Notes white minimal ─── */
-.login-bg { background: var(--bg-2) !important; }
+/* ── Login: soft-pastel hero design ── */
+.login-bg {
+  background: linear-gradient(135deg, #ecfdf5 0%, #fef3f3 35%, #fce7f3 65%, #dbeafe 100%) !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 32px 16px !important;
+}
 .login-card {
-  border-radius: 14px !important;
-  border: 1px solid var(--bd) !important;
-  box-shadow: none !important;
-  background: var(--surface) !important;
+  border-radius: 24px !important;
+  border: none !important;
+  box-shadow: 0 20px 60px -20px rgba(0,0,0,.18), 0 8px 24px -12px rgba(0,0,0,.10) !important;
+  background: #ffffff !important;
+  max-width: 440px !important;
+  width: 100% !important;
+  padding: 36px 28px 24px !important;
+  position: relative;
 }
 .login-app-hdr {
-  padding: 24px 24px 20px !important;
-  border-bottom: 1px solid var(--bd-2) !important;
+  padding: 0 0 22px !important;
+  border-bottom: none !important;
   gap: 14px !important;
-  background: var(--surface) !important;
+  background: transparent !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
 }
-.login-app-name  { font-size: 17px !important; font-weight: 700 !important; color: var(--txt) !important; letter-spacing: -.015em; }
-.login-app-ver   { font-size: 12px !important; color: var(--txt2) !important; font-weight: 400 !important; }
-.login-app-logo  { border-radius: 11px !important; box-shadow: none !important; }
-/* Tabs: minimal */
-.login-tabs { background: var(--bg-2) !important; border-radius: 9px !important; margin: 18px 20px 0 !important; padding: 3px !important; }
-.login-tab  { border-radius: 7px !important; font-size: 13.5px !important; font-weight: 600 !important; color: var(--txt2) !important; transition: all .15s; }
-.login-tab.active { background: var(--brand) !important; color: #fff !important; box-shadow: 0 2px 6px rgba(242,108,28,.30) !important; }
-/* OTP boxes */
+.login-app-name  {
+  font-size: 22px !important; font-weight: 800 !important; color: var(--txt) !important;
+  letter-spacing: -.015em; line-height: 1.25;
+}
+.login-app-ver   {
+  font-size: 13px !important; color: var(--txt2) !important; font-weight: 400 !important;
+  margin-top: 4px;
+}
+.login-app-logo  {
+  border-radius: 14px !important; box-shadow: 0 6px 18px -6px rgba(242,108,28,.30) !important;
+  width: 78px !important; height: 78px !important; object-fit: cover;
+}
+/* Tabs: pill */
+.login-tabs {
+  background: #f1f5f9 !important; border-radius: 14px !important;
+  margin: 0 0 18px !important; padding: 5px !important;
+  display: flex; gap: 4px;
+}
+.login-tab  {
+  border-radius: 10px !important; font-size: 14px !important; font-weight: 700 !important;
+  color: var(--txt2) !important; transition: all .18s; flex: 1; padding: 11px !important;
+}
+.login-tab.active {
+  background: var(--brand) !important; color: #fff !important;
+  box-shadow: 0 6px 18px -4px rgba(242,108,28,.45) !important;
+}
+.login-body { padding: 6px 0 16px !important; }
+.login-otp  { gap: 12px !important; }
 .login-otp-box {
-  width: 48px !important; height: 58px !important;
-  border: 1.5px solid var(--bd) !important;
-  border-radius: 10px !important;
+  width: 56px !important; height: 62px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 14px !important;
   font-size: 22px !important; font-weight: 700 !important;
-  background: var(--surface) !important; color: var(--txt) !important;
-  transition: border-color .15s, box-shadow .15s !important;
+  background: #fff !important; color: var(--txt) !important;
+  transition: all .18s !important;
 }
-.login-otp-box:focus { border-color: var(--brand) !important; background: var(--surface) !important; box-shadow: 0 0 0 3px rgba(242,108,28,.12) !important; }
-.login-otp-box.filled { border-color: var(--brand) !important; background: var(--surface) !important; color: var(--txt) !important; }
-/* Submit button */
-.login-submit-wrap { padding: 16px 20px 20px !important; border-top: 1px solid var(--bd-2) !important; }
+.login-otp-box:focus {
+  border-color: var(--brand) !important; background: #fffbf6 !important;
+  box-shadow: 0 0 0 4px rgba(242,108,28,.14) !important;
+}
+.login-otp-box.filled {
+  border-color: var(--brand) !important; background: #fffbf6 !important; color: var(--brand) !important;
+}
+/* Submit button — gradient + glow */
+.login-submit-wrap { padding: 8px 0 0 !important; border-top: none !important; }
 .btn-login-submit {
-  background: var(--brand) !important;
-  border-radius: 10px !important;
-  font-size: 15.5px !important; font-weight: 700 !important;
-  letter-spacing: .01em !important;
-  transition: background .15s, transform .1s !important;
-  box-shadow: none !important;
+  background: linear-gradient(135deg, #ff8a3d 0%, #f26c1c 100%) !important;
+  border-radius: 16px !important;
+  font-size: 16px !important; font-weight: 700 !important;
+  letter-spacing: .02em !important;
+  height: 56px !important;
+  width: 100% !important;
+  border: none !important;
+  color: #fff !important;
+  transition: all .18s !important;
+  box-shadow: 0 12px 28px -8px rgba(242,108,28,.50), 0 4px 10px -4px rgba(242,108,28,.30) !important;
 }
-.btn-login-submit:not(:disabled):hover  { background: var(--brand-d) !important; }
-.btn-login-submit:not(:disabled):active { transform: scale(.98) !important; }
-.btn-login-submit:disabled { opacity: .35 !important; cursor: default; pointer-events: none; }
+.btn-login-submit:not(:disabled):hover  {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px -8px rgba(242,108,28,.55), 0 6px 14px -4px rgba(242,108,28,.35) !important;
+}
+.btn-login-submit:not(:disabled):active { transform: translateY(0) scale(.99) !important; }
+.btn-login-submit:disabled {
+  background: linear-gradient(135deg, #fdba74 0%, #fed7aa 100%) !important;
+  box-shadow: none !important;
+  cursor: default; pointer-events: none;
+}
+/* Footer credit */
+.login-footer {
+  text-align: center; margin-top: 16px;
+  font-size: 12px; color: var(--txt2); font-weight: 500;
+}
 
 /* ─── BUTTONS — flat, minimal ─── */
 .btn { border-radius: var(--radius-sm) !important; font-weight: 600 !important; letter-spacing: .005em !important; transition: all .14s !important; }
@@ -2893,12 +2949,12 @@ body { background: var(--bg); color: var(--txt); }
       <div class="login-bg">
         <div class="login-card">
 
-          <!-- App-style header -->
+          <!-- App-style header (centered) -->
           <div class="login-app-hdr">
             <img src="536282464_1192954076197758_7560981869126705598_n.jpg" alt="Santa Fe" class="login-app-logo">
             <div>
-              <div class="login-app-name">ระบบส่งยอดขาย Santa Fe</div>
-              <div class="login-app-ver">Version 2.0 · 22.4.2026</div>
+              <div class="login-app-name">Santa Fe Sales Report</div>
+              <div class="login-app-ver">ระบบส่งยอดขาย</div>
             </div>
           </div>
 
@@ -2953,6 +3009,8 @@ body { background: var(--bg); color: var(--txt); }
               เข้าสู่ระบบ
             </button>
           </div>
+
+          <div class="login-footer">© 2026 Santa Fe · Sales Report v2.0</div>
 
         </div>
       </div>
