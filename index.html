@@ -2135,6 +2135,10 @@ body { background: var(--bg); color: var(--txt); }
   box-shadow: 0 6px 18px -4px rgba(242,108,28,.45) !important;
 }
 .login-body { padding: 6px 0 16px !important; }
+.login-otp-label {
+  text-align: center; font-size: 14px; font-weight: 700;
+  color: var(--txt); margin-bottom: 12px;
+}
 .login-otp  { gap: 12px !important; }
 .login-otp-box {
   width: 56px !important; height: 62px !important;
@@ -2969,6 +2973,7 @@ body { background: var(--bg); color: var(--txt); }
 
             <!-- Branch panel -->
             <div class="login-branch-panel" id="branchPanel">
+              <div class="login-otp-label">กรอกรหัสสาขา 4 หลัก</div>
               <div class="login-otp" id="loginOtp">
                 <input class="login-otp-box" id="lc0" type="tel" maxlength="1" inputmode="numeric" autocomplete="off"
                   oninput="onOtpInput(0,this)" onkeydown="onOtpKey(0,this,event)" onpaste="onOtpPaste(event)">
@@ -2984,6 +2989,7 @@ body { background: var(--bg); color: var(--txt); }
 
             <!-- Admin panel (6-digit OTP) -->
             <div class="login-admin-panel" id="adminPanel">
+              <div class="login-otp-label">กรอกรหัส Admin 6 หลัก</div>
               <div class="login-otp" id="adminOtp">
                 <input class="login-otp-box" id="ac0" type="tel" maxlength="1" inputmode="numeric" autocomplete="off"
                   oninput="onAdminOtpInput(0,this)" onkeydown="onAdminOtpKey(0,this,event)"
