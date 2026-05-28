@@ -2012,6 +2012,17 @@
   .btn-edit-row:hover { border-color:var(--brand); color:var(--brand); background:var(--brand-l); }
 }
 
+/* Edit history summary + lock badge (history page) */
+.hist-edit-info {
+  font-size: 11px; color: #c2410c; margin-top: 3px;
+  font-weight: 500; line-height: 1.3;
+}
+.hist-lock-badge {
+  display: inline-block; font-size: 11.5px; color: #64748b;
+  background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 5px 12px; font-weight: 600; white-space: nowrap;
+}
+
 /* ════════════════════════════════════════════════════════
    VISUAL OVERHAUL v6  —  "Apple Notes" Minimal
    ขาวล้วน · Hairline borders · Black text · Orange accent
@@ -2804,6 +2815,108 @@ body { background: var(--bg); color: var(--txt); }
   .hist-table-wrap table { min-width: 900px; }
   .plan-sticky-btn { justify-content: center !important; }
 }
+
+/* ════════════════════════════════════════
+   DASHBOARD 2.0 — clean card grid layout
+════════════════════════════════════════ */
+.dash2-hdr {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 22px;
+}
+.dash2-title { font-size: 1.7rem; font-weight: 700; letter-spacing: -.02em; color: var(--txt); margin: 0; }
+.dash2-sub   { font-size: 13px; color: var(--txt2); margin-top: 4px; }
+.dash2-period { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.dash2-pbtn {
+  background: #fff; border: 1px solid var(--bd); border-radius: 8px;
+  padding: 8px 14px; font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--txt2); cursor: pointer; transition: border-color .14s, background .14s, color .14s;
+  white-space: nowrap;
+}
+.dash2-pbtn:hover { border-color: var(--txt3); color: var(--txt); }
+.dash2-pbtn.active { background: var(--bg-2); border-color: var(--txt3); color: var(--txt); }
+.dash2-branch {
+  background: #fff; border: 1px solid var(--bd); border-radius: 8px;
+  padding: 7px 10px; font-family: inherit; font-size: 13px; min-width: 180px;
+}
+
+.dash2-kpis {
+  display: grid; grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 14px; margin-bottom: 18px;
+}
+.dash2-kpi {
+  background: var(--surface); border: 1px solid var(--bd);
+  border-radius: 12px; padding: 18px 18px; transition: border-color .14s;
+}
+.dash2-kpi:hover { border-color: var(--txt3); }
+.dash2-kpi-lbl { font-size: 12px; font-weight: 500; color: var(--txt2); margin-bottom: 8px; }
+.dash2-kpi-val {
+  font-size: 1.75rem; font-weight: 700; color: var(--txt);
+  font-variant-numeric: tabular-nums; letter-spacing: -.025em; line-height: 1.1;
+}
+.dash2-kpi-chg {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 8px; font-size: 12.5px; font-weight: 600;
+}
+.dash2-kpi-chg.up   { color: var(--green); }
+.dash2-kpi-chg.down { color: var(--red); }
+.dash2-kpi-chg.neutral { color: var(--txt2); }
+
+.dash2-row1, .dash2-row2 {
+  display: grid; gap: 16px; margin-bottom: 16px;
+}
+.dash2-row1 { grid-template-columns: 2fr 1fr; }
+.dash2-row2 { grid-template-columns: 2fr 1fr; }
+
+.dash2-card {
+  background: var(--surface); border: 1px solid var(--bd);
+  border-radius: 12px; padding: 20px 22px; transition: border-color .14s;
+}
+.dash2-card:hover { border-color: var(--txt3); }
+.dash2-cardhdr { margin-bottom: 14px; }
+.dash2-cardhdr h3 { font-size: 15px; font-weight: 700; color: var(--txt); margin: 0 0 2px; letter-spacing: -.01em; }
+.dash2-cardsub { font-size: 12px; color: var(--txt2); font-weight: 400; }
+
+.dash2-chan-legend {
+  display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 12px;
+  font-size: 12.5px; color: var(--txt2);
+}
+.dash2-chan-legend .lg-item { display: inline-flex; align-items: center; gap: 6px; }
+.dash2-chan-legend .lg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+.dash2-quick-list { display: flex; flex-direction: column; gap: 0; }
+.dash2-quick-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 0; border-bottom: 1px solid var(--bd-2);
+  font-size: 13.5px;
+}
+.dash2-quick-row:last-child { border-bottom: none; }
+.dash2-quick-lbl { color: var(--txt2); font-weight: 500; }
+.dash2-quick-val { color: var(--txt); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.dash2-custom-row {
+  display: none; align-items: center; gap: 8px;
+  background: var(--bg-2); border-radius: 8px; padding: 8px 12px;
+  margin-bottom: 18px; flex-wrap: wrap;
+}
+.dash2-custom-row.show { display: inline-flex; }
+.dash2-custom-row input[type="date"] {
+  background: #fff; border: 1px solid var(--bd); border-radius: 6px;
+  padding: 5px 8px; font-family: inherit; font-size: 13px;
+}
+.dash2-custom-row label { font-size: 12px; color: var(--txt2); font-weight: 600; }
+
+@media (max-width: 900px) {
+  .dash2-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .dash2-row1, .dash2-row2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .dash2-title { font-size: 1.35rem; }
+  .dash2-kpis { gap: 10px; }
+  .dash2-kpi { padding: 14px; border-top: 3px solid var(--brand); }
+  .dash2-kpi-val { font-size: 1.4rem; color: var(--brand); }
+  .dash2-card { padding: 16px; border-top: 3px solid var(--brand); }
+  .dash2-pbtn { padding: 6px 10px; font-size: 12px; }
+}
     </style>
   </head>
 
@@ -3251,194 +3364,118 @@ body { background: var(--bg); color: var(--txt); }
 ════════════════════════════════════════ -->
     <div id="sDash" class="screen">
       <div class="dash-wrap">
-        <!-- Page header -->
-        <div class="dash-page-hdr">
+        <!-- ───────── HEADER ───────── -->
+        <div class="dash2-hdr">
           <div>
-            <div class="dash-page-title">📊 แดชบอร์ด</div>
-            <div class="dash-page-sub" id="dashPageSub"></div>
+            <h1 class="dash2-title">📊 แดชบอร์ด</h1>
+            <div class="dash2-sub" id="dashPageSub">Track your business performance</div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <!-- Toggle รายวัน / รายเดือน / รายปี (มุมขวาบน) — default = รายเดือน -->
-            <div class="dash-view-toggle" style="display:inline-flex;background:#f1f5f9;border-radius:10px;padding:3px">
-              <button id="dashViewDaily"   onclick="setDashViewMode('daily')"   style="background:transparent;color:#475569;border:none;padding:6px 14px;border-radius:8px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer">รายวัน</button>
-              <button id="dashViewMonthly" onclick="setDashViewMode('monthly')" style="background:var(--brand);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer">รายเดือน</button>
-              <button id="dashViewYearly"  onclick="setDashViewMode('yearly')"  style="background:transparent;color:#475569;border:none;padding:6px 14px;border-radius:8px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer">รายปี</button>
-            </div>
-            <!-- Branch filter (admin only) -->
-            <select id="dashBranchFilter" onchange="loadDash()" style="display:none;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;min-width:180px"></select>
-            <button class="btn btn-sm" onclick="loadDash()" style="background:#f1f5f9;color:#475569;flex-shrink:0">🔄 รีเฟรช</button>
+          <div class="dash2-period">
+            <button id="dash2P7"      class="dash2-pbtn" onclick="setDashPeriod(7)">Last 7 days</button>
+            <button id="dash2P30"     class="dash2-pbtn active" onclick="setDashPeriod(30)">Last 30 days</button>
+            <button id="dash2P90"     class="dash2-pbtn" onclick="setDashPeriod(90)">Last 90 days</button>
+            <button id="dash2PCustom" class="dash2-pbtn" onclick="toggleDashCustom()">📅 Custom</button>
+            <select id="dashBranchFilter" class="dash2-branch" onchange="loadDash()" style="display:none"></select>
+            <button class="dash2-pbtn" onclick="loadDash()" title="รีเฟรช">🔄</button>
           </div>
         </div>
 
-        <!-- ───────── SECTION 1: สรุปรายเดือน ───────── -->
-        <div class="dash-section">
-          <!-- หัวข้อ (ซ้าย) + ปุ่มเลื่อนเดือน (ขวา) -->
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
-            <h2 class="dash-section-h" id="dashMonthTitle" style="margin:0">สรุปรายเดือน</h2>
-            <div class="dash-month-nav" style="display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border-radius:10px;padding:6px 10px;margin-left:auto">
-              <button class="btn btn-sm" onclick="dashPrevPeriod()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">‹</button>
-              <span id="dashMonthLabel" style="font-size:13px;font-weight:700;min-width:130px;text-align:center;color:var(--txt);background:#fff;padding:6px 14px;border-radius:6px;border:1px solid var(--bd)">—</span>
-              <button class="btn btn-sm" onclick="dashNextPeriod()" style="background:#fff;border:1px solid var(--bd);width:32px;height:32px;padding:0;font-size:1rem;color:var(--txt);border-radius:6px">›</button>
+        <!-- Custom date range (hidden by default) -->
+        <div id="dash2Custom" class="dash2-custom-row">
+          <label>From</label>
+          <input type="date" id="dash2CustomFrom">
+          <label>To</label>
+          <input type="date" id="dash2CustomTo">
+          <button class="dash2-pbtn active" onclick="applyDashCustom()">Apply</button>
+        </div>
+
+        <!-- ───────── KPI STRIP ───────── -->
+        <div class="dash2-kpis" id="dashStatsGrid">
+          <div class="dash2-kpi"><div class="dash2-kpi-lbl">Actual Sale</div><div class="dash2-kpi-val">-</div></div>
+          <div class="dash2-kpi"><div class="dash2-kpi-lbl">Transactions</div><div class="dash2-kpi-val">-</div></div>
+          <div class="dash2-kpi"><div class="dash2-kpi-lbl">% of Plan</div><div class="dash2-kpi-val">-</div></div>
+          <div class="dash2-kpi"><div class="dash2-kpi-lbl">Labour %</div><div class="dash2-kpi-val">-</div></div>
+        </div>
+
+        <!-- ───────── ROW 1: Revenue Trend + Sales by Category ───────── -->
+        <div class="dash2-row1">
+          <div class="dash2-card">
+            <div class="dash2-cardhdr">
+              <h3>Revenue Trend</h3>
+              <div class="dash2-cardsub">Daily Actual sale for selected period</div>
             </div>
-          </div>
-          <!-- 4 stat cards -->
-          <div class="dash-stats-grid dash-stats-row" id="dashStatsGrid">
-            <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Actual Sale</div></div>
-            <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">% ของ Plan</div></div>
-            <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Trans/วัน</div></div>
-            <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Labour %</div></div>
-          </div>
-          <!-- กราฟยอดสะสม (ย้ายมาอยู่ใต้รายเดือน) -->
-          <div class="dash-sec-title" style="margin-top:18px">กราฟยอดสะสม Actual vs Plan (รอบสิ้นวัน)</div>
-          <div class="dash-card-wrap" style="padding:16px">
-            <div style="position:relative;height:320px">
+            <div style="position:relative;height:300px">
               <canvas id="dashChart"></canvas>
             </div>
-            <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px;font-size:11.5px;color:#64748b">
-              <span style="display:inline-flex;align-items:center;gap:5px">
-                <span style="width:14px;height:12px;background:rgba(59,130,246,.10);border:1px solid rgba(59,130,246,.5);border-radius:2px"></span>
-                เสาร์
-              </span>
-              <span style="display:inline-flex;align-items:center;gap:5px">
-                <span style="width:14px;height:12px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.5);border-radius:2px"></span>
-                อาทิตย์
-              </span>
-              <span style="display:inline-flex;align-items:center;gap:5px">
-                <span style="width:14px;height:12px;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.6);border-radius:2px"></span>
-                วันหยุดราชการ
-              </span>
+          </div>
+          <div class="dash2-card">
+            <div class="dash2-cardhdr">
+              <h3>Sales by Channel</h3>
+              <div class="dash2-cardsub">Revenue breakdown</div>
             </div>
-          </div>
-        </div>
-
-        <!-- ───────── SECTION 1B: สรุปตามกลุ่ม BZM (admin/vp/bzm เห็น) ───────── -->
-        <div class="dash-section" id="dashBzmGroupSection" style="display:none;margin-top:32px">
-          <h2 class="dash-section-h">สรุปยอดขายตามกลุ่ม BZM <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(รอบสิ้นวัน)</span></h2>
-          <div class="dash-card-wrap" style="overflow-x:auto">
-            <table class="dash-tbl" id="dashBzmGroupTable">
-              <thead><tr>
-                <th>BZM</th>
-                <th style="text-align:center">สาขา</th>
-                <th style="text-align:right">Plan</th>
-                <th style="text-align:right">Actual (%)</th>
-                <th style="text-align:right">Trans</th>
-                <th style="text-align:right">Labour Baht (%)</th>
-              </tr></thead>
-              <tbody id="dashBzmGroupBody"><tr><td colspan="6" style="color:#94a3b8;padding:16px;text-align:center">⏳ กำลังโหลด...</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- ───────── ANALYTICS B: ยอดขายแยกตามช่องทาง ───────── -->
-        <div class="dash-section" id="dashChannelSection" style="margin-top:32px;display:none">
-          <h2 class="dash-section-h">ยอดขายแยกตามช่องทาง <span id="dashChannelSub" style="font-weight:400;font-size:0.7em;color:var(--txt2)">(รอบสิ้นวัน · เดือนนี้)</span></h2>
-          <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;align-items:start;background:#fff;border:1px solid var(--bd);border-radius:12px;padding:16px">
-            <div style="height:240px;position:relative;min-width:0">
+            <div style="position:relative;height:220px">
               <canvas id="dashChannelChart"></canvas>
             </div>
-            <div class="dash-card-wrap">
-              <table class="dash-tbl" style="width:100%">
-                <thead><tr>
-                  <th>ช่องทาง</th>
-                  <th style="text-align:right">ยอดขาย</th>
-                  <th style="text-align:right">%</th>
-                </tr></thead>
-                <tbody id="dashChannelBody"></tbody>
-              </table>
-            </div>
+            <div id="dashChannelLegend" class="dash2-chan-legend"></div>
           </div>
         </div>
 
-        <!-- ───────── ANALYTICS C: เปรียบเทียบเดือนนี้ vs เดือนก่อน ───────── -->
-        <div class="dash-section" id="dashCompareSection" style="margin-top:32px;display:none">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
-            <h2 class="dash-section-h" id="dashCompareTitle" style="margin:0">เปรียบเทียบเดือนนี้ vs เดือนก่อนหน้า <span style="font-weight:400;font-size:0.7em;color:var(--txt2)">(Actual Sale · รอบสิ้นวัน)</span></h2>
-            <!-- Toggle 4 มุม: ยอดสะสม / รายวัน / ส่วนต่าง / Projection -->
-            <div id="dashCompareModeToggle" class="dash-view-toggle" style="display:inline-flex;background:#f1f5f9;border-radius:10px;padding:3px;margin-left:auto;flex-wrap:wrap">
-              <button id="dashCompareModeCum"   onclick="setDashCompareMode('cumulative')" style="background:var(--brand);color:#fff;border:none;padding:5px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">ยอดสะสม</button>
-              <button id="dashCompareModeDaily" onclick="setDashCompareMode('daily')"      style="background:transparent;color:#475569;border:none;padding:5px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">รายวัน</button>
-              <button id="dashCompareModeDiff"  onclick="setDashCompareMode('diff')"       style="background:transparent;color:#475569;border:none;padding:5px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">ส่วนต่าง</button>
-              <button id="dashCompareModeProj"  onclick="setDashCompareMode('projection')" style="background:transparent;color:#475569;border:none;padding:5px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Projection</button>
+        <!-- ───────── ROW 2: Top Branches + Quick Stats ───────── -->
+        <div class="dash2-row2">
+          <div class="dash2-card">
+            <div class="dash2-cardhdr">
+              <h3>Top Branches</h3>
+              <div class="dash2-cardsub">% of Plan — best 8 branches</div>
+            </div>
+            <div style="position:relative;height:300px">
+              <canvas id="dashBranchBars"></canvas>
             </div>
           </div>
-          <div style="background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px">
-            <div style="height:260px;position:relative">
-              <canvas id="dashCompareChart"></canvas>
+          <div class="dash2-card">
+            <div class="dash2-cardhdr">
+              <h3>Quick Stats</h3>
+              <div class="dash2-cardsub">Key metrics summary</div>
             </div>
-            <div id="dashCompareSummary" style="margin-top:10px;display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--txt2)"></div>
-          </div>
-        </div>
-
-        <!-- ───────── ANALYTICS A: Top / Bottom 10 สาขา ───────── -->
-        <div class="dash-section" id="dashRankingSection" style="margin-top:32px;display:none">
-          <h2 class="dash-section-h">อันดับสาขา <span id="dashRankingSub" style="font-weight:400;font-size:0.7em;color:var(--txt2)">(% ของ Plan · รอบสิ้นวัน · เดือนนี้)</span></h2>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
-            <div>
-              <div style="font-weight:700;color:#15803d;margin-bottom:6px;font-size:14px">🏆 Top 10 — ทำได้สูงสุด</div>
-              <div class="dash-card-wrap">
-                <table class="dash-tbl" style="width:100%">
-                  <thead><tr>
-                    <th style="width:36px">#</th>
-                    <th>สาขา</th>
-                    <th style="text-align:right">% Plan</th>
-                  </tr></thead>
-                  <tbody id="dashRankTopBody"></tbody>
-                </table>
-              </div>
-            </div>
-            <div>
-              <div style="font-weight:700;color:#dc2626;margin-bottom:6px;font-size:14px">⚠️ Bottom 10 — ต่ำสุด</div>
-              <div class="dash-card-wrap">
-                <table class="dash-tbl" style="width:100%">
-                  <thead><tr>
-                    <th style="width:36px">#</th>
-                    <th>สาขา</th>
-                    <th style="text-align:right">% Plan</th>
-                  </tr></thead>
-                  <tbody id="dashRankBottomBody"></tbody>
-                </table>
-              </div>
+            <div class="dash2-quick-list" id="dashQuickStats">
+              <div class="dash2-quick-row"><span class="dash2-quick-lbl">Ticket Avg</span><span class="dash2-quick-val">-</span></div>
+              <div class="dash2-quick-row"><span class="dash2-quick-lbl">Trans/Day</span><span class="dash2-quick-val">-</span></div>
+              <div class="dash2-quick-row"><span class="dash2-quick-lbl">Sale/Day</span><span class="dash2-quick-val">-</span></div>
+              <div class="dash2-quick-row"><span class="dash2-quick-lbl">Days submitted</span><span class="dash2-quick-val">-</span></div>
             </div>
           </div>
         </div>
-
-        <!-- ───────── SECTION 2: สรุปตามช่วงวันที่ ───────── -->
-        <div class="dash-section" style="margin-top:32px">
-          <!-- หัวข้อ (ซ้าย) + Date range picker (ขวา) — บรรทัดเดียวกัน -->
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-bottom:14px">
-            <h2 class="dash-section-h" style="margin:0;white-space:nowrap">สรุปตามช่วงวันที่</h2>
-            <div class="dash-date-range" style="background:#f1f5f9;border-radius:8px;padding:5px 7px;display:inline-flex;align-items:center;gap:5px;flex-wrap:nowrap;margin-left:auto;min-width:0">
-              <input type="date" id="dashDateFrom" onchange="renderDashFromCache()"
-                     style="background:#fff;border:1px solid var(--bd);border-radius:6px;padding:4px 6px;font-family:inherit;font-size:11.5px;color:var(--txt);outline:none;min-width:0;width:108px">
-              <span style="font-size:11px;color:var(--txt2);font-weight:600">-</span>
-              <input type="date" id="dashDateTo" onchange="renderDashFromCache()"
-                     style="background:#fff;border:1px solid var(--bd);border-radius:6px;padding:4px 6px;font-family:inherit;font-size:11.5px;color:var(--txt);outline:none;min-width:0;width:108px">
-            </div>
-          </div>
-          <div class="dash-today-grid" id="dashTodayGrid">
-            <div class="dash-today-card"><div class="dtc-slot">🕓 รอบ 16.00</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
-            <div class="dash-today-card"><div class="dtc-slot">🌙 รอบสิ้นวัน</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
-          </div>
-        </div>
-
-        <!-- ───────── SECTION 3: 30 วันล่าสุด ───────── -->
-        <div class="dash-section" style="margin-top:14px">
-          <h2 class="dash-section-h" id="dashRecentTitle" style="margin-bottom:8px;text-align:center">30 วันล่าสุด <span style="font-weight:400;font-size:0.85em;color:var(--txt2)">(รอบสิ้นวัน)</span></h2>
-          <div class="dash-card-wrap">
-            <table class="dash-tbl">
-              <thead><tr>
-                <th>วันที่</th>
-                <th style="text-align:right">Plan</th>
-                <th style="text-align:right">Actual (%)</th>
-                <th style="text-align:right">Labour Hour</th>
-                <th style="text-align:right">Labour Baht (%)</th>
-              </tr></thead>
-              <tbody id="dashRecentBody"><tr><td colspan="5" style="color:#94a3b8;padding:16px">⏳ กำลังโหลด...</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
       </div>
+    </div>
+
+    <!-- ───────── HIDDEN STUB: legacy dashboard DOM (kept for render-fn compatibility) ───────── -->
+    <div style="display:none" aria-hidden="true">
+      <span id="dashMonthLabel"></span>
+      <span id="dashMonthTitle"></span>
+      <div id="dashTodayGrid"></div>
+      <input type="date" id="dashDateFrom">
+      <input type="date" id="dashDateTo">
+      <div id="dashRecentBody"></div>
+      <div id="dashBzmGroupBody"></div>
+      <div id="dashRankTopBody"></div>
+      <div id="dashRankBottomBody"></div>
+      <div id="dashChannelBody"></div>
+      <span id="dashRecentTitle"></span>
+      <span id="dashRankingSub"></span>
+      <span id="dashChannelSub"></span>
+      <span id="dashCompareTitle"></span>
+      <div id="dashBzmGroupSection"></div>
+      <div id="dashChannelSection"></div>
+      <div id="dashCompareSection"></div>
+      <div id="dashRankingSection"></div>
+      <div id="dashCompareSummary"></div>
+      <canvas id="dashCompareChart"></canvas>
+      <button id="dashViewDaily"></button>
+      <button id="dashViewMonthly"></button>
+      <button id="dashViewYearly"></button>
+      <button id="dashCompareModeCum"></button>
+      <button id="dashCompareModeDaily"></button>
+      <button id="dashCompareModeDiff"></button>
+      <button id="dashCompareModeProj"></button>
     </div>
 
     <!-- ════════════════════════════════════════
@@ -5113,148 +5150,381 @@ body { background: var(--bg); color: var(--txt); }
         return (sel && sel.value) ? sel.value : "ALL";
       }
 
-      async function loadDash() {
-        // init state เริ่มต้น
-        if (_dashMonth === undefined) {
-          const now = new Date();
-          _dashMonth = now.getMonth();
-          _dashYear  = now.getFullYear();
-        }
-        if (!_dashDay) _dashDay = todayStr();
+      /* ════════════════════════════════════════════
+         DASHBOARD 2.0 — period-based date range
+      ════════════════════════════════════════════ */
+      let _dashPeriod = 30;          // 7 | 30 | 90 | 'custom'
+      let _dashCustomFrom = null;
+      let _dashCustomTo   = null;
 
+      function _fmtDate(d) {
+        return d.getFullYear() + '-' +
+               String(d.getMonth() + 1).padStart(2, '0') + '-' +
+               String(d.getDate()).padStart(2, '0');
+      }
+
+      function setDashPeriod(days) {
+        _dashPeriod = days;
+        _dashCustomFrom = _dashCustomTo = null;
+        ['7','30','90'].forEach(d => {
+          const btn = document.getElementById('dash2P' + d);
+          if (btn) btn.classList.toggle('active', String(days) === d);
+        });
+        const customBtn = document.getElementById('dash2PCustom');
+        if (customBtn) customBtn.classList.remove('active');
+        const customRow = document.getElementById('dash2Custom');
+        if (customRow) customRow.classList.remove('show');
+        loadDash();
+      }
+
+      function toggleDashCustom() {
+        const row = document.getElementById('dash2Custom');
+        if (!row) return;
+        row.classList.toggle('show');
+        if (row.classList.contains('show')) {
+          const today = todayStr();
+          const from = document.getElementById('dash2CustomFrom');
+          const to   = document.getElementById('dash2CustomTo');
+          if (from && !from.value) {
+            const d = new Date(); d.setDate(d.getDate() - 29);
+            from.value = _fmtDate(d);
+          }
+          if (to && !to.value) to.value = today;
+        }
+      }
+
+      function applyDashCustom() {
+        const from = document.getElementById('dash2CustomFrom').value;
+        const to   = document.getElementById('dash2CustomTo').value;
+        if (!from || !to) { alert('กรุณาเลือกวันที่ทั้งสองช่อง'); return; }
+        _dashCustomFrom = from;
+        _dashCustomTo   = to;
+        _dashPeriod = 'custom';
+        ['7','30','90'].forEach(d => {
+          const btn = document.getElementById('dash2P' + d);
+          if (btn) btn.classList.remove('active');
+        });
+        const customBtn = document.getElementById('dash2PCustom');
+        if (customBtn) customBtn.classList.add('active');
+        loadDash();
+      }
+
+      /* ─── KPI strip (4 cards with change badges) ─── */
+      function renderDashKpis(curRows, prevRows, planByDateCur, planByDatePrev) {
+        const eodCur  = (curRows  || []).filter(r => r.submit_time_slot === "สิ้นวัน");
+        const eodPrev = (prevRows || []).filter(r => r.submit_time_slot === "สิ้นวัน");
+
+        const sumActual = (rs) => rs.reduce((s,r) => s + (parseFloat(r.actual_sale) || 0), 0);
+        const sumTrans  = (rs) => rs.reduce((s,r) => s + (parseFloat(r.total_trans) || 0), 0);
+        const sumLabour = (rs) => rs.reduce((s,r) => s + (parseFloat(r.labour_baht) || 0), 0);
+        const sumPlan   = (m)  => Object.values(m || {}).reduce((s,v) => s + (parseFloat(v) || 0), 0);
+
+        const actCur  = sumActual(eodCur),  actPrev  = sumActual(eodPrev);
+        const trnCur  = sumTrans(eodCur),   trnPrev  = sumTrans(eodPrev);
+        const labCur  = sumLabour(eodCur),  labPrev  = sumLabour(eodPrev);
+        const planCur = sumPlan(planByDateCur), planPrev = sumPlan(planByDatePrev);
+
+        const pctPlanCur  = planCur  > 0 ? (actCur  / planCur)  * 100 : null;
+        const pctPlanPrev = planPrev > 0 ? (actPrev / planPrev) * 100 : null;
+        const labPctCur   = actCur   > 0 ? (labCur  / actCur)   * 100 : null;
+        const labPctPrev  = actPrev  > 0 ? (labPrev / actPrev)  * 100 : null;
+
+        function chgBadge(cur, prev, opts) {
+          opts = opts || {};
+          if (cur === null || prev === null || prev === 0) {
+            return '<div class="dash2-kpi-chg neutral">—</div>';
+          }
+          const pct = ((cur - prev) / Math.abs(prev)) * 100;
+          const arrow = pct >= 0 ? '↗' : '↘';
+          // For labour %, going DOWN is good → flip semantics
+          const isGood = opts.lowerIsBetter ? (pct <= 0) : (pct >= 0);
+          const cls = Math.abs(pct) < 0.05 ? 'neutral' : (isGood ? 'up' : 'down');
+          const sign = pct >= 0 ? '+' : '';
+          return `<div class="dash2-kpi-chg ${cls}">${arrow} ${sign}${pct.toFixed(1)}%</div>`;
+        }
+
+        const grid = document.getElementById('dashStatsGrid');
+        if (!grid) return;
+        grid.innerHTML = `
+          <div class="dash2-kpi">
+            <div class="dash2-kpi-lbl">Actual Sale</div>
+            <div class="dash2-kpi-val">฿${fmt(actCur)}</div>
+            ${chgBadge(actCur, actPrev)}
+          </div>
+          <div class="dash2-kpi">
+            <div class="dash2-kpi-lbl">Transactions</div>
+            <div class="dash2-kpi-val">${fmt(trnCur)}</div>
+            ${chgBadge(trnCur, trnPrev)}
+          </div>
+          <div class="dash2-kpi">
+            <div class="dash2-kpi-lbl">% of Plan</div>
+            <div class="dash2-kpi-val">${pctPlanCur !== null ? pctPlanCur.toFixed(1) + '%' : '-'}</div>
+            ${chgBadge(pctPlanCur, pctPlanPrev)}
+          </div>
+          <div class="dash2-kpi">
+            <div class="dash2-kpi-lbl">Labour %</div>
+            <div class="dash2-kpi-val">${labPctCur !== null ? labPctCur.toFixed(1) + '%' : '-'}</div>
+            ${chgBadge(labPctCur, labPctPrev, { lowerIsBetter: true })}
+          </div>`;
+      }
+
+      /* ─── Revenue Trend — daily Actual sale area line ─── */
+      let _dashRevenueChart = null;
+      function renderDashRevenueChart(rows, startDate, endDate) {
+        const ctx = document.getElementById('dashChart');
+        if (!ctx) return;
+        if (_dashRevenueChart) { _dashRevenueChart.destroy(); _dashRevenueChart = null; }
+        // also kill the old chart instance if it owns this canvas
+        if (_dashChartInstance) { _dashChartInstance.destroy(); _dashChartInstance = null; }
+
+        const eod = (rows || []).filter(r => r.submit_time_slot === "สิ้นวัน");
+        const byDate = {};
+        eod.forEach(r => {
+          byDate[r.submit_date] = (byDate[r.submit_date] || 0) + (parseFloat(r.actual_sale) || 0);
+        });
+
+        const labels = [], data = [];
+        const sD = new Date(startDate + 'T00:00:00');
+        const eD = new Date(endDate   + 'T00:00:00');
+        const TH_SHORT = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+        for (let d = new Date(sD); d <= eD; d.setDate(d.getDate() + 1)) {
+          const key = _fmtDate(d);
+          labels.push(d.getDate() + ' ' + TH_SHORT[d.getMonth()]);
+          data.push(byDate[key] || 0);
+        }
+
+        _dashRevenueChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Actual',
+              data,
+              borderColor: 'rgba(242,108,28,1)',
+              backgroundColor: 'rgba(242,108,28,0.12)',
+              borderWidth: 2.5,
+              fill: true,
+              tension: 0.35,
+              pointRadius: 0,
+              pointHoverRadius: 5
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (c) => 'Actual: ฿' + c.parsed.y.toLocaleString()
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: {
+                  font: { size: 10 }, color: '#94a3b8',
+                  maxRotation: 0, autoSkipPadding: 12
+                }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  font: { size: 10 }, color: '#94a3b8',
+                  callback: (v) => v >= 1000 ? '฿' + (v/1000).toFixed(0) + 'k' : '฿' + v
+                },
+                grid: { color: 'rgba(0,0,0,.05)', drawBorder: false }
+              }
+            }
+          }
+        });
+      }
+
+      /* ─── Top Branches — horizontal bar of % Plan (best 8) ─── */
+      let _dashBranchBars = null;
+      function renderDashBranchBars(rows, planByBranchTotal) {
+        const ctx = document.getElementById('dashBranchBars');
+        if (!ctx) return;
+        if (_dashBranchBars) { _dashBranchBars.destroy(); _dashBranchBars = null; }
+
+        const eod = (rows || []).filter(r => r.submit_time_slot === "สิ้นวัน");
+        const actByBranch = {};
+        eod.forEach(r => {
+          const bc = r.branch_code; if (!bc) return;
+          actByBranch[bc] = (actByBranch[bc] || 0) + (parseFloat(r.actual_sale) || 0);
+        });
+
+        // Build list with % plan
+        const branchList = [];
+        Object.keys(actByBranch).forEach(bc => {
+          const plan = planByBranchTotal[bc] || 0;
+          if (plan <= 0) return;
+          const pct = (actByBranch[bc] / plan) * 100;
+          const info = BRANCH_DM_MAP[bc] || {};
+          branchList.push({ name: info.branch || bc, pct });
+        });
+        branchList.sort((a, b) => b.pct - a.pct);
+        const top = branchList.slice(0, 8);
+
+        if (!top.length) {
+          ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+          return;
+        }
+
+        _dashBranchBars = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: top.map(b => b.name),
+            datasets: [{
+              label: '% of Plan',
+              data: top.map(b => b.pct),
+              backgroundColor: top.map(b => b.pct >= 100 ? 'rgba(34,197,94,0.85)' : 'rgba(242,108,28,0.85)'),
+              borderRadius: 4,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: { label: (c) => c.parsed.x.toFixed(1) + '%' }
+              }
+            },
+            scales: {
+              x: {
+                beginAtZero: true,
+                ticks: { font: { size: 10 }, color: '#94a3b8', callback: (v) => v + '%' },
+                grid: { color: 'rgba(0,0,0,.05)', drawBorder: false }
+              },
+              y: {
+                ticks: { font: { size: 11 }, color: '#475569' },
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      }
+
+      /* ─── Quick Stats panel ─── */
+      function renderDashQuickStats(rows, days) {
+        const list = document.getElementById('dashQuickStats');
+        if (!list) return;
+        const eod = (rows || []).filter(r => r.submit_time_slot === "สิ้นวัน");
+        const totalActual = eod.reduce((s,r) => s + (parseFloat(r.actual_sale) || 0), 0);
+        const totalTrans  = eod.reduce((s,r) => s + (parseFloat(r.total_trans) || 0), 0);
+        const submittedDates = new Set();
+        eod.forEach(r => { if (r.submit_date) submittedDates.add(r.submit_date); });
+        const daysSub = submittedDates.size;
+
+        const ticketAvg = totalTrans > 0 ? totalActual / totalTrans : null;
+        const transPerDay = daysSub > 0 ? totalTrans / daysSub : null;
+        const salePerDay  = daysSub > 0 ? totalActual / daysSub : null;
+
+        list.innerHTML = `
+          <div class="dash2-quick-row"><span class="dash2-quick-lbl">Ticket Avg</span><span class="dash2-quick-val">${ticketAvg !== null ? '฿' + ticketAvg.toFixed(2) : '-'}</span></div>
+          <div class="dash2-quick-row"><span class="dash2-quick-lbl">Trans / Day</span><span class="dash2-quick-val">${transPerDay !== null ? fmt(Math.round(transPerDay)) : '-'}</span></div>
+          <div class="dash2-quick-row"><span class="dash2-quick-lbl">Sale / Day</span><span class="dash2-quick-val">${salePerDay !== null ? '฿' + fmt(Math.round(salePerDay)) : '-'}</span></div>
+          <div class="dash2-quick-row"><span class="dash2-quick-lbl">Days submitted</span><span class="dash2-quick-val">${daysSub} / ${days}</span></div>`;
+      }
+
+      async function loadDash() {
         // Admin/VP/BZM: populate branch filter + resolve scope
         populateBranchFilter("dashBranchFilter");
         const queryCodes = getQueryBranchCodes("dashBranchFilter"); // array | null
 
-        // คำนวณช่วงวันที่ตาม view mode
-        const isDaily   = (_dashViewMode === "daily");
-        const isYearly  = (_dashViewMode === "yearly");
-        // monthly = fallthrough (ไม่ต้อง flag)
-        let startDate, endDate, ym;
-        if (isDaily) {
-          startDate = endDate = _dashDay;
-          ym = null;
-        } else if (isYearly) {
-          startDate = _dashYear + "-01-01";
-          endDate   = _dashYear + "-12-31";
-          ym = null;
-        } else { // monthly
-          ym = _dashYear + "-" + String(_dashMonth + 1).padStart(2, "0");
-          startDate = ym + "-01";
-          const lastDay = new Date(_dashYear, _dashMonth + 1, 0).getDate();
-          endDate = ym + "-" + String(lastDay).padStart(2, "0");
+        // Compute date range from period state
+        let startDate, endDate;
+        if (_dashPeriod === 'custom' && _dashCustomFrom && _dashCustomTo) {
+          const a = _dashCustomFrom, b = _dashCustomTo;
+          startDate = a <= b ? a : b;
+          endDate   = a <= b ? b : a;
+        } else {
+          const days = Number(_dashPeriod) || 30;
+          const end = new Date(); end.setHours(0,0,0,0);
+          const start = new Date(end); start.setDate(start.getDate() - (days - 1));
+          startDate = _fmtDate(start);
+          endDate   = _fmtDate(end);
         }
 
-        // Label + title
-        document.getElementById("dashMonthLabel").textContent = isDaily
-          ? fmtThaiDate(_dashDay)
-          : (isYearly ? ("ปี " + (_dashYear + 543))
-                      : (TH_MONTHS[_dashMonth] + " " + (_dashYear + 543)));
-        document.getElementById("dashMonthTitle").textContent = isDaily
-          ? "สรุปรายวัน"
-          : (isYearly ? "สรุปรายปี" : "สรุปรายเดือน");
+        // Equivalent previous period (same length, immediately before)
+        const sD = new Date(startDate + 'T00:00:00');
+        const eD = new Date(endDate   + 'T00:00:00');
+        const periodDays = Math.round((eD - sD) / 86400000) + 1;
+        const prevEnd   = new Date(sD); prevEnd.setDate(prevEnd.getDate() - 1);
+        const prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - (periodDays - 1));
+        const prevStartStr = _fmtDate(prevStart);
+        const prevEndStr   = _fmtDate(prevEnd);
 
+        // Subtitle
         const sub = document.getElementById("dashPageSub");
         if (sub) {
-          if (S.role === "admin")      sub.textContent = "Admin · ภาพรวมทั้งระบบ";
-          else if (S.role === "vp")    sub.textContent = S.branch + " · ภาพรวมทั้งระบบ";
-          else if (S.role === "bzm")   sub.textContent = "โซน BZM: " + S.dm;
-          else                         sub.textContent = S.branch + (S.dm ? "  ·  BZM: " + S.dm : "");
+          let prefix;
+          if (S.role === "admin")      prefix = "Admin · ภาพรวมทั้งระบบ";
+          else if (S.role === "vp")    prefix = (S.branch || "") + " · ภาพรวมทั้งระบบ";
+          else if (S.role === "bzm")   prefix = "โซน BZM: " + (S.dm || "");
+          else                         prefix = (S.branch || "") + (S.dm ? "  ·  BZM: " + S.dm : "");
+          sub.textContent = prefix + "  ·  " + fmtThaiDate(startDate) + " — " + fmtThaiDate(endDate);
         }
 
         // Loading state
-        document.getElementById("dashTodayGrid").innerHTML =
-          `<div class="dash-today-card"><div class="dtc-slot">🕓 รอบ 16.00</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>` +
-          `<div class="dash-today-card"><div class="dtc-slot">🌙 รอบสิ้นวัน</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>`;
-        document.getElementById("dashStatsGrid").innerHTML =
-          `<div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Actual Sale</div></div>`.repeat(4);
-        document.getElementById("dashRecentBody").innerHTML =
-          `<tr><td colspan="5" style="color:#94a3b8;padding:16px">⏳ กำลังโหลด...</td></tr>`;
+        document.getElementById("dashStatsGrid").innerHTML = `
+          <div class="dash2-kpi"><div class="dash2-kpi-lbl">Actual Sale</div><div class="dash2-kpi-val">-</div></div>
+          <div class="dash2-kpi"><div class="dash2-kpi-lbl">Transactions</div><div class="dash2-kpi-val">-</div></div>
+          <div class="dash2-kpi"><div class="dash2-kpi-lbl">% of Plan</div><div class="dash2-kpi-val">-</div></div>
+          <div class="dash2-kpi"><div class="dash2-kpi-lbl">Labour %</div><div class="dash2-kpi-val">-</div></div>`;
 
-        // ตั้ง date range — default = today (ถ้าอยู่ในเดือน), ถ้าไม่ใช้วันแรก-วันสุดท้ายของเดือน
-        const today = todayStr();
-        const inThisMonth = (today >= startDate && today <= endDate);
-        const defaultDate = inThisMonth ? today : startDate;
-
-        const dFrom = document.getElementById("dashDateFrom");
-        const dTo   = document.getElementById("dashDateTo");
-        // ถ้าค่าปัจจุบันหลุดเดือน → reset เป็น default
-        if (!dFrom.value || dFrom.value < startDate || dFrom.value > endDate) dFrom.value = defaultDate;
-        if (!dTo.value   || dTo.value   < startDate || dTo.value   > endDate) dTo.value   = defaultDate;
-        // ถ้า from > to → swap
-        if (dFrom.value > dTo.value) { const t = dFrom.value; dFrom.value = dTo.value; dTo.value = t; }
-        dFrom.min = dTo.min = startDate;
-        dFrom.max = dTo.max = endDate;
-
-        // คำนวณช่วงก่อนหน้า (สำหรับ Section C: เปรียบเทียบ)
-        // daily → เมื่อวาน, monthly → เดือนก่อน, yearly → ปีก่อน
-        let prevDate = null, prevStart = null, prevEnd = null;
-        if (isDaily) {
-          const d = new Date(_dashDay + "T00:00:00");
-          d.setDate(d.getDate() - 1);
-          prevDate = d;
-          prevStart = prevEnd = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
-        } else if (isYearly) {
-          prevDate = new Date(_dashYear - 1, 0, 1);
-          prevStart = (_dashYear - 1) + "-01-01";
-          prevEnd   = (_dashYear - 1) + "-12-31";
-        } else {
-          prevDate = new Date(_dashYear, _dashMonth - 1, 1);
-          const prevYm = prevDate.getFullYear() + "-" + String(prevDate.getMonth() + 1).padStart(2, "0");
-          prevStart = prevYm + "-01";
-          const prevLastDay = new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 0).getDate();
-          prevEnd = prevYm + "-" + String(prevLastDay).padStart(2, "0");
-        }
-
-        // Fetch parallel: history + plans + prev period history
-        let _hist = null, _plan = null, _prevHist = null, _done = 0;
-        const _needed = 3;
+        // Fetch parallel: history + plans for current + prev
+        let _hist = null, _plan = null, _prevHist = null, _prevPlan = null, _done = 0;
+        const _needed = 4;
         function _onDone() {
           if (++_done < _needed) return;
           if (!_hist || !_hist.ok) {
-            document.getElementById("dashRecentBody").innerHTML =
-              `<tr><td colspan="5" style="color:#dc2626;padding:16px">⚠️ โหลดไม่สำเร็จ</td></tr>`;
+            console.error("Dashboard: history load failed");
             return;
           }
-          // Build plan lookups จาก raw plan_sale rows (มี branch_code)
-          const planByDate = {};        // total plan ต่อวัน (รวมทุกสาขา) — ใช้กับ chart
-          const planByBranchTotal = {}; // ผลรวม plan ต่อสาขา (ทั้งเดือน) — ใช้กับ BZM groups
-          if (_plan && _plan.ok && Array.isArray(_plan.rows)) {
-            _plan.rows.forEach(r => {
-              const d = r.plan_date;
-              const bc = r.branch_code;
-              const amt = parseFloat(r.plan_amount) || 0;
-              planByDate[d] = (planByDate[d] || 0) + amt;
-              if (bc) planByBranchTotal[bc] = (planByBranchTotal[bc] || 0) + amt;
-            });
-          }
-          _dashPlans = planByDate;
-          _dashPlanByBranch = planByBranchTotal;
+          const buildLookup = (planRes) => {
+            const planByDate = {}, planByBranch = {};
+            if (planRes && planRes.ok && Array.isArray(planRes.rows)) {
+              planRes.rows.forEach(r => {
+                const d = r.plan_date, bc = r.branch_code;
+                const amt = parseFloat(r.plan_amount) || 0;
+                planByDate[d] = (planByDate[d] || 0) + amt;
+                if (bc) planByBranch[bc] = (planByBranch[bc] || 0) + amt;
+              });
+            }
+            return { planByDate, planByBranch };
+          };
+          const cur  = buildLookup(_plan);
+          const prev = buildLookup(_prevPlan);
+          _dashPlans = cur.planByDate;
+          _dashPlanByBranch = cur.planByBranch;
 
-          // Merge: ใช้ plan จากตาราง plan_sale แทน plan_sale ที่ฝังในแถว (แม่นยำกว่า)
           _dashRows = (_hist.rows || []).map(r => ({
             ...r,
-            plan_sale: planByDate[r.submit_date] !== undefined
-              ? planByDate[r.submit_date]
+            plan_sale: cur.planByDate[r.submit_date] !== undefined
+              ? cur.planByDate[r.submit_date]
               : (parseFloat(r.plan_sale) || 0)
           }));
           const prevRows = (_prevHist && _prevHist.ok && _prevHist.rows) ? _prevHist.rows : [];
 
-          renderDashRange(_dashRows, dFrom.value, dTo.value);
-          renderDashMonthly(_dashRows);
-          renderDashRecent(_dashRows);
-          renderDashBzmGroups(_dashRows);
+          renderDashKpis(_dashRows, prevRows, cur.planByDate, prev.planByDate);
+          renderDashRevenueChart(_dashRows, startDate, endDate);
           renderDashChannel(_dashRows);
-          renderDashCompare(_dashRows, prevRows, _dashYear, _dashMonth, prevDate);
-          renderDashRanking(_dashRows, planByBranchTotal);
+          renderDashBranchBars(_dashRows, cur.planByBranch);
+          renderDashQuickStats(_dashRows, periodDays);
         }
 
         apiCall({ mode:"history", branch_codes:queryCodes, start_date:startDate, end_date:endDate },
                 function(res) { _hist = res; _onDone(); });
         apiCall({ mode:"getPlan", branch_codes:queryCodes, start_date:startDate, end_date:endDate, raw:true },
                 function(res) { _plan = res; _onDone(); });
-        apiCall({ mode:"history", branch_codes:queryCodes, start_date:prevStart, end_date:prevEnd },
+        apiCall({ mode:"history", branch_codes:queryCodes, start_date:prevStartStr, end_date:prevEndStr },
                 function(res) { _prevHist = res; _onDone(); });
+        apiCall({ mode:"getPlan", branch_codes:queryCodes, start_date:prevStartStr, end_date:prevEndStr, raw:true },
+                function(res) { _prevPlan = res; _onDone(); });
       }
 
       // เรียกเมื่อเปลี่ยนวันที่ใน date picker (ไม่ fetch ใหม่)
@@ -5280,6 +5550,18 @@ body { background: var(--bg); color: var(--txt); }
         const TH_SHORT = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
         const [y, m, d] = dateStr.split("-");
         return `${parseInt(d)} ${TH_SHORT[parseInt(m)-1]} ${parseInt(y)+543}`;
+      }
+
+      // ISO timestamp → "12 พ.ค. 69 14:30 น."
+      function fmtThaiDateTime(iso) {
+        if (!iso) return "-";
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return "-";
+        const TH_SHORT = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+        const yy = String((d.getFullYear() + 543) % 100).padStart(2, "0");
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mi = String(d.getMinutes()).padStart(2, "0");
+        return `${d.getDate()} ${TH_SHORT[d.getMonth()]} ${yy} ${hh}:${mi} น.`;
       }
 
       function renderDashRange(rows, dateFrom, dateTo) {
@@ -5836,35 +6118,38 @@ body { background: var(--bg); color: var(--txt); }
         { key: "sale_shopeefood",  label: "Shopee Food",  color: "#f59e0b" }
       ];
       function renderDashChannel(rows) {
-        const section = document.getElementById("dashChannelSection");
-        if (!section) return;
-        const sub = document.getElementById("dashChannelSub");
-        if (sub) sub.textContent = _dashViewMode === "yearly"
-          ? `(รอบสิ้นวัน · ปี ${_dashYear + 543})`
-          : (_dashViewMode === "monthly"
-              ? `(รอบสิ้นวัน · ${TH_MONTHS[_dashMonth]} ${_dashYear + 543})`
-              : `(รอบสิ้นวัน · ${fmtThaiDate(_dashDay)})`);
         const eod = (rows || []).filter(r => r.submit_time_slot === "สิ้นวัน");
         const totals = CHANNEL_DEFS.map(c => ({
           ...c,
           value: eod.reduce((s, r) => s + (parseFloat(r[c.key]) || 0), 0)
         }));
         const grand = totals.reduce((s, t) => s + t.value, 0);
-        if (grand <= 0) { section.style.display = "none"; return; }
-        section.style.display = "";
 
+        // Custom legend block under the donut
+        const legend = document.getElementById("dashChannelLegend");
+        if (legend) {
+          if (grand <= 0) {
+            legend.innerHTML = '<span style="color:var(--txt2);font-size:12px">ไม่มีข้อมูล</span>';
+          } else {
+            legend.innerHTML = totals
+              .slice().sort((a, b) => b.value - a.value)
+              .map(t => {
+                const pct = grand > 0 ? (t.value / grand * 100).toFixed(1) + "%" : "-";
+                return `<span class="lg-item"><span class="lg-dot" style="background:${t.color}"></span>${escHtml(t.label)} <span style="color:var(--txt);font-weight:600;margin-left:2px">${pct}</span></span>`;
+              }).join("");
+          }
+        }
+
+        // Legacy hidden table body — keep populated for any consumers
         const tbody = document.getElementById("dashChannelBody");
-        tbody.innerHTML = totals
-          .sort((a, b) => b.value - a.value)
-          .map(t => {
-            const pct = grand > 0 ? (t.value / grand * 100).toFixed(1) + "%" : "-";
-            return `<tr>
-              <td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${t.color};margin-right:6px;vertical-align:middle"></span>${t.label}</td>
-              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(t.value)}</td>
-              <td style="text-align:right;color:var(--txt2)">${pct}</td>
-            </tr>`;
-          }).join("") +
-          `<tr style="background:#f8fafc;font-weight:700"><td>รวม</td><td style="text-align:right">${fmt(grand)}</td><td style="text-align:right">100%</td></tr>`;
+        if (tbody) {
+          tbody.innerHTML = totals
+            .slice().sort((a, b) => b.value - a.value)
+            .map(t => {
+              const pct = grand > 0 ? (t.value / grand * 100).toFixed(1) + "%" : "-";
+              return `<tr><td>${escHtml(t.label)}</td><td>${fmt(t.value)}</td><td>${pct}</td></tr>`;
+            }).join("");
+        }
 
         const canvas = document.getElementById("dashChannelChart");
         if (!canvas) return;
@@ -5883,8 +6168,9 @@ body { background: var(--bg); color: var(--txt); }
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: "62%",
             plugins: {
-              legend: { position: "bottom", labels: { font: { size: 11 }, boxWidth: 12, padding: 8 } },
+              legend: { display: false },
               tooltip: {
                 callbacks: {
                   label: (ctx) => {
@@ -6938,15 +7224,24 @@ body { background: var(--bg); color: var(--txt); }
           const pctCls = pct !== null ? (actual >= plan ? "pct-ok" : "pct-low") : "";
           const isEod = r.submit_time_slot === "สิ้นวัน";
           const editCnt = parseInt(r.edit_count) || 0;
+          const isAdmin = (S.role === "admin" || S.code === "ADMIN");
+          // branch (และ role อื่นที่ไม่ใช่ admin) แก้ได้ครั้งเดียว — admin แก้ได้ไม่จำกัด
+          const canEdit = isAdmin || editCnt < 1;
 
           const slotBadge = isEod
             ? '<span class="badge badge-green slot-badge slot-eod">สิ้นวัน</span>'
             : '<span class="badge badge-blue slot-badge slot-1600">16.00</span>';
           const editBadge = ""; // ย้ายไปบนปุ่มแก้ไขแทน
+          // สรุปประวัติการแก้ไข (จาก edit_count + last_edited_at)
+          const editInfo = editCnt > 0
+            ? `<div class="hist-edit-info">✏️ แก้ไข ${editCnt} ครั้ง · ล่าสุด ${fmtThaiDateTime(r.last_edited_at)}</div>`
+            : "";
           const editLabel = editCnt > 0 ? `✏️ แก้ไขรอบที่ ${editCnt}` : `✏️ แก้ไข`;
-          const editBtn = `<button class="btn-edit-row btn btn-sm"
+          const editBtn = canEdit
+            ? `<button class="btn-edit-row btn btn-sm"
       style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa"
-      onclick="openEdit(${JSON.stringify(r).replace(/"/g, "&quot;")})">${editLabel}</button>`;
+      onclick="openEdit(${JSON.stringify(r).replace(/"/g, "&quot;")})">${editLabel}</button>`
+            : `<span class="hist-lock-badge" title="แก้ไขได้ครั้งเดียว — ติดต่อแอดมินหากต้องแก้เพิ่ม">🔒 แก้ไขแล้ว</span>`;
           // Admin เท่านั้น — ปุ่มลบ
           const delBtn = (S.code === "ADMIN") ? `<button class="btn btn-sm"
       style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;font-size:11.5px;padding:5px 10px;border-radius:7px;margin-left:4px"
@@ -6972,7 +7267,7 @@ body { background: var(--bg); color: var(--txt); }
 
           // Table row
           tbl += `<tr>
-      <td>${slotBadge} ${editBadge}</td>
+      <td>${slotBadge} ${editBadge}${editInfo}</td>
       <td style="font-weight:600;white-space:nowrap">${dateDMY}</td>
       <td>${r.submitter_name || "-"}</td>
       <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(plan)}</td>
@@ -6992,6 +7287,7 @@ body { background: var(--bg); color: var(--txt); }
         <div class="hist-card-date">${dateDMY}</div>
         ${slotBadge}${editBadge}
       </div>
+      ${editInfo}
       <div class="hist-card-row"><span class="hist-card-lbl">ผู้ส่ง</span><span class="hist-card-val">${r.submitter_name || "-"}</span></div>
       <div class="hist-card-row">
         <span class="hist-card-lbl">Plan / Actual</span>
@@ -7016,8 +7312,15 @@ body { background: var(--bg); color: var(--txt); }
          EDIT
       ════════════════════════════════════════════ */
       function openEdit(row) {
-        _editRow = row;
         const editCnt = parseInt(row.edit_count) || 0;
+        const isAdmin = (S.role === "admin" || S.code === "ADMIN");
+        // branch (ไม่ใช่ admin) แก้ได้ครั้งเดียว
+        if (!isAdmin && editCnt >= 1) {
+          showAlert("🔒", "แก้ไขได้ครั้งเดียว",
+            "รายการนี้ถูกแก้ไขไปแล้ว ไม่สามารถแก้ซ้ำได้\nหากจำเป็นต้องแก้ไขเพิ่ม กรุณาติดต่อแอดมิน");
+          return;
+        }
+        _editRow = row;
         const isEod = row.submit_time_slot === "สิ้นวัน";
 
         const planHint = isEod
@@ -7251,6 +7554,17 @@ body { background: var(--bg); color: var(--txt); }
           if (mode === "edit") {
             const id = parseInt(params._row);
             if (!id) { cb({ ok: false, error: "missing row id" }); return; }
+            // ── ล็อกการแก้ไข: branch (ไม่ใช่ admin) แก้ได้ครั้งเดียว ──
+            const isAdmin = (S.role === "admin" || S.code === "ADMIN");
+            if (!isAdmin) {
+              const { data: cur, error: curErr } = await sb
+                .from("sales_data").select("edit_count").eq("id", id).single();
+              if (!curErr && cur && (parseInt(cur.edit_count) || 0) >= 1) {
+                cb({ ok: false, locked: true,
+                     userMessage: "รายการนี้ถูกแก้ไขไปแล้ว 1 ครั้ง ไม่สามารถแก้ซ้ำได้ — กรุณาติดต่อแอดมิน" });
+                return;
+              }
+            }
             const payload = _supaCleanPayload(params);
             // edit_count + last_edited_at อัพเดทอัตโนมัติด้วย trigger
             const { data, error } = await sb
