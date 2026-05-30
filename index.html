@@ -3140,6 +3140,7 @@ body { background: var(--bg); color: var(--txt); }
         <button class="btn btn-sm btn-outline" onclick="showForm()">📋 ส่งยอดขาย</button>
         <button class="btn btn-sm btn-outline" onclick="showPlan()">📅 Plan Sale</button>
         <button class="btn btn-sm btn-outline" onclick="showHistory()">🗂️ ประวัติ</button>
+        <button class="btn btn-sm btn-outline" onclick="goBackToHub()" title="กลับไปเลือกระบบอื่นใน Hub">⌂ เมนูหลัก</button>
         <button class="btn btn-sm btn-danger" onclick="doLogout()">ออกจากระบบ</button>
       </div>
       <!-- Test mode toggle (admin only) — อยู่ข้างปุ่มออกจากระบบ -->
@@ -3147,6 +3148,7 @@ body { background: var(--bg); color: var(--txt); }
         <span style="font-size:14px">🧪</span>
         <span id="hdrTestModeStatus" style="font-weight:700">ทดสอบ</span>
       </button>
+      <button class="btn btn-sm btn-outline hdr-logout-btn" id="hdrHubBtn" onclick="goBackToHub()" style="display:none;color:var(--brand);border-color:rgba(255,140,66,.4)" title="กลับเมนูหลัก Hub">⌂ Hub</button>
       <button class="btn btn-sm btn-danger hdr-logout-btn" id="hdrLogoutBtn" onclick="doLogout()" style="display:none">ออกจากระบบ</button>
     </header>
 
@@ -3203,7 +3205,8 @@ body { background: var(--bg); color: var(--txt); }
       </button>
 
 
-      <!-- Logout — centered -->
+      <!-- Back to Hub menu + Logout -->
+      <button class="desk-logout-btn" onclick="goBackToHub()" style="justify-content:center;margin-left:auto;margin-right:auto;color:var(--brand) !important;" title="กลับเมนูหลัก Hub (ไม่ logout)">⌂ เมนูหลัก</button>
       <button class="desk-logout-btn" onclick="doLogout()" style="justify-content:center;margin-left:auto;margin-right:auto">ออกจากระบบ</button>
     </aside>
 
@@ -3264,12 +3267,13 @@ body { background: var(--bg); color: var(--txt); }
         </button>
       </nav>
 
-      <!-- Footer: test mode + logout -->
+      <!-- Footer: test mode + back to hub + logout -->
       <div class="md-footer">
         <button class="md-test-btn admin-only-nav" id="mdTestModeBtn" onclick="toggleTestModeAdmin()" style="display:none">
           <span class="md-nav-ico">🧪</span>
           <span>โหมดทดสอบ: <span id="mdTestModeStatus" style="font-weight:800;color:var(--brand)">ปิด</span></span>
         </button>
+        <button class="md-logout" onclick="goBackToHub()" style="background:rgba(255,140,66,.12);color:var(--brand);border:1px solid rgba(255,140,66,.3);" title="กลับเมนูหลัก Hub (ไม่ logout)">⌂ เมนูหลัก</button>
         <button class="md-logout" onclick="doLogout()">ออกจากระบบ</button>
       </div>
     </aside>
@@ -4376,6 +4380,15 @@ body { background: var(--bg); color: var(--txt); }
         showAlert('👋', 'ยินดีต้อนรับ!', info.branch, enterApp);
       }
 
+      // กลับเมนูหลัก Hub โดย "ไม่" logout (session ค้างไว้ → กลับมาไม่ต้อง login ใหม่)
+      function goBackToHub() {
+        try {
+          window.location.href = HUB_URL;
+        } catch (e) {
+          window.location.href = '/fab-operations-hub/';
+        }
+      }
+
       function doLogout() {
         try {
           // SSO: ล้าง shared session → Hub และแอปอื่นต้อง login ใหม่
@@ -4384,6 +4397,7 @@ body { background: var(--bg); color: var(--txt); }
           S = { code: "", branch: "", dm: "", role: "" };
           const ah = document.getElementById("appHdr"); if (ah) ah.style.display = "none";
           const hl = document.getElementById("hdrLogoutBtn"); if (hl) hl.style.display = "none";
+          const hb = document.getElementById("hdrHubBtn"); if (hb) hb.style.display = "none";
           const ds = document.getElementById("deskSidebar"); if (ds) ds.classList.add("hidden");
           const mn = document.getElementById("mobNav"); if (mn) mn.classList.remove("visible");
           // Hide test mode banner + reset body class (กัน layout offset ค้าง)
@@ -4483,6 +4497,7 @@ body { background: var(--bg); color: var(--txt); }
         if (mdDm) mdDm.textContent = dmText;
         document.getElementById("mobNav").classList.add("visible");
         document.getElementById("hdrLogoutBtn").style.display = "";
+        var _hbBtn = document.getElementById("hdrHubBtn"); if (_hbBtn) _hbBtn.style.display = "";
         document.getElementById("deskSidebar").classList.remove("hidden");
         document.getElementById("submit_date").value = todayStr();
         const savedName = localStorage.getItem(LS_NAME);
