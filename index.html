@@ -879,7 +879,7 @@
       .dd-crumb button.here { color:var(--brand); font-weight:700; background:rgba(242,108,28,.09); border-color:rgba(242,108,28,.32); cursor:default; }
       .dd-crumb .dd-sep { color:var(--txt2); opacity:.55; }
 
-      .dd-kpis { grid-template-columns:repeat(6,1fr); margin-bottom:18px; }
+      .dd-kpis { grid-template-columns:repeat(5,1fr); margin-bottom:18px; }
       .dd-kpis .dash3-kpi-hero { grid-column:auto; }
       .dd-kpi-sub { font-size:11.5px; color:var(--txt2); margin-top:6px; font-weight:600; }
 
@@ -6716,7 +6716,6 @@ body { background: var(--bg); color: var(--txt); }
         const pct    = plan > 0 ? a.actual / plan : 0;
         const ticket = a.bills > 0 ? a.actual / a.bills : 0;
         const labPct = a.actual > 0 ? a.labBaht / a.actual : 0;
-        const prod   = a.labHr > 0 ? a.actual / a.labHr : 0;
         const dp = a.actual - plan;
         const cards = [
           { hero: true, lbl: "💰 ยอดขายจริง", val: "฿" + fmt(Math.round(a.actual)), sub: "เป้า ฿" + fmt(Math.round(plan)) },
@@ -6725,8 +6724,7 @@ body { background: var(--bg); color: var(--txt); }
             subColor: plan > 0 ? _ddAchvColor(pct) : null },
           { lbl: "🧾 จำนวนบิล", val: fmt(a.bills), sub: "ลูกค้า " + fmt(a.cust) + " คน" },
           { lbl: "💵 บิลเฉลี่ย", val: a.bills > 0 ? "฿" + fmt(Math.round(ticket)) : "-", sub: "ต่อบิล" },
-          { lbl: "👥 ค่าแรง %", val: a.actual > 0 ? (labPct * 100).toFixed(1) + "%" : "-", sub: fmt(Math.round(a.labHr)) + " ชม." },
-          { lbl: "⚡ Productivity", val: a.labHr > 0 ? "฿" + fmt(Math.round(prod)) : "-", sub: "ต่อ ชม." }
+          { lbl: "👥 ค่าแรง %", val: a.actual > 0 ? (labPct * 100).toFixed(1) + "%" : "-", sub: fmt(Math.round(a.labHr)) + " ชม." }
         ];
         return cards.map(k => `
           <div class="dash3-kpi${k.hero ? " dash3-kpi-hero" : ""}">
