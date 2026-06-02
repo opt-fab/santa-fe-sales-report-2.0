@@ -4088,10 +4088,12 @@ body { background: var(--bg); color: var(--txt); }
           </div>
           <div class="dash3-controls">
             <div class="dash3-seg">
+              <button id="dash2PToday"  class="dash3-seg-btn" onclick="setDashPeriod('today')">📅 วันนี้</button>
+              <button id="dash2PMonth"  class="dash3-seg-btn" onclick="setDashPeriod('month')">🗓️ เดือนนี้</button>
               <button id="dash2P7"      class="dash3-seg-btn" onclick="setDashPeriod(7)">7 วัน</button>
               <button id="dash2P30"     class="dash3-seg-btn active" onclick="setDashPeriod(30)">30 วัน</button>
               <button id="dash2P90"     class="dash3-seg-btn" onclick="setDashPeriod(90)">90 วัน</button>
-              <button id="dash2PCustom" class="dash3-seg-btn" onclick="toggleDashCustom()">📅 เลือกช่วง</button>
+              <button id="dash2PCustom" class="dash3-seg-btn" onclick="toggleDashCustom()">เลือกช่วง</button>
             </div>
             <select id="dashBranchFilter" class="dash3-branch" onchange="loadDash()" style="display:none"></select>
             <button class="dash3-icon-btn" onclick="loadDash()" title="รีเฟรช">🔄</button>
@@ -4107,52 +4109,6 @@ body { background: var(--bg); color: var(--txt); }
           <button class="dash3-seg-btn active" onclick="applyDashCustom()">ดูข้อมูล</button>
         </div>
 
-        <!-- ═══════════════ SNAPSHOT: วันนี้ + เดือนนี้ ═══════════════ -->
-        <div class="dash3-snap-row">
-          <!-- 📅 วันนี้ -->
-          <div class="dash3-snap dash3-snap-today">
-            <div class="dash3-snap-head">
-              <div class="dash3-snap-eyebrow">📅 วันนี้</div>
-              <div class="dash3-snap-date" id="dashSnapTodayDate">—</div>
-            </div>
-            <div class="dash3-snap-big" id="dashSnapTodayVal">฿—</div>
-            <div class="dash3-snap-progress">
-              <div class="dash3-snap-progress-lbl">
-                <span>ทำได้ <b id="dashSnapTodayPct">—</b></span>
-                <span>เป้า <b id="dashSnapTodayPlan">฿—</b></span>
-              </div>
-              <div class="dash3-snap-progress-track">
-                <div class="dash3-snap-progress-fill" id="dashSnapTodayBar" style="width:0%"></div>
-              </div>
-            </div>
-            <div class="dash3-snap-mini">
-              <span>🧾 <b id="dashSnapTodayBills">—</b> บิล</span>
-              <span id="dashSnapTodayStatus" class="dash3-snap-status">⏳ รอข้อมูล</span>
-            </div>
-          </div>
-
-          <!-- 🗓️ เดือนนี้ -->
-          <div class="dash3-snap dash3-snap-month">
-            <div class="dash3-snap-head">
-              <div class="dash3-snap-eyebrow">🗓️ เดือนนี้</div>
-              <div class="dash3-snap-date" id="dashSnapMonthName">—</div>
-            </div>
-            <div class="dash3-snap-big" id="dashSnapMonthVal">฿—</div>
-            <div class="dash3-snap-progress">
-              <div class="dash3-snap-progress-lbl">
-                <span>ทำได้ <b id="dashSnapMonthPct">—</b></span>
-                <span>เป้าเดือน <b id="dashSnapMonthPlan">฿—</b></span>
-              </div>
-              <div class="dash3-snap-progress-track">
-                <div class="dash3-snap-progress-fill" id="dashSnapMonthBar" style="width:0%"></div>
-              </div>
-            </div>
-            <div class="dash3-snap-mini">
-              <span>📊 ส่งแล้ว <b id="dashSnapMonthDays">—</b></span>
-              <span id="dashSnapMonthProj" class="dash3-snap-proj">📈 คาดการณ์: —</span>
-            </div>
-          </div>
-        </div>
 
         <!-- ═══════════════ BRANCH VIEW (สาขา) ═══════════════ -->
         <div class="dash3-branch-view">
@@ -5328,7 +5284,10 @@ body { background: var(--bg); color: var(--txt); }
         var setHTML = function(id, val){ var el = document.getElementById(id); if (el) el.innerHTML = val; };
         setText("dashBranchName", "🏬 " + name);
         setHTML("dashBranchSales", "฿" + fmtV(Math.round(sales)));
-        setText("dashBranchSub", "ยอดขายในช่วงที่เลือก");
+        var subTxt = (_dashPeriod === 'today') ? '📅 ยอดขายวันนี้'
+                   : (_dashPeriod === 'month') ? '🗓️ ยอดขายเดือนนี้'
+                   : 'ยอดขายในช่วงที่เลือก';
+        setText("dashBranchSub", subTxt);
         setText("dashBranchPctVal", pct.toFixed(1) + "%");
         setText("dashBranchPlanVal", "฿" + fmtV(Math.round(plan)));
         var bar = document.getElementById("dashBranchPctBar");
@@ -6202,15 +6161,19 @@ body { background: var(--bg); color: var(--txt); }
                String(d.getDate()).padStart(2, '0');
       }
 
-      function setDashPeriod(days) {
-        _dashPeriod = days;
+      function setDashPeriod(period) {
+        _dashPeriod = period;
         _dashCustomFrom = _dashCustomTo = null;
-        ['7','30','90'].forEach(d => {
-          const btn = document.getElementById('dash2P' + d);
-          if (btn) btn.classList.toggle('active', String(days) === d);
+        // Deactivate all period buttons
+        ['dash2PToday','dash2PMonth','dash2P7','dash2P30','dash2P90','dash2PCustom'].forEach(function(id){
+          var btn = document.getElementById(id); if (btn) btn.classList.remove('active');
         });
-        const customBtn = document.getElementById('dash2PCustom');
-        if (customBtn) customBtn.classList.remove('active');
+        // Activate matching button
+        var activeId = (period === 'today') ? 'dash2PToday'
+                     : (period === 'month') ? 'dash2PMonth'
+                     : 'dash2P' + period;
+        var btn = document.getElementById(activeId);
+        if (btn) btn.classList.add('active');
         const customRow = document.getElementById('dash2Custom');
         if (customRow) customRow.classList.remove('show');
         loadDash();
@@ -6513,6 +6476,14 @@ body { background: var(--bg); color: var(--txt); }
           const a = _dashCustomFrom, b = _dashCustomTo;
           startDate = a <= b ? a : b;
           endDate   = a <= b ? b : a;
+        } else if (_dashPeriod === 'today') {
+          const t = new Date(); t.setHours(0,0,0,0);
+          startDate = _fmtDate(t);
+          endDate   = _fmtDate(t);
+        } else if (_dashPeriod === 'month') {
+          const t = new Date(); t.setHours(0,0,0,0);
+          startDate = _fmtDate(new Date(t.getFullYear(), t.getMonth(), 1));
+          endDate   = _fmtDate(new Date(t.getFullYear(), t.getMonth() + 1, 0));
         } else {
           const days = Number(_dashPeriod) || 30;
           const end = new Date(); end.setHours(0,0,0,0);
@@ -6530,7 +6501,7 @@ body { background: var(--bg); color: var(--txt); }
         const prevStartStr = _fmtDate(prevStart);
         const prevEndStr   = _fmtDate(prevEnd);
 
-        // Subtitle
+        // Subtitle — มี label พิเศษสำหรับ 'today' และ 'month'
         const sub = document.getElementById("dashPageSub");
         if (sub) {
           let prefix;
@@ -6538,7 +6509,15 @@ body { background: var(--bg); color: var(--txt); }
           else if (S.role === "vp")    prefix = (S.branch || "") + " · ภาพรวมทั้งระบบ";
           else if (S.role === "bzm")   prefix = "โซน BZM: " + (S.dm || "");
           else                         prefix = (S.branch || "") + (S.dm ? "  ·  BZM: " + S.dm : "");
-          sub.textContent = prefix + "  ·  " + fmtThaiDate(startDate) + " — " + fmtThaiDate(endDate);
+          let periodLabel;
+          if (_dashPeriod === 'today') periodLabel = '📅 วันนี้ · ' + fmtThaiDate(startDate);
+          else if (_dashPeriod === 'month') {
+            const thaiMonth = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+            const sd = new Date(startDate + 'T00:00:00');
+            periodLabel = '🗓️ เดือน ' + thaiMonth[sd.getMonth()] + ' ' + (sd.getFullYear() + 543);
+          }
+          else periodLabel = fmtThaiDate(startDate) + " — " + fmtThaiDate(endDate);
+          sub.textContent = prefix + "  ·  " + periodLabel;
         }
 
         // Loading state
@@ -6597,8 +6576,6 @@ body { background: var(--bg); color: var(--txt); }
             var labourPct = totalActual > 0 ? (totalLabour / totalActual * 100) : 0;
             _updateBranchHero({ totalActual: totalActual, totalPlan: totalPlan, totalBills: totalBills, labourPct: labourPct });
           } catch (e) { console.warn('branch hero update failed', e); }
-          // วันนี้ + เดือนนี้ snapshot (fetch separately for accurate data)
-          _loadDashSnapshots(queryCodes);
         }
 
         apiCall({ mode:"history", branch_codes:queryCodes, start_date:startDate, end_date:endDate },
