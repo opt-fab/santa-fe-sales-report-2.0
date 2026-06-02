@@ -336,6 +336,132 @@
       body.dash-role-branch .dash3-team-view { display: none !important; }
       body.dash-role-team .dash3-branch-view { display: none !important; }
 
+      /* ─── Snapshot cards: วันนี้ + เดือนนี้ ─── */
+      .dash3-snap-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+      .dash3-snap {
+        position: relative;
+        background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+        border: 1px solid var(--bd);
+        border-radius: 18px;
+        padding: 20px 22px;
+        overflow: hidden;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        transition: transform .25s var(--ease), border-color .25s var(--ease);
+      }
+      .dash3-snap:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255,140,66,0.35);
+      }
+      .dash3-snap::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 4px;
+        background: var(--brand-grad);
+      }
+      .dash3-snap-month::before {
+        background: linear-gradient(180deg, #6dd5fa, #2196f3);
+      }
+      .dash3-snap-month::after {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 180px; height: 180px;
+        background: radial-gradient(circle, rgba(109,213,250,0.10) 0%, transparent 70%);
+        pointer-events: none;
+      }
+      .dash3-snap-today::after {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 180px; height: 180px;
+        background: radial-gradient(circle, rgba(255,140,66,0.12) 0%, transparent 70%);
+        pointer-events: none;
+      }
+      .dash3-snap-head {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 12px;
+        position: relative; z-index: 1;
+      }
+      .dash3-snap-eyebrow {
+        font-size: 12px; font-weight: 800;
+        color: var(--brand);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+      .dash3-snap-month .dash3-snap-eyebrow { color: #6dd5fa; }
+      .dash3-snap-date {
+        font-size: 12px; font-weight: 600;
+        color: var(--txt2);
+      }
+      .dash3-snap-big {
+        font-size: 2rem; font-weight: 800;
+        color: var(--txt);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        margin-bottom: 16px;
+        position: relative; z-index: 1;
+      }
+      .dash3-snap-today .dash3-snap-big { color: var(--brand); text-shadow: 0 0 24px rgba(255,140,66,0.35); }
+      .dash3-snap-month .dash3-snap-big { color: #6dd5fa; text-shadow: 0 0 24px rgba(109,213,250,0.3); }
+      .dash3-snap-progress {
+        margin-bottom: 12px;
+        position: relative; z-index: 1;
+      }
+      .dash3-snap-progress-lbl {
+        display: flex; justify-content: space-between;
+        font-size: 12px; color: var(--txt2);
+        margin-bottom: 6px;
+      }
+      .dash3-snap-progress-lbl b { color: var(--txt); font-weight: 800; font-variant-numeric: tabular-nums; }
+      .dash3-snap-progress-track {
+        position: relative;
+        height: 8px;
+        background: rgba(255,255,255,0.06);
+        border-radius: 999px;
+        overflow: hidden;
+        border: 1px solid var(--bd);
+      }
+      .dash3-snap-progress-fill {
+        position: absolute; left: 0; top: 0; bottom: 0;
+        background: var(--brand-grad);
+        border-radius: inherit;
+        transition: width 0.6s var(--ease);
+      }
+      .dash3-snap-month .dash3-snap-progress-fill {
+        background: linear-gradient(90deg, #6dd5fa, #2196f3);
+      }
+      .dash3-snap-mini {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 10px;
+        font-size: 12.5px; color: var(--txt2);
+        position: relative; z-index: 1;
+      }
+      .dash3-snap-mini b { color: var(--txt); font-weight: 800; }
+      .dash3-snap-status, .dash3-snap-proj {
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid var(--bd);
+        font-size: 11.5px; font-weight: 700;
+        white-space: nowrap;
+      }
+      .dash3-snap-status.is-good { background: rgba(52,211,153,0.12); border-color: rgba(52,211,153,0.3); color: var(--green); }
+      .dash3-snap-status.is-pending { background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.3); color: var(--amber); }
+
+      @media (max-width: 700px) {
+        .dash3-snap-row { grid-template-columns: 1fr; gap: 12px; }
+        .dash3-snap { padding: 16px 18px; }
+        .dash3-snap-big { font-size: 1.7rem; margin-bottom: 12px; }
+      }
+
       /* ─── Branch hero — single store focus ─── */
       .dash3-branch-hero {
         display: grid;
@@ -3981,6 +4107,53 @@ body { background: var(--bg); color: var(--txt); }
           <button class="dash3-seg-btn active" onclick="applyDashCustom()">ดูข้อมูล</button>
         </div>
 
+        <!-- ═══════════════ SNAPSHOT: วันนี้ + เดือนนี้ ═══════════════ -->
+        <div class="dash3-snap-row">
+          <!-- 📅 วันนี้ -->
+          <div class="dash3-snap dash3-snap-today">
+            <div class="dash3-snap-head">
+              <div class="dash3-snap-eyebrow">📅 วันนี้</div>
+              <div class="dash3-snap-date" id="dashSnapTodayDate">—</div>
+            </div>
+            <div class="dash3-snap-big" id="dashSnapTodayVal">฿—</div>
+            <div class="dash3-snap-progress">
+              <div class="dash3-snap-progress-lbl">
+                <span>ทำได้ <b id="dashSnapTodayPct">—</b></span>
+                <span>เป้า <b id="dashSnapTodayPlan">฿—</b></span>
+              </div>
+              <div class="dash3-snap-progress-track">
+                <div class="dash3-snap-progress-fill" id="dashSnapTodayBar" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="dash3-snap-mini">
+              <span>🧾 <b id="dashSnapTodayBills">—</b> บิล</span>
+              <span id="dashSnapTodayStatus" class="dash3-snap-status">⏳ รอข้อมูล</span>
+            </div>
+          </div>
+
+          <!-- 🗓️ เดือนนี้ -->
+          <div class="dash3-snap dash3-snap-month">
+            <div class="dash3-snap-head">
+              <div class="dash3-snap-eyebrow">🗓️ เดือนนี้</div>
+              <div class="dash3-snap-date" id="dashSnapMonthName">—</div>
+            </div>
+            <div class="dash3-snap-big" id="dashSnapMonthVal">฿—</div>
+            <div class="dash3-snap-progress">
+              <div class="dash3-snap-progress-lbl">
+                <span>ทำได้ <b id="dashSnapMonthPct">—</b></span>
+                <span>เป้าเดือน <b id="dashSnapMonthPlan">฿—</b></span>
+              </div>
+              <div class="dash3-snap-progress-track">
+                <div class="dash3-snap-progress-fill" id="dashSnapMonthBar" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="dash3-snap-mini">
+              <span>📊 ส่งแล้ว <b id="dashSnapMonthDays">—</b></span>
+              <span id="dashSnapMonthProj" class="dash3-snap-proj">📈 คาดการณ์: —</span>
+            </div>
+          </div>
+        </div>
+
         <!-- ═══════════════ BRANCH VIEW (สาขา) ═══════════════ -->
         <div class="dash3-branch-view">
           <!-- Branch hero: store name + period sales -->
@@ -5070,6 +5243,74 @@ body { background: var(--bg); color: var(--txt); }
           if (title) title.innerHTML = "📊 ภาพรวมทีม";
           if (sub) sub.textContent = "ผลรวมหลายสาขาในขอบเขตที่ดูแล";
         }
+      }
+
+      // โหลด snapshot วันนี้ + เดือนนี้ (fetch แยกจาก period range)
+      function _loadDashSnapshots(branchCodes) {
+        var today = todayStr();
+        var d = new Date(); d.setHours(0,0,0,0);
+        var firstOfMonth = _fmtDate(new Date(d.getFullYear(), d.getMonth(), 1));
+        var lastOfMonth  = _fmtDate(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+        var thaiMonth = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+        var setText = function(id, val){ var el = document.getElementById(id); if (el) el.textContent = val; };
+        var setBar = function(id, pct){ var el = document.getElementById(id); if (el) el.style.width = Math.max(0, Math.min(100, pct)) + '%'; };
+        var setStatus = function(id, html, cls){ var el = document.getElementById(id); if (!el) return; el.innerHTML = html; el.className = 'dash3-snap-status' + (cls ? ' ' + cls : ''); };
+        // Display dates
+        setText('dashSnapTodayDate', fmtThaiDate(today));
+        setText('dashSnapMonthName', thaiMonth[d.getMonth()] + ' ' + (d.getFullYear() + 543));
+        // Fetch today + month in parallel
+        var _t = null, _tp = null, _m = null, _mp = null, _n = 0;
+        function onDone() {
+          if (++_n < 4) return;
+          // ── วันนี้ ──
+          var tRows = (_t && _t.ok && _t.rows) ? _t.rows.filter(function(r){ return r.submit_date === today; }) : [];
+          var tEod = tRows.filter(function(r){ return r.submit_time_slot === 'สิ้นวัน'; });
+          var t16 = tRows.filter(function(r){ return r.submit_time_slot === '16.00'; });
+          var tSales = tEod.reduce(function(s,r){ return s + (parseFloat(r.actual_sale)||0); }, 0);
+          var t16Sales = t16.reduce(function(s,r){ return s + (parseFloat(r.actual_sale)||0); }, 0);
+          var tBills = tEod.reduce(function(s,r){ return s + (parseFloat(r.total_trans)||0); }, 0);
+          // Plan from today
+          var tPlanMap = {};
+          if (_tp && _tp.ok && _tp.rows) _tp.rows.forEach(function(r){ if (r.plan_date === today) tPlanMap[r.branch_code] = (tPlanMap[r.branch_code]||0) + (parseFloat(r.plan_amount)||0); });
+          var tPlan = Object.values(tPlanMap).reduce(function(s,v){ return s+v; }, 0);
+          var actToday = tEod.length > 0 ? tSales : t16Sales;
+          var tPct = tPlan > 0 ? (actToday / tPlan * 100) : 0;
+          setText('dashSnapTodayVal', '฿' + fmt(Math.round(actToday)));
+          setText('dashSnapTodayPct', tPlan > 0 ? tPct.toFixed(1) + '%' : '—');
+          setText('dashSnapTodayPlan', tPlan > 0 ? '฿' + fmt(Math.round(tPlan)) : '฿—');
+          setBar('dashSnapTodayBar', tPct);
+          setText('dashSnapTodayBills', tBills > 0 ? fmt(tBills) : '—');
+          if (tEod.length > 0) {
+            setStatus('dashSnapTodayStatus', '✓ ส่งสิ้นวันแล้ว', 'is-good');
+          } else if (t16.length > 0) {
+            setStatus('dashSnapTodayStatus', '⏳ ส่งรอบ 16.00', 'is-pending');
+          } else {
+            setStatus('dashSnapTodayStatus', '⏳ รอข้อมูล', '');
+          }
+          // ── เดือนนี้ ──
+          var mRows = (_m && _m.ok && _m.rows) ? _m.rows : [];
+          var mEod = mRows.filter(function(r){ return r.submit_time_slot === 'สิ้นวัน'; });
+          var mSales = mEod.reduce(function(s,r){ return s + (parseFloat(r.actual_sale)||0); }, 0);
+          var mPlanTotal = 0;
+          if (_mp && _mp.ok && _mp.rows) _mp.rows.forEach(function(r){ mPlanTotal += (parseFloat(r.plan_amount)||0); });
+          var mPct = mPlanTotal > 0 ? (mSales / mPlanTotal * 100) : 0;
+          var daysWithData = new Set();
+          mEod.forEach(function(r){ if (r.submit_date) daysWithData.add(r.submit_date); });
+          var nDays = daysWithData.size;
+          var daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+          var projected = nDays > 0 ? mSales * (daysInMonth / nDays) : 0;
+          setText('dashSnapMonthVal', '฿' + fmt(Math.round(mSales)));
+          setText('dashSnapMonthPct', mPlanTotal > 0 ? mPct.toFixed(1) + '%' : '—');
+          setText('dashSnapMonthPlan', mPlanTotal > 0 ? '฿' + fmt(Math.round(mPlanTotal)) : '฿—');
+          setBar('dashSnapMonthBar', mPct);
+          setText('dashSnapMonthDays', nDays + '/' + daysInMonth + ' วัน');
+          var projEl = document.getElementById('dashSnapMonthProj');
+          if (projEl) projEl.innerHTML = projected > 0 ? '📈 คาดการณ์: ฿' + fmt(Math.round(projected)) : '📈 คาดการณ์: —';
+        }
+        apiCall({ mode:'history', branch_codes:branchCodes, start_date:today, end_date:today }, function(res){ _t = res; onDone(); });
+        apiCall({ mode:'getPlan', branch_codes:branchCodes, start_date:today, end_date:today, raw:true }, function(res){ _tp = res; onDone(); });
+        apiCall({ mode:'history', branch_codes:branchCodes, start_date:firstOfMonth, end_date:lastOfMonth }, function(res){ _m = res; onDone(); });
+        apiCall({ mode:'getPlan', branch_codes:branchCodes, start_date:firstOfMonth, end_date:lastOfMonth, raw:true }, function(res){ _mp = res; onDone(); });
       }
 
       // อัปเดต branch hero card (เฉพาะ role branch)
@@ -6356,6 +6597,8 @@ body { background: var(--bg); color: var(--txt); }
             var labourPct = totalActual > 0 ? (totalLabour / totalActual * 100) : 0;
             _updateBranchHero({ totalActual: totalActual, totalPlan: totalPlan, totalBills: totalBills, labourPct: labourPct });
           } catch (e) { console.warn('branch hero update failed', e); }
+          // วันนี้ + เดือนนี้ snapshot (fetch separately for accurate data)
+          _loadDashSnapshots(queryCodes);
         }
 
         apiCall({ mode:"history", branch_codes:queryCodes, start_date:startDate, end_date:endDate },
