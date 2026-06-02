@@ -713,6 +713,16 @@
         color: #fff;
         box-shadow: 0 2px 8px -2px rgba(255,140,66,0.5);
       }
+      .dash3-nav { display: inline-flex; align-items: center; gap: 4px; }
+      .dash3-nav-btn {
+        background: var(--surface); border: 1px solid var(--bd); color: var(--txt);
+        width: 30px; height: 30px; border-radius: 9px; cursor: pointer; font-size: 12px;
+        display: inline-flex; align-items: center; justify-content: center;
+        transition: all .15s var(--ease); flex-shrink: 0;
+      }
+      .dash3-nav-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+      .dash3-nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+      .dash3-nav-lbl { min-width: 132px; text-align: center; font-size: 13px; font-weight: 800; color: var(--txt); font-variant-numeric: tabular-nums; }
       .dash3-branch {
         background: var(--surface);
         border: 1px solid var(--bd);
@@ -4286,24 +4296,19 @@ body { background: var(--bg); color: var(--txt); }
             <div class="dash3-sub" id="dashPageSub">ภาพรวมผลการขาย</div>
           </div>
           <div class="dash3-controls">
-            <div class="dash3-seg">
-              <button id="dash2P7"      class="dash3-seg-btn" onclick="setDashPeriod(7)">7 วัน</button>
-              <button id="dash2P30"     class="dash3-seg-btn active" onclick="setDashPeriod(30)">30 วัน</button>
-              <button id="dash2P90"     class="dash3-seg-btn" onclick="setDashPeriod(90)">90 วัน</button>
-              <button id="dash2PCustom" class="dash3-seg-btn" onclick="toggleDashCustom()">📅 เลือกช่วง</button>
+            <div class="dash3-seg" id="dashModeSeg">
+              <button id="dashModeWeek"  class="dash3-seg-btn" onclick="setDashMode('week')">สัปดาห์</button>
+              <button id="dashModeMonth" class="dash3-seg-btn active" onclick="setDashMode('month')">เดือน</button>
+              <button id="dashModeYear"  class="dash3-seg-btn" onclick="setDashMode('year')">ปี</button>
+            </div>
+            <div class="dash3-nav" id="dashPeriodNav">
+              <button class="dash3-nav-btn" id="dashNavPrev" onclick="dashNav(-1)" title="ก่อนหน้า">◀</button>
+              <span class="dash3-nav-lbl" id="dashNavLabel">—</span>
+              <button class="dash3-nav-btn" id="dashNavNext" onclick="dashNav(1)" title="ถัดไป">▶</button>
             </div>
             <select id="dashBranchFilter" class="dash3-branch" onchange="loadDash()" style="display:none"></select>
             <button class="dash3-icon-btn" onclick="loadDash()" title="รีเฟรช">🔄</button>
           </div>
-        </div>
-
-        <!-- เลือกช่วงวันที่เอง (ซ่อนไว้) -->
-        <div id="dash2Custom" class="dash2-custom-row dash3-custom">
-          <label>ตั้งแต่</label>
-          <input type="date" id="dash2CustomFrom">
-          <label>ถึง</label>
-          <input type="date" id="dash2CustomTo">
-          <button class="dash3-seg-btn active" onclick="applyDashCustom()">ดูข้อมูล</button>
         </div>
 
         <!-- ═══════════════ DRILL-DOWN: ทั้งบริษัท → BZM → สาขา ═══════════════ -->
@@ -5272,6 +5277,7 @@ body { background: var(--bg); color: var(--txt); }
       function showDash() {
         showScreen("sDash");
         setMobTab("mnDash");
+        _dashAnchor = new Date();   // เปิดแดชบอร์ดมา = ช่วงปัจจุบันเสมอ
         _applyDashRoleView();
         loadDash();
       }
@@ -5286,7 +5292,7 @@ body { background: var(--bg); color: var(--txt); }
         const sub = document.getElementById("dashPageSub");
         if (isBranch) {
           if (tag) tag.textContent = "MY STORE";
-          if (title) title.innerHTML = "🏬 ภาพรวมสาขา";
+          if (title) title.innerHTML = "📊 แดชบอร์ด";
           if (sub) sub.textContent = (S.branch || "สาขาของคุณ");
         } else {
           var roleTxt = (S.role === "admin") ? "ADMIN" : (S.role === "vp") ? "VP" : (S.role === "bzm") ? "BZM TEAM" : "OVERVIEW";
@@ -5466,8 +5472,8 @@ body { background: var(--bg); color: var(--txt); }
         var setHTML = function(id, val){ var el = document.getElementById(id); if (el) el.innerHTML = val; };
         setText("dashBranchName", "🏬 " + name);
         setHTML("dashBranchSales", "฿" + fmtV(Math.round(sales)));
-        var subTxt = (_dashPeriod === 'today') ? '📅 ยอดขายวันนี้'
-                   : (_dashPeriod === 'month') ? '🗓️ ยอดขายเดือนนี้'
+        var subTxt = (_dashMode === 'year') ? '🗓️ ยอดขายปีนี้'
+                   : (_dashMode === 'month') ? '🗓️ ยอดขายเดือนนี้'
                    : 'ยอดขายในช่วงที่เลือก';
         setText("dashBranchSub", subTxt);
         setText("dashBranchPctVal", pct.toFixed(1) + "%");
@@ -6333,9 +6339,8 @@ body { background: var(--bg); color: var(--txt); }
       /* ════════════════════════════════════════════
          DASHBOARD 2.0 — period-based date range
       ════════════════════════════════════════════ */
-      let _dashPeriod = 30;          // 7 | 30 | 90 | 'custom'
-      let _dashCustomFrom = null;
-      let _dashCustomTo   = null;
+      let _dashMode = 'month';        // 'week' | 'month' | 'year'
+      let _dashAnchor = new Date();   // วันอ้างอิงภายในช่วงที่เลือก
 
       function _fmtDate(d) {
         return d.getFullYear() + '-' +
@@ -6343,49 +6348,69 @@ body { background: var(--bg); color: var(--txt); }
                String(d.getDate()).padStart(2, '0');
       }
 
-      function setDashPeriod(days) {
-        _dashPeriod = days;
-        _dashCustomFrom = _dashCustomTo = null;
-        ['7','30','90'].forEach(function(d){
-          var btn = document.getElementById('dash2P' + d);
-          if (btn) btn.classList.toggle('active', String(days) === d);
-        });
-        var customBtn = document.getElementById('dash2PCustom');
-        if (customBtn) customBtn.classList.remove('active');
-        var customRow = document.getElementById('dash2Custom');
-        if (customRow) customRow.classList.remove('show');
-        loadDash();
+      const _TH_MONTH_FULL = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+      const _TH_MONTH_SHORT = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+
+      // คำนวณช่วงจากโหมด + วันอ้างอิง (สัปดาห์ จ–อา / เดือน / ปี) + ช่วงก่อนหน้า + label
+      function _dashPeriodRange() {
+        const a = new Date(_dashAnchor); a.setHours(0,0,0,0);
+        let start, end, prevStart, prevEnd, label;
+        if (_dashMode === 'week') {
+          const day = a.getDay();                 // 0=อา..6=ส
+          const diffToMon = (day === 0 ? -6 : 1 - day);
+          start = new Date(a); start.setDate(a.getDate() + diffToMon);
+          end   = new Date(start); end.setDate(start.getDate() + 6);
+          prevStart = new Date(start); prevStart.setDate(start.getDate() - 7);
+          prevEnd   = new Date(end);   prevEnd.setDate(end.getDate() - 7);
+          label = start.getDate() + ' ' + _TH_MONTH_SHORT[start.getMonth()] + ' – ' +
+                  end.getDate() + ' ' + _TH_MONTH_SHORT[end.getMonth()] + ' ' + (end.getFullYear() + 543);
+        } else if (_dashMode === 'year') {
+          const y = a.getFullYear();
+          start = new Date(y, 0, 1); end = new Date(y, 11, 31);
+          prevStart = new Date(y - 1, 0, 1); prevEnd = new Date(y - 1, 11, 31);
+          label = 'ปี ' + (y + 543);
+        } else { // month
+          const y = a.getFullYear(), m = a.getMonth();
+          start = new Date(y, m, 1); end = new Date(y, m + 1, 0);
+          prevStart = new Date(y, m - 1, 1); prevEnd = new Date(y, m, 0);
+          label = _TH_MONTH_FULL[m] + ' ' + (y + 543);
+        }
+        return {
+          startDate: _fmtDate(start), endDate: _fmtDate(end),
+          prevStartStr: _fmtDate(prevStart), prevEndStr: _fmtDate(prevEnd),
+          label: label, end: end
+        };
       }
 
-      function toggleDashCustom() {
-        const row = document.getElementById('dash2Custom');
-        if (!row) return;
-        row.classList.toggle('show');
-        if (row.classList.contains('show')) {
-          const today = todayStr();
-          const from = document.getElementById('dash2CustomFrom');
-          const to   = document.getElementById('dash2CustomTo');
-          if (from && !from.value) {
-            const d = new Date(); d.setDate(d.getDate() - 29);
-            from.value = _fmtDate(d);
-          }
-          if (to && !to.value) to.value = today;
+      // อัปเดต label + ปิดปุ่ม "ถัดไป" เมื่อช่วงปัจจุบันรวมวันนี้แล้ว (กันไปอนาคต)
+      function _updateDashNav(pr) {
+        const lbl = document.getElementById('dashNavLabel');
+        if (lbl) lbl.textContent = pr.label;
+        const next = document.getElementById('dashNavNext');
+        if (next) {
+          const today = new Date(); today.setHours(0,0,0,0);
+          next.disabled = (pr.end >= today);
         }
       }
 
-      function applyDashCustom() {
-        const from = document.getElementById('dash2CustomFrom').value;
-        const to   = document.getElementById('dash2CustomTo').value;
-        if (!from || !to) { alert('กรุณาเลือกวันที่ทั้งสองช่อง'); return; }
-        _dashCustomFrom = from;
-        _dashCustomTo   = to;
-        _dashPeriod = 'custom';
-        ['7','30','90'].forEach(d => {
-          const btn = document.getElementById('dash2P' + d);
-          if (btn) btn.classList.remove('active');
+      // สลับโหมด — เริ่มที่ช่วงปัจจุบันเสมอ
+      function setDashMode(mode) {
+        _dashMode = mode;
+        _dashAnchor = new Date();
+        ['week','month','year'].forEach(function(m){
+          var btn = document.getElementById('dashMode' + m.charAt(0).toUpperCase() + m.slice(1));
+          if (btn) btn.classList.toggle('active', m === mode);
         });
-        const customBtn = document.getElementById('dash2PCustom');
-        if (customBtn) customBtn.classList.add('active');
+        loadDash();
+      }
+
+      // เลื่อนช่วงก่อนหน้า/ถัดไป
+      function dashNav(dir) {
+        const a = new Date(_dashAnchor);
+        if (_dashMode === 'week')      a.setDate(a.getDate() + dir * 7);
+        else if (_dashMode === 'year') a.setFullYear(a.getFullYear() + dir);
+        else                           a.setMonth(a.getMonth() + dir);
+        _dashAnchor = a;
         loadDash();
       }
 
@@ -6927,8 +6952,8 @@ body { background: var(--bg); color: var(--txt); }
       function _ddCrumb() {
         const role = (typeof S !== "undefined" && S && S.role) || "";
         if (role === "branch") {
-          const nm = (BRANCH_DM_MAP[_ddView.branch] || {}).branch || _ddView.branch || "สาขา";
-          return `<button class="here">🏬 ${escHtml(nm)}</button>`;
+          // หน้าสาขาเห็นแค่สาขาตัวเอง — ไม่ต้องโชว์ breadcrumb (ซ้ำกับหัวข้อ/ซับไตเติล)
+          return "";
         }
         let h = "";
         const canCompany = (role === "admin" || role === "vp");
@@ -7050,28 +7075,15 @@ body { background: var(--bg); color: var(--txt); }
         populateBranchFilter("dashBranchFilter");
         const queryCodes = getQueryBranchCodes("dashBranchFilter"); // array | null
 
-        // Compute date range from period state
-        let startDate, endDate;
-        if (_dashPeriod === 'custom' && _dashCustomFrom && _dashCustomTo) {
-          const a = _dashCustomFrom, b = _dashCustomTo;
-          startDate = a <= b ? a : b;
-          endDate   = a <= b ? b : a;
-        } else {
-          const days = Number(_dashPeriod) || 30;
-          const end = new Date(); end.setHours(0,0,0,0);
-          const start = new Date(end); start.setDate(start.getDate() - (days - 1));
-          startDate = _fmtDate(start);
-          endDate   = _fmtDate(end);
-        }
+        // Compute date range from mode + anchor (สัปดาห์ จ–อา / เดือน / ปี)
+        const _pr = _dashPeriodRange();
+        const startDate = _pr.startDate, endDate = _pr.endDate;
+        const prevStartStr = _pr.prevStartStr, prevEndStr = _pr.prevEndStr;
+        _updateDashNav(_pr);
 
-        // Equivalent previous period (same length, immediately before)
         const sD = new Date(startDate + 'T00:00:00');
         const eD = new Date(endDate   + 'T00:00:00');
         const periodDays = Math.round((eD - sD) / 86400000) + 1;
-        const prevEnd   = new Date(sD); prevEnd.setDate(prevEnd.getDate() - 1);
-        const prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - (periodDays - 1));
-        const prevStartStr = _fmtDate(prevStart);
-        const prevEndStr   = _fmtDate(prevEnd);
 
         // Subtitle
         const sub = document.getElementById("dashPageSub");
