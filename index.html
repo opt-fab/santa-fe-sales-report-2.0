@@ -5291,14 +5291,15 @@ body { background: var(--bg); color: var(--txt); }
         const title = document.getElementById("dashTitle");
         const sub = document.getElementById("dashPageSub");
         if (isBranch) {
-          if (tag) tag.textContent = "MY STORE";
+          // หน้าสาขา: ซ่อน tag "MY STORE" และ subtitle (ช่วงวันที่อยู่ที่ปุ่มเลื่อนแล้ว)
+          if (tag) tag.style.display = "none";
           if (title) title.innerHTML = "📊 แดชบอร์ด";
-          if (sub) sub.textContent = (S.branch || "สาขาของคุณ");
+          if (sub) sub.style.display = "none";
         } else {
           var roleTxt = (S.role === "admin") ? "ADMIN" : (S.role === "vp") ? "VP" : (S.role === "bzm") ? "BZM TEAM" : "OVERVIEW";
-          if (tag) tag.textContent = roleTxt;
+          if (tag) { tag.style.display = ""; tag.textContent = roleTxt; }
           if (title) title.innerHTML = "📊 ภาพรวมทีม";
-          if (sub) sub.textContent = "ผลรวมหลายสาขาในขอบเขตที่ดูแล";
+          if (sub) { sub.style.display = ""; sub.textContent = "ผลรวมหลายสาขาในขอบเขตที่ดูแล"; }
         }
       }
 
