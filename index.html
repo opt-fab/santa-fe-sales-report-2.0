@@ -908,6 +908,26 @@
       .dd-loading { padding:40px; text-align:center; color:var(--txt2); }
       .dd-empty { padding:48px 20px; text-align:center; color:var(--txt2); font-size:14px; }
 
+      /* สรุปรายวัน / รายสัปดาห์ */
+      .dsum-hdr { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; }
+      .dsum-rounds { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px; }
+      .dsum-round { background:var(--surface); border:1px solid var(--bd); border-radius:14px; padding:14px 16px; }
+      .dsum-round.dsum-empty { display:flex; flex-direction:column; justify-content:center; min-height:96px; }
+      .dsum-round-hd { font-size:12.5px; font-weight:700; color:var(--txt2); margin-bottom:8px; }
+      .dsum-round-val { font-size:1.55rem; font-weight:800; color:var(--brand); letter-spacing:-.02em; line-height:1.1; }
+      .dsum-round-meta { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--txt2); margin-top:8px; }
+      .dsum-round-meta b { font-weight:800; }
+      .dsum-round-status { font-size:13px; color:var(--txt2); font-weight:600; }
+      .dsum-wk { display:grid; grid-template-columns:130px 1fr 108px; align-items:center; gap:12px; padding:9px 4px; border-bottom:1px solid var(--bd); }
+      .dsum-wk:last-child { border-bottom:none; }
+      .dsum-wk-name { font-size:12.5px; color:var(--txt); }
+      .dsum-wk-name b { color:var(--txt2); font-weight:700; font-size:11px; margin-left:4px; }
+      .dsum-wk-track { height:12px; background:var(--bd); border-radius:6px; overflow:hidden; }
+      .dsum-wk-fill { height:100%; border-radius:6px; background:linear-gradient(90deg,#f59e0b,var(--brand)); transition:width .6s var(--ease); }
+      .dsum-wk-val { text-align:right; font-size:12.5px; font-weight:700; color:var(--txt); font-variant-numeric:tabular-nums; }
+      .dsum-wk-val i { font-style:normal; font-size:11px; font-weight:700; margin-left:6px; }
+      @media (max-width:560px){ .dsum-wk { grid-template-columns:1fr 88px; } .dsum-wk-track { display:none; } }
+
       /* branch hero */
       .dd-hero { display:flex; gap:18px; align-items:flex-start; }
       .dd-hero-emoji { font-size:3rem; line-height:1; }
@@ -4311,6 +4331,25 @@ body { background: var(--bg); color: var(--txt); }
           </div>
         </div>
 
+        <!-- ═══════════════ สรุปรายวัน + รายสัปดาห์ (เฉพาะหน้าสาขา) ═══════════════ -->
+        <div id="dashDaySumWrap" class="dash3-row dd-grid2" style="margin-bottom:18px;display:none">
+          <div class="dash2-card dash3-card">
+            <div class="dash2-cardhdr dsum-hdr">
+              <div><h3>🧾 สรุปรายวัน</h3><div class="dash2-cardsub">รอบ 16:00 และสิ้นวัน</div></div>
+              <div class="dash3-nav">
+                <button class="dash3-nav-btn" id="daySumPrev" onclick="daySumNav(-1)" title="วันก่อนหน้า">◀</button>
+                <span class="dash3-nav-lbl" id="daySumLabel">—</span>
+                <button class="dash3-nav-btn" id="daySumNext" onclick="daySumNav(1)" title="วันถัดไป">▶</button>
+              </div>
+            </div>
+            <div class="dsum-rounds" id="daySumBody"></div>
+          </div>
+          <div class="dash2-card dash3-card">
+            <div class="dash2-cardhdr"><h3>📅 สรุปรายสัปดาห์</h3><div class="dash2-cardsub" id="daySumWkSub">ทั้งเดือน</div></div>
+            <div id="daySumWkBody"></div>
+          </div>
+        </div>
+
         <!-- ═══════════════ DRILL-DOWN: ทั้งบริษัท → BZM → สาขา ═══════════════ -->
         <div class="dd-crumb" id="dashCrumb"></div>
         <div class="dash3-kpis dd-kpis" id="dashDrillKpis"></div>
@@ -5278,8 +5317,10 @@ body { background: var(--bg); color: var(--txt); }
         showScreen("sDash");
         setMobTab("mnDash");
         _dashAnchor = new Date();   // เปิดแดชบอร์ดมา = ช่วงปัจจุบันเสมอ
+        _daySumAnchor = new Date(); // กล่องสรุปรายวัน = วันนี้เสมอ
         _applyDashRoleView();
         loadDash();
+        loadBranchSummary();
       }
 
       // เลือก view ตาม role: branch ดูเฉพาะสาขาตัวเอง · team (admin/vp/bzm) ดูภาพรวม
@@ -7060,6 +7101,123 @@ body { background: var(--bg); color: var(--txt); }
         if (isSingleDay) _ddRenderDayChannels(rows);
         else if (isBranch) _ddRenderBranchTrend(rows, codes);
         else _ddRenderTrend(rows);
+      }
+
+      /* ════════════════════════════════════════════
+         สรุปรายวัน (รอบ 16:00 / สิ้นวัน) + รายสัปดาห์ (ทั้งเดือน) — เฉพาะหน้าสาขา
+      ════════════════════════════════════════════ */
+      let _daySumAnchor = new Date();   // วันที่ของกล่องรายวัน (ดีฟอลต์วันนี้)
+      let _daySumMonthKey = null;       // 'yyyy-m' ของข้อมูลที่โหลดไว้
+      let _daySumRows = [];             // rows ทั้งเดือนของสาขา
+      let _daySumPlanByDate = {};       // เป้าต่อวัน (ทั้งเดือน)
+
+      function loadBranchSummary() {
+        const wrap = document.getElementById('dashDaySumWrap');
+        if (!wrap) return;
+        const isBranch = (S.role === 'branch' || S.role === 'franchise');
+        wrap.style.display = isBranch ? '' : 'none';
+        if (!isBranch) return;
+
+        populateBranchFilter('dashBranchFilter');
+        const codes = getQueryBranchCodes('dashBranchFilter');
+
+        const a = new Date(_daySumAnchor); a.setHours(0,0,0,0);
+        const y = a.getFullYear(), m = a.getMonth();
+        const mStart = _fmtDate(new Date(y, m, 1));
+        const mEnd   = _fmtDate(new Date(y, m + 1, 0));
+        _daySumMonthKey = y + '-' + m;
+
+        let _h = null, _p = null, _n = 0;
+        function _onDone() {
+          if (++_n < 2) return;
+          _daySumRows = (_h && _h.ok && _h.rows) ? _h.rows : [];
+          _daySumPlanByDate = {};
+          if (_p && _p.ok && Array.isArray(_p.rows)) {
+            _p.rows.forEach(function(r){
+              const amt = parseFloat(r.plan_amount) || 0;
+              _daySumPlanByDate[r.plan_date] = (_daySumPlanByDate[r.plan_date] || 0) + amt;
+            });
+          }
+          renderBranchSummary();
+        }
+        apiCall({ mode:'history', branch_codes:codes, start_date:mStart, end_date:mEnd }, function(r){ _h = r; _onDone(); });
+        apiCall({ mode:'getPlan', branch_codes:codes, start_date:mStart, end_date:mEnd, raw:true }, function(r){ _p = r; _onDone(); });
+      }
+
+      function daySumNav(dir) {
+        const a = new Date(_daySumAnchor); a.setHours(0,0,0,0);
+        a.setDate(a.getDate() + dir);
+        const today = new Date(); today.setHours(0,0,0,0);
+        if (a > today) return;                              // ไม่ไปอนาคต
+        _daySumAnchor = a;
+        const key = a.getFullYear() + '-' + a.getMonth();
+        if (key !== _daySumMonthKey) loadBranchSummary();   // ข้ามเดือน → โหลดใหม่
+        else renderBranchSummary();
+      }
+
+      function renderBranchSummary() {
+        const dStr = _fmtDate(_daySumAnchor);
+        const lbl = document.getElementById('daySumLabel');
+        if (lbl) lbl.textContent = fmtThaiDate(dStr);
+        const nextBtn = document.getElementById('daySumNext');
+        if (nextBtn) {
+          const t = new Date(); t.setHours(0,0,0,0);
+          const a2 = new Date(_daySumAnchor); a2.setHours(0,0,0,0);
+          nextBtn.disabled = (a2 >= t);
+        }
+
+        // ── รายวัน: 2 รอบ (16:00 / สิ้นวัน) ──
+        const plan = _daySumPlanByDate[dStr] || 0;
+        function roundCard(slot, icon, name) {
+          const rs = _daySumRows.filter(function(r){ return r.submit_date === dStr && r.submit_time_slot === slot; });
+          if (!rs.length) {
+            return `<div class="dsum-round dsum-empty"><div class="dsum-round-hd">${icon} ${name}</div><div class="dsum-round-status">⏳ ยังไม่ส่ง</div></div>`;
+          }
+          const act = rs.reduce(function(s,r){ return s + (parseFloat(r.actual_sale) || 0); }, 0);
+          const bills = rs.reduce(function(s,r){ return s + (parseFloat(r.total_trans) || 0); }, 0);
+          const pct = plan > 0 ? act / plan : 0;
+          const col = _ddAchvColor(pct);
+          return `<div class="dsum-round">
+            <div class="dsum-round-hd">${icon} ${name}</div>
+            <div class="dsum-round-val">฿${fmt(Math.round(act))}</div>
+            <div class="dsum-round-meta"><span>ทำได้ <b style="color:${col}">${plan > 0 ? (pct*100).toFixed(1)+'%' : '-'}</b></span><span>${fmt(bills)} บิล</span></div>
+          </div>`;
+        }
+        const body = document.getElementById('daySumBody');
+        if (body) body.innerHTML = roundCard('16.00','🕓','รอบ 16:00') + roundCard('สิ้นวัน','🌙','รอบสิ้นวัน');
+
+        // ── รายสัปดาห์: ทั้งเดือนของวันที่เลือก ──
+        const a = new Date(_daySumAnchor); const y = a.getFullYear(), m = a.getMonth();
+        const lastDay = new Date(y, m + 1, 0).getDate();
+        const weeks = {};
+        for (let dn = 1; dn <= lastDay; dn++) {
+          const day = new Date(y, m, dn);
+          const dow = day.getDay();
+          const mon = new Date(day); mon.setDate(day.getDate() + (dow === 0 ? -6 : 1 - dow));
+          const key = _fmtDate(mon);
+          if (!weeks[key]) weeks[key] = { start: dn, end: dn, act: 0, plan: 0 };
+          weeks[key].end = dn;
+          const ds = _fmtDate(day);
+          _daySumRows.forEach(function(r){ if (r.submit_date === ds && r.submit_time_slot === 'สิ้นวัน') weeks[key].act += parseFloat(r.actual_sale) || 0; });
+          weeks[key].plan += _daySumPlanByDate[ds] || 0;
+        }
+        const keys = Object.keys(weeks).sort();
+        const maxAct = Math.max.apply(null, keys.map(function(k){ return weeks[k].act; }).concat([1]));
+        const wkHtml = keys.map(function(k, i){
+          const w = weeks[k];
+          const pct = w.plan > 0 ? w.act / w.plan : 0;
+          const col = _ddAchvColor(pct);
+          const bw = (w.act / maxAct * 100).toFixed(1);
+          return `<div class="dsum-wk">
+            <div class="dsum-wk-name">สัปดาห์ ${i+1} <b>${w.start}–${w.end} ${_TH_MONTH_SHORT[m]}</b></div>
+            <div class="dsum-wk-track"><div class="dsum-wk-fill" style="width:${bw}%"></div></div>
+            <div class="dsum-wk-val">฿${fmt(Math.round(w.act))}<i style="color:${col}">${w.plan > 0 ? (pct*100).toFixed(0)+'%' : '-'}</i></div>
+          </div>`;
+        }).join('');
+        const wkBody = document.getElementById('daySumWkBody');
+        if (wkBody) wkBody.innerHTML = wkHtml || '<div class="dd-empty">ไม่มีข้อมูล</div>';
+        const wkSub = document.getElementById('daySumWkSub');
+        if (wkSub) wkSub.textContent = _TH_MONTH_FULL[m] + ' ' + (y + 543);
       }
 
       async function loadDash() {
