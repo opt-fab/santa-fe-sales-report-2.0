@@ -7031,16 +7031,16 @@ body { background: var(--bg); color: var(--txt); }
           return;
         }
 
-        // หน้าสาขา (เรียบ): โชว์แค่สัดส่วนช่องทาง — กล่องรายวัน/รายสัปดาห์อยู่ด้านบนแล้ว
+        // หน้าสาขา (เรียบ): สรุปผลรวมช่วงที่เลือก + สัดส่วนช่องทาง — กล่องรายวัน/รายสัปดาห์อยู่ด้านบนแล้ว
         if (role === "branch" || role === "franchise") {
           if (crumbEl) crumbEl.innerHTML = "";
           kpiEl.innerHTML = "";
           var _plabel = (typeof _dashPeriodRange === "function") ? _dashPeriodRange().label : "";
-          bodyEl.innerHTML = `<div class="dash3-row"><div class="dash2-card dash3-card">
-            <div class="dash2-cardhdr"><h3>🍽️ สัดส่วนช่องทางการขาย</h3><div class="dash2-cardsub">มูลค่ายอดขายแยกตามช่องทาง · ${escHtml(_plabel)}</div></div>
-            <div style="position:relative;height:240px"><canvas id="ddDonut"></canvas></div>
-            <div id="ddDonutLegend" class="dash2-chan-legend"></div>
-          </div></div>`;
+          var _bcodes = _ddCodes();
+          bodyEl.innerHTML = `<div class="dash3-row dd-grid2">
+            ${_ddPanel("📊 สรุปผลสาขา", "ผลรวม · " + escHtml(_plabel), _ddBranchHero(_dashRows, _bcodes))}
+            ${_ddPanel("🍽️ สัดส่วนช่องทางการขาย", "แยกตามช่องทาง · " + escHtml(_plabel), `<div style="position:relative;height:240px"><canvas id="ddDonut"></canvas></div><div id="ddDonutLegend" class="dash2-chan-legend"></div>`)}
+          </div>`;
           _ddRenderDonut(_dashRows);
           return;
         }
