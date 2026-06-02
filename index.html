@@ -305,7 +305,7 @@
         gap: 16px; flex-wrap: wrap;
         margin-bottom: 22px;
       }
-      .dash3-eyebrow {
+      .dash3-eyebrow, .dash3-role-tag {
         font-size: 11px; font-weight: 700;
         color: var(--brand);
         letter-spacing: 1.4px;
@@ -313,11 +313,125 @@
         margin-bottom: 4px;
         opacity: 0.85;
       }
+      .dash3-role-tag {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(255,140,66,0.12);
+        border: 1px solid rgba(255,140,66,0.3);
+        margin-bottom: 6px;
+      }
       .dash3-title {
         font-size: 2rem; font-weight: 800;
         letter-spacing: -0.025em;
         color: var(--txt);
         line-height: 1.1;
+      }
+      .dash3-sub {
+        font-size: 13px; color: var(--txt2); margin-top: 4px;
+      }
+      .dash3-hdr-titles { min-width: 0; flex: 1; }
+
+      /* ─── Role-based show/hide ─── */
+      body.dash-role-branch .dash3-team-view { display: none !important; }
+      body.dash-role-team .dash3-branch-view { display: none !important; }
+
+      /* ─── Branch hero — single store focus ─── */
+      .dash3-branch-hero {
+        display: grid;
+        grid-template-columns: 1fr 1.4fr;
+        gap: 24px;
+        background: linear-gradient(135deg, rgba(255,140,66,0.08) 0%, rgba(109,213,250,0.04) 100%);
+        border: 1px solid var(--bd);
+        border-radius: 20px;
+        padding: 28px 28px;
+        margin-bottom: 18px;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(20px);
+      }
+      .dash3-branch-hero::before {
+        content: '';
+        position: absolute;
+        top: -80px; right: -80px;
+        width: 320px; height: 320px;
+        background: radial-gradient(circle, rgba(255,140,66,0.18) 0%, transparent 65%);
+        pointer-events: none;
+      }
+      .dash3-bh-left, .dash3-bh-right {
+        position: relative; z-index: 1; min-width: 0;
+      }
+      .dash3-bh-eyebrow {
+        font-size: 12px; font-weight: 700;
+        color: var(--brand);
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .dash3-bh-bigval {
+        font-size: 2.6rem; font-weight: 800;
+        color: var(--txt);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.035em;
+        line-height: 1;
+        text-shadow: 0 0 30px rgba(255,140,66,0.3);
+        margin-bottom: 4px;
+      }
+      .dash3-bh-sub {
+        font-size: 12.5px; color: var(--txt2);
+      }
+      .dash3-bh-right { display: flex; flex-direction: column; gap: 14px; }
+      .dash3-bh-progress-lbl {
+        display: flex; justify-content: space-between;
+        font-size: 12.5px; color: var(--txt2);
+      }
+      .dash3-bh-progress-lbl b { color: var(--brand); font-weight: 800; }
+      .dash3-bh-progress-track {
+        position: relative;
+        height: 10px;
+        background: rgba(255,255,255,0.06);
+        border-radius: 999px;
+        overflow: hidden;
+        border: 1px solid var(--bd);
+      }
+      .dash3-bh-progress-fill {
+        position: absolute; left: 0; top: 0; bottom: 0;
+        background: var(--brand-grad);
+        border-radius: inherit;
+        transition: width 0.6s var(--ease);
+        box-shadow: 0 0 16px rgba(255,140,66,0.5);
+      }
+      .dash3-bh-tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      .dash3-bh-tile {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--bd);
+        border-radius: 12px;
+        padding: 12px;
+        text-align: center;
+      }
+      .dash3-bh-tile-lbl {
+        font-size: 11px; color: var(--txt2);
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+      .dash3-bh-tile-val {
+        font-size: 18px; font-weight: 800;
+        color: var(--txt);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em;
+      }
+      @media (max-width: 700px) {
+        .dash3-branch-hero { grid-template-columns: 1fr; gap: 18px; padding: 22px; }
+        .dash3-bh-bigval { font-size: 2.1rem; }
+      }
+      @media (max-width: 480px) {
+        .dash3-bh-tiles { grid-template-columns: 1fr 1fr; }
+        .dash3-bh-tile-val { font-size: 16px; }
       }
       .dash3-controls {
         display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
@@ -495,75 +609,6 @@
         .dash3-kpi-val { font-size: 1.4rem; }
         .dash3-kpi-hero .dash3-kpi-val { font-size: 1.6rem; }
         .dash3-card { padding: 16px !important; }
-      }
-
-      /* ─────────────────────────────────────────
-   EDIT MODAL — grouped sections + chips banner
-───────────────────────────────────────── */
-      .edt-banner-card {
-        background: linear-gradient(135deg, rgba(255,140,66,0.10), rgba(255,140,66,0.04));
-        border: 1px solid rgba(255,140,66,0.32);
-        border-radius: 14px;
-        padding: 14px 16px;
-        margin-bottom: 18px;
-      }
-      .edt-banner-row {
-        display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
-      }
-      .edt-banner-chip {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 5px 12px;
-        border-radius: 999px;
-        font-size: 12px; font-weight: 700;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.12);
-        color: var(--txt);
-      }
-      .edt-chip-date { color: #fde68a; border-color: rgba(251,191,36,0.4); }
-      .edt-chip-slot { color: #93c5fd; border-color: rgba(96,165,250,0.4); }
-      .edt-chip-edits { color: #fca5a5; border-color: rgba(248,113,113,0.4); }
-      .edt-banner-submitter { font-size: 13px; color: var(--txt2); margin-bottom: 6px; }
-      .edt-banner-submitter b { color: var(--txt); font-weight: 700; }
-      .edt-banner-hint {
-        font-size: 11.5px;
-        color: var(--brand);
-        font-weight: 600;
-        padding-top: 8px;
-        border-top: 1px dashed rgba(255,255,255,0.08);
-      }
-      .edt-section {
-        background: var(--surface);
-        border: 1px solid var(--bd);
-        border-radius: 12px;
-        margin-bottom: 14px;
-        overflow: hidden;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-      }
-      .edt-section-hdr {
-        background: var(--brand-grad);
-        color: #fff;
-        padding: 10px 16px;
-        font-size: 13.5px; font-weight: 800;
-        letter-spacing: 0.2px;
-        display: flex; align-items: center; gap: 8px;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.15);
-      }
-      .edt-section-body {
-        padding: 14px;
-      }
-      .edt-grid-3 {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 10px;
-      }
-      .edt-field-full { width: 100%; }
-      .edt-section input:disabled { opacity: 0.45; cursor: not-allowed; }
-
-      @media (max-width: 600px) {
-        .edt-grid-3 { grid-template-columns: 1fr 1fr; gap: 8px; }
-        .edt-banner-card { padding: 12px 14px; }
-        .edt-section-body { padding: 12px; }
       }
 
       /* ─────────────────────────────────────────
@@ -3911,8 +3956,9 @@ body { background: var(--bg); color: var(--txt); }
         <!-- ───────── HEADER bar — minimal ───────── -->
         <div class="dash3-hdr">
           <div class="dash3-hdr-titles">
-            <div class="dash3-eyebrow" id="dashPageSub">ภาพรวมผลการขาย</div>
-            <h1 class="dash3-title">📊 แดชบอร์ด</h1>
+            <div class="dash3-role-tag" id="dashRoleTag">SALES OVERVIEW</div>
+            <h1 class="dash3-title" id="dashTitle">📊 แดชบอร์ด</h1>
+            <div class="dash3-sub" id="dashPageSub">ภาพรวมผลการขาย</div>
           </div>
           <div class="dash3-controls">
             <div class="dash3-seg">
@@ -3935,9 +3981,43 @@ body { background: var(--bg); color: var(--txt); }
           <button class="dash3-seg-btn active" onclick="applyDashCustom()">ดูข้อมูล</button>
         </div>
 
-        <!-- ───────── HERO + KPI strip ───────── -->
-        <div class="dash3-hero-row">
-          <!-- Hero: ยอดขายจริง (เด่นใหญ่) + Mini KPIs ใต้ -->
+        <!-- ═══════════════ BRANCH VIEW (สาขา) ═══════════════ -->
+        <div class="dash3-branch-view">
+          <!-- Branch hero: store name + period sales -->
+          <div class="dash3-branch-hero">
+            <div class="dash3-bh-left">
+              <div class="dash3-bh-eyebrow" id="dashBranchName">— สาขา —</div>
+              <div class="dash3-bh-bigval" id="dashBranchSales">฿—</div>
+              <div class="dash3-bh-sub" id="dashBranchSub">ยอดขายในช่วงที่เลือก</div>
+            </div>
+            <div class="dash3-bh-right">
+              <div class="dash3-bh-progress-lbl">
+                <span>ทำได้ <b id="dashBranchPctVal">—</b></span>
+                <span>เป้า <b id="dashBranchPlanVal">฿—</b></span>
+              </div>
+              <div class="dash3-bh-progress-track">
+                <div class="dash3-bh-progress-fill" id="dashBranchPctBar" style="width:0%"></div>
+              </div>
+              <div class="dash3-bh-tiles">
+                <div class="dash3-bh-tile">
+                  <div class="dash3-bh-tile-lbl">🧾 บิล</div>
+                  <div class="dash3-bh-tile-val" id="dashBranchBills">—</div>
+                </div>
+                <div class="dash3-bh-tile">
+                  <div class="dash3-bh-tile-lbl">💵 เฉลี่ย/บิล</div>
+                  <div class="dash3-bh-tile-val" id="dashBranchAvg">฿—</div>
+                </div>
+                <div class="dash3-bh-tile">
+                  <div class="dash3-bh-tile-lbl">👥 ค่าแรง %</div>
+                  <div class="dash3-bh-tile-val" id="dashBranchLabour">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════ TEAM VIEW (Admin/VP/BZM) ═══════════════ -->
+        <div class="dash3-team-view">
           <div class="dash3-hero">
             <div class="dash3-hero-bg"></div>
             <div class="dash3-kpis" id="dashStatsGrid">
@@ -3986,7 +4066,7 @@ body { background: var(--bg); color: var(--txt); }
 
         <!-- ───────── แถว 2: สาขายอดเยี่ยม + สรุปตัวเลข ───────── -->
         <div class="dash2-row2 dash3-row">
-          <div class="dash2-card dash3-card">
+          <div class="dash2-card dash3-card dash3-team-view">
             <div class="dash2-cardhdr">
               <h3>🏆 สาขายอดเยี่ยม</h3>
               <div class="dash2-cardsub">% ของเป้า — 8 สาขาที่ทำได้สูงสุด</div>
@@ -4968,7 +5048,53 @@ body { background: var(--bg); color: var(--txt); }
       function showDash() {
         showScreen("sDash");
         setMobTab("mnDash");
+        _applyDashRoleView();
         loadDash();
+      }
+
+      // เลือก view ตาม role: branch ดูเฉพาะสาขาตัวเอง · team (admin/vp/bzm) ดูภาพรวม
+      function _applyDashRoleView() {
+        const isBranch = (S.role === "branch" || S.role === "franchise");
+        document.body.classList.toggle("dash-role-branch", isBranch);
+        document.body.classList.toggle("dash-role-team", !isBranch);
+        const tag = document.getElementById("dashRoleTag");
+        const title = document.getElementById("dashTitle");
+        const sub = document.getElementById("dashPageSub");
+        if (isBranch) {
+          if (tag) tag.textContent = "MY STORE";
+          if (title) title.innerHTML = "🏬 ภาพรวมสาขา";
+          if (sub) sub.textContent = (S.branch || "สาขาของคุณ");
+        } else {
+          var roleTxt = (S.role === "admin") ? "ADMIN" : (S.role === "vp") ? "VP" : (S.role === "bzm") ? "BZM TEAM" : "OVERVIEW";
+          if (tag) tag.textContent = roleTxt;
+          if (title) title.innerHTML = "📊 ภาพรวมทีม";
+          if (sub) sub.textContent = "ผลรวมหลายสาขาในขอบเขตที่ดูแล";
+        }
+      }
+
+      // อัปเดต branch hero card (เฉพาะ role branch)
+      function _updateBranchHero(data) {
+        if (!document.body.classList.contains("dash-role-branch")) return;
+        var fmtV = (typeof fmt === 'function') ? fmt : function(n){ return Number(n||0).toLocaleString('th-TH'); };
+        var name = S.branch || "สาขา";
+        var sales = data && data.totalActual ? data.totalActual : 0;
+        var plan = data && data.totalPlan ? data.totalPlan : 0;
+        var bills = data && data.totalBills ? data.totalBills : 0;
+        var avgBill = bills > 0 ? sales / bills : 0;
+        var labourPct = (data && data.labourPct != null) ? data.labourPct : 0;
+        var pct = plan > 0 ? (sales / plan * 100) : 0;
+        var setText = function(id, val){ var el = document.getElementById(id); if (el) el.textContent = val; };
+        var setHTML = function(id, val){ var el = document.getElementById(id); if (el) el.innerHTML = val; };
+        setText("dashBranchName", "🏬 " + name);
+        setHTML("dashBranchSales", "฿" + fmtV(Math.round(sales)));
+        setText("dashBranchSub", "ยอดขายในช่วงที่เลือก");
+        setText("dashBranchPctVal", pct.toFixed(1) + "%");
+        setText("dashBranchPlanVal", "฿" + fmtV(Math.round(plan)));
+        var bar = document.getElementById("dashBranchPctBar");
+        if (bar) bar.style.width = Math.max(0, Math.min(100, pct)) + "%";
+        setText("dashBranchBills", fmtV(bills));
+        setText("dashBranchAvg", "฿" + fmtV(Math.round(avgBill)));
+        setText("dashBranchLabour", (labourPct).toFixed(1) + "%");
       }
 
 
@@ -6220,6 +6346,16 @@ body { background: var(--bg); color: var(--txt); }
           renderDashChannel(_dashRows);
           renderDashBranchBars(_dashRows, cur.planByBranch);
           renderDashQuickStats(_dashRows, periodDays);
+          // Branch view hero (เฉพาะ role=branch)
+          try {
+            var eod = _dashRows.filter(function(r){ return r.submit_time_slot === "สิ้นวัน"; });
+            var totalActual = eod.reduce(function(s,r){ return s + (parseFloat(r.actual_sale)||0); }, 0);
+            var totalPlan = Object.values(cur.planByDate).reduce(function(s,v){ return s + (parseFloat(v)||0); }, 0);
+            var totalBills = eod.reduce(function(s,r){ return s + (parseFloat(r.total_trans)||0); }, 0);
+            var totalLabour = eod.reduce(function(s,r){ return s + (parseFloat(r.labour_baht)||0); }, 0);
+            var labourPct = totalActual > 0 ? (totalLabour / totalActual * 100) : 0;
+            _updateBranchHero({ totalActual: totalActual, totalPlan: totalPlan, totalBills: totalBills, labourPct: labourPct });
+          } catch (e) { console.warn('branch hero update failed', e); }
         }
 
         apiCall({ mode:"history", branch_codes:queryCodes, start_date:startDate, end_date:endDate },
@@ -8026,71 +8162,45 @@ body { background: var(--bg); color: var(--txt); }
         }
         _editRow = row;
         const isEod = row.submit_time_slot === "สิ้นวัน";
-        const slotLabel = row.submit_time_slot === "สิ้นวัน" ? "สิ้นวัน" : "16.00";
 
-        // ─ Banner (header info) ─
         const planHint = isEod
-          ? '⚠️ Plan Sale ของรอบสิ้นวัน — แก้ได้เฉพาะรอบ 16.00 เท่านั้น'
-          : 'การแก้ Plan Sale ที่นี่จะอัปเดต Plan Sale ในหน้าปฏิทินด้วย';
-        document.getElementById("editBanner").innerHTML = `
-          <div class="edt-banner-card">
-            <div class="edt-banner-row">
-              <div class="edt-banner-chip edt-chip-date">📅 ${row.submit_date}</div>
-              <div class="edt-banner-chip edt-chip-slot">⏱ รอบ ${slotLabel}</div>
-              ${editCnt > 0 ? `<div class="edt-banner-chip edt-chip-edits">✏️ แก้แล้ว ${editCnt} ครั้ง</div>` : ''}
-            </div>
-            <div class="edt-banner-submitter">ส่งครั้งแรกโดย: <b>${escHtml(row.submitter_name || "-")}</b></div>
-            <div class="edt-banner-hint">${planHint}</div>
-          </div>`;
+          ? `* แก้ไข Plan Sale ได้เฉพาะรอบ 16.00 เท่านั้น`
+          : `* การแก้ Plan Sale ที่นี่จะอัปเดต Plan Sale ในหน้าปฏิทินด้วย (เป็นค่าเดียวกัน)`;
+        document.getElementById("editBanner").innerHTML =
+          `<strong>📅 ${row.submit_date}  รอบ ${row.submit_time_slot}</strong><br>` +
+          `ส่งครั้งแรกโดย: <strong>${row.submitter_name || "-"}</strong>` +
+          (editCnt > 0 ? `&ensp;|&ensp;แก้ไขแล้ว <strong>${editCnt} ครั้ง</strong>` : "") +
+          `<div style="margin-top:6px;font-size:0.78rem;color:#92400e">${planHint}</div>`;
 
-        // ─ Field groups ─
-        const numInp = (id, val, dis) => {
-          const disAttr = dis ? "disabled" : "";
-          return `<input id="${id}" type="text" inputmode="decimal" value="${val}" ${disAttr}>`;
-        };
-        const textInp = (id, val) => `<input id="${id}" type="text" value="${escHtml(String(val))}">`;
+        const fields = [
+          { id: "e_submitter", label: "ชื่อผู้ส่ง *", val: row.submitter_name || "", num: false, full: true },
+          { id: "e_plan",   label: "Plan Sale",   val: row.plan_sale   || 0, num: true, dis: isEod },
+          { id: "e_actual", label: "Actual Sale", val: row.actual_sale || 0, num: true },
+          { id: "e_din_s",  label: "Sale Dine In",    val: row.sale_dine_in    || 0, num: true, dis: !isEod },
+          { id: "e_ta_s",   label: "Sale Take Away",  val: row.sale_take_away  || 0, num: true, dis: !isEod },
+          { id: "e_grab_s", label: "Sale Grab",       val: row.sale_grab       || 0, num: true, dis: !isEod },
+          { id: "e_line_s", label: "Sale Lineman",    val: row.sale_lineman    || 0, num: true, dis: !isEod },
+          { id: "e_shp_s",  label: "Sale Shopee",     val: row.sale_shopeefood || 0, num: true, dis: !isEod },
+          { id: "e_trans",  label: "Total Trans",     val: row.total_trans     || 0, num: true, dis: !isEod },
+          { id: "e_din_t",  label: "Trans Dine In",   val: row.trans_dine_in   || 0, num: true, dis: !isEod },
+          { id: "e_ta_t",   label: "Trans Take Away", val: row.trans_take_away || 0, num: true, dis: !isEod },
+          { id: "e_grab_t", label: "Trans Grab",      val: row.trans_grab      || 0, num: true, dis: !isEod },
+          { id: "e_line_t", label: "Trans Lineman",   val: row.trans_lineman   || 0, num: true, dis: !isEod },
+          { id: "e_shp_t",  label: "Trans Shopee",    val: row.trans_shopeefood|| 0, num: true, dis: !isEod },
+          { id: "e_cust",   label: "Customer",        val: row.customer        || 0, num: true, dis: !isEod },
+          { id: "e_lhour",  label: "Labour Hour",     val: row.labour_hour     || 0, num: true, dis: !isEod },
+          { id: "e_lbaht",  label: "Labour Baht",     val: row.labour_baht     || 0, num: true, dis: !isEod }
+        ];
 
-        const gridHtml = `
-          <div class="edt-section">
-            <div class="edt-section-hdr">👤 ข้อมูลผู้ส่ง</div>
-            <div class="edt-section-body">
-              <div class="field edt-field-full"><label>ชื่อผู้ส่ง *</label>${textInp("e_submitter", row.submitter_name || "")}</div>
-            </div>
-          </div>
-
-          <div class="edt-section">
-            <div class="edt-section-hdr">💰 ยอดขาย (Sale)</div>
-            <div class="edt-section-body edt-grid-3">
-              <div class="field"><label>Plan Sale</label>${numInp("e_plan",   row.plan_sale   || 0, isEod)}</div>
-              <div class="field"><label>Actual Sale *</label>${numInp("e_actual", row.actual_sale || 0, false)}</div>
-              <div class="field"><label>Dine In</label>${numInp("e_din_s",  row.sale_dine_in    || 0, !isEod)}</div>
-              <div class="field"><label>Take Away</label>${numInp("e_ta_s",   row.sale_take_away  || 0, !isEod)}</div>
-              <div class="field"><label>Grab</label>${numInp("e_grab_s", row.sale_grab       || 0, !isEod)}</div>
-              <div class="field"><label>Lineman</label>${numInp("e_line_s", row.sale_lineman    || 0, !isEod)}</div>
-              <div class="field"><label>Shopee Food</label>${numInp("e_shp_s",  row.sale_shopeefood || 0, !isEod)}</div>
-            </div>
-          </div>
-
-          <div class="edt-section">
-            <div class="edt-section-hdr">🧾 จำนวน Trans</div>
-            <div class="edt-section-body edt-grid-3">
-              <div class="field"><label>Total Trans</label>${numInp("e_trans",  row.total_trans     || 0, !isEod)}</div>
-              <div class="field"><label>Dine In</label>${numInp("e_din_t",  row.trans_dine_in   || 0, !isEod)}</div>
-              <div class="field"><label>Take Away</label>${numInp("e_ta_t",   row.trans_take_away || 0, !isEod)}</div>
-              <div class="field"><label>Grab</label>${numInp("e_grab_t", row.trans_grab      || 0, !isEod)}</div>
-              <div class="field"><label>Lineman</label>${numInp("e_line_t", row.trans_lineman   || 0, !isEod)}</div>
-              <div class="field"><label>Shopee Food</label>${numInp("e_shp_t",  row.trans_shopeefood|| 0, !isEod)}</div>
-            </div>
-          </div>
-
-          <div class="edt-section">
-            <div class="edt-section-hdr">👥 Customer & Labour</div>
-            <div class="edt-section-body edt-grid-3">
-              <div class="field"><label>Customer</label>${numInp("e_cust",   row.customer        || 0, !isEod)}</div>
-              <div class="field"><label>Labour Hour</label>${numInp("e_lhour",  row.labour_hour     || 0, !isEod)}</div>
-              <div class="field"><label>Labour Baht</label>${numInp("e_lbaht",  row.labour_baht     || 0, !isEod)}</div>
-            </div>
-          </div>`;
+        let gridHtml = "";
+        fields.forEach(f => {
+          const col = f.full ? "grid-column:1/-1" : "";
+          const dis = f.dis ? "disabled style='opacity:.45'" : "";
+          const inp = f.num
+            ? `<input id="${f.id}" type="text" inputmode="decimal" value="${f.val}" ${dis}>`
+            : `<input id="${f.id}" type="text" value="${escHtml(String(f.val))}">`;
+          gridHtml += `<div class="field" style="${col}"><label>${f.label}</label>${inp}</div>`;
+        });
 
         document.getElementById("editGrid").innerHTML = gridHtml;
         openM("mEdit");
