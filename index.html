@@ -5330,10 +5330,12 @@ body { background: var(--bg); color: var(--txt); }
         const tag = document.getElementById("dashRoleTag");
         const title = document.getElementById("dashTitle");
         const sub = document.getElementById("dashPageSub");
-        // ซ่อน/โชว์ ตัวเลือกช่วง (สัปดาห์/เดือน/ปี) + KPI strip — หน้าสาขาเอาออกให้เรียบ
-        ['dashModeSeg','dashPeriodNav','dashDrillKpis'].forEach(function(id){
+        // ซ่อน KPI strip เฉพาะหน้าสาขา · ตัวเลือกช่วง (สัปดาห์/เดือน/ปี) โชว์ทุกบทบาท
+        var _kpiStrip = document.getElementById('dashDrillKpis');
+        if (_kpiStrip) _kpiStrip.style.display = isBranch ? "none" : "";
+        ['dashModeSeg','dashPeriodNav'].forEach(function(id){
           var e = document.getElementById(id);
-          if (e) e.style.display = isBranch ? "none" : "";
+          if (e) e.style.display = "";
         });
         if (isBranch) {
           // หน้าสาขา: ซ่อน tag "MY STORE" และ subtitle (ช่วงวันที่อยู่ที่ปุ่มเลื่อนแล้ว)
@@ -7033,8 +7035,9 @@ body { background: var(--bg); color: var(--txt); }
         if (role === "branch" || role === "franchise") {
           if (crumbEl) crumbEl.innerHTML = "";
           kpiEl.innerHTML = "";
+          var _plabel = (typeof _dashPeriodRange === "function") ? _dashPeriodRange().label : "";
           bodyEl.innerHTML = `<div class="dash3-row"><div class="dash2-card dash3-card">
-            <div class="dash2-cardhdr"><h3>🍽️ สัดส่วนช่องทางการขาย</h3><div class="dash2-cardsub">มูลค่ายอดขายแยกตามช่องทาง · เดือนนี้</div></div>
+            <div class="dash2-cardhdr"><h3>🍽️ สัดส่วนช่องทางการขาย</h3><div class="dash2-cardsub">มูลค่ายอดขายแยกตามช่องทาง · ${escHtml(_plabel)}</div></div>
             <div style="position:relative;height:240px"><canvas id="ddDonut"></canvas></div>
             <div id="ddDonutLegend" class="dash2-chan-legend"></div>
           </div></div>`;
