@@ -4327,30 +4327,53 @@ body { background: var(--bg); color: var(--txt); }
             <div class="dash3-sub" id="dashPageSub">ภาพรวมผลการขาย</div>
           </div>
           <div class="dash3-controls">
-            <div class="dash3-seg" id="dashModeSeg">
-              <button id="dashModeWeek"  class="dash3-seg-btn" onclick="setDashMode('week')">สัปดาห์</button>
-              <button id="dashModeMonth" class="dash3-seg-btn active" onclick="setDashMode('month')">เดือน</button>
-              <button id="dashModeYear"  class="dash3-seg-btn" onclick="setDashMode('year')">ปี</button>
-            </div>
-            <div class="dash3-nav" id="dashPeriodNav">
-              <button class="dash3-nav-btn" id="dashNavPrev" onclick="dashNav(-1)" title="ก่อนหน้า">◀</button>
-              <span class="dash3-nav-lbl" id="dashNavLabel">—</span>
-              <button class="dash3-nav-btn" id="dashNavNext" onclick="dashNav(1)" title="ถัดไป">▶</button>
-            </div>
             <select id="dashBranchFilter" class="dash3-branch" onchange="loadDash()" style="display:none"></select>
             <button class="dash3-icon-btn" onclick="loadDash()" title="รีเฟรช">🔄</button>
           </div>
         </div>
 
-        <!-- ═══════════════ หน้าสาขา (วันนี้ + เดือนนี้) — JS เติมเนื้อหา ═══════════════ -->
-        <div id="dashDaySumWrap" style="display:none"></div>
-
-        <!-- ═══════════════ DRILL-DOWN: ทั้งบริษัท → BZM → สาขา (ทีม) ═══════════════ -->
+        <!-- breadcrumb เอนทิตี (บริษัท › โซน › สาขา) — ใช้ร่วมทั้ง 3 พาร์ท -->
         <div class="dd-crumb" id="dashCrumb"></div>
-        <div class="dash3-kpis dd-kpis" id="dashDrillKpis"></div>
-        <div id="dashDrillBody"></div>
 
-        <!-- (โครงเดิม: 3 framed cards / branch view / team view / chart rows — แทนด้วย drill-down ด้านบนแล้ว) -->
+        <!-- ═══════════════ 3 พาร์ทตามช่วงเวลา: วัน / สัปดาห์ / เดือน ═══════════════ -->
+        <section class="dash3-section" id="secDayWrap" style="margin-bottom:24px">
+          <div class="dash2-cardhdr dsum-hdr" style="margin-bottom:12px">
+            <div><h3 style="margin:0">📅 รายวัน</h3><div class="dash2-cardsub" id="secDaySub"></div></div>
+            <div class="dash3-nav">
+              <button class="dash3-nav-btn" id="secDayPrev" onclick="dashSecNav('day',-1)" title="วันก่อนหน้า">◀</button>
+              <span class="dash3-nav-lbl" id="secDayLabel">—</span>
+              <button class="dash3-nav-btn" id="secDayNext" onclick="dashSecNav('day',1)" title="วันถัดไป">▶</button>
+            </div>
+          </div>
+          <div class="dash3-kpis dd-kpis" id="secDayKpis"></div>
+          <div id="secDayBody"></div>
+        </section>
+
+        <section class="dash3-section" id="secWeekWrap" style="margin-bottom:24px">
+          <div class="dash2-cardhdr dsum-hdr" style="margin-bottom:12px">
+            <div><h3 style="margin:0">🗓️ รายสัปดาห์</h3><div class="dash2-cardsub" id="secWeekSub"></div></div>
+            <div class="dash3-nav">
+              <button class="dash3-nav-btn" id="secWeekPrev" onclick="dashSecNav('week',-1)" title="สัปดาห์ก่อนหน้า">◀</button>
+              <span class="dash3-nav-lbl" id="secWeekLabel">—</span>
+              <button class="dash3-nav-btn" id="secWeekNext" onclick="dashSecNav('week',1)" title="สัปดาห์ถัดไป">▶</button>
+            </div>
+          </div>
+          <div class="dash3-kpis dd-kpis" id="secWeekKpis"></div>
+          <div id="secWeekBody"></div>
+        </section>
+
+        <section class="dash3-section" id="secMonthWrap">
+          <div class="dash2-cardhdr dsum-hdr" style="margin-bottom:12px">
+            <div><h3 style="margin:0">📆 รายเดือน</h3><div class="dash2-cardsub" id="secMonthSub"></div></div>
+            <div class="dash3-nav">
+              <button class="dash3-nav-btn" id="secMonthPrev" onclick="dashSecNav('month',-1)" title="เดือนก่อนหน้า">◀</button>
+              <span class="dash3-nav-lbl" id="secMonthLabel">—</span>
+              <button class="dash3-nav-btn" id="secMonthNext" onclick="dashSecNav('month',1)" title="เดือนถัดไป">▶</button>
+            </div>
+          </div>
+          <div class="dash3-kpis dd-kpis" id="secMonthKpis"></div>
+          <div id="secMonthBody"></div>
+        </section>
       </div>
     </div>
 
@@ -5311,8 +5334,8 @@ body { background: var(--bg); color: var(--txt); }
       function showDash() {
         showScreen("sDash");
         setMobTab("mnDash");
-        _dashAnchor = new Date();   // เปิดแดชบอร์ดมา = ช่วงปัจจุบันเสมอ
-        _daySumAnchor = new Date(); // กล่องสรุปรายวัน = วันนี้เสมอ
+        // เปิดแดชบอร์ดมา = ทุกพาร์ทกลับมาช่วงปัจจุบันเสมอ
+        _secAnchor = { day: new Date(), week: new Date(), month: new Date() };
         _applyDashRoleView();
         loadDash();
       }
@@ -5325,11 +5348,7 @@ body { background: var(--bg); color: var(--txt); }
         const tag = document.getElementById("dashRoleTag");
         const title = document.getElementById("dashTitle");
         const sub = document.getElementById("dashPageSub");
-        // หน้าสาขาใช้เลย์เอาต์ของตัวเอง — ซ่อน drill-down + ตัวเลือกช่วง (ทีมโชว์)
-        ['dashModeSeg','dashPeriodNav','dashDrillKpis','dashCrumb','dashDrillBody'].forEach(function(id){
-          var e = document.getElementById(id);
-          if (e) e.style.display = isBranch ? "none" : "";
-        });
+        // เลย์เอาต์ 3 พาร์ทใช้ร่วมทุกบทบาท · breadcrumb ว่างเองสำหรับหน้าสาขา
         if (isBranch) {
           // หน้าสาขา: ซ่อน tag "MY STORE" และ subtitle (ช่วงวันที่อยู่ที่ปุ่มเลื่อนแล้ว)
           if (tag) tag.style.display = "none";
@@ -6393,68 +6412,6 @@ body { background: var(--bg); color: var(--txt); }
       const _TH_MONTH_SHORT = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 
       // คำนวณช่วงจากโหมด + วันอ้างอิง (สัปดาห์ จ–อา / เดือน / ปี) + ช่วงก่อนหน้า + label
-      function _dashPeriodRange() {
-        const a = new Date(_dashAnchor); a.setHours(0,0,0,0);
-        let start, end, prevStart, prevEnd, label;
-        if (_dashMode === 'week') {
-          const day = a.getDay();                 // 0=อา..6=ส
-          const diffToMon = (day === 0 ? -6 : 1 - day);
-          start = new Date(a); start.setDate(a.getDate() + diffToMon);
-          end   = new Date(start); end.setDate(start.getDate() + 6);
-          prevStart = new Date(start); prevStart.setDate(start.getDate() - 7);
-          prevEnd   = new Date(end);   prevEnd.setDate(end.getDate() - 7);
-          label = start.getDate() + ' ' + _TH_MONTH_SHORT[start.getMonth()] + ' – ' +
-                  end.getDate() + ' ' + _TH_MONTH_SHORT[end.getMonth()] + ' ' + (end.getFullYear() + 543);
-        } else if (_dashMode === 'year') {
-          const y = a.getFullYear();
-          start = new Date(y, 0, 1); end = new Date(y, 11, 31);
-          prevStart = new Date(y - 1, 0, 1); prevEnd = new Date(y - 1, 11, 31);
-          label = 'ปี ' + (y + 543);
-        } else { // month
-          const y = a.getFullYear(), m = a.getMonth();
-          start = new Date(y, m, 1); end = new Date(y, m + 1, 0);
-          prevStart = new Date(y, m - 1, 1); prevEnd = new Date(y, m, 0);
-          label = _TH_MONTH_FULL[m] + ' ' + (y + 543);
-        }
-        return {
-          startDate: _fmtDate(start), endDate: _fmtDate(end),
-          prevStartStr: _fmtDate(prevStart), prevEndStr: _fmtDate(prevEnd),
-          label: label, end: end
-        };
-      }
-
-      // อัปเดต label + ปิดปุ่ม "ถัดไป" เมื่อช่วงปัจจุบันรวมวันนี้แล้ว (กันไปอนาคต)
-      function _updateDashNav(pr) {
-        const lbl = document.getElementById('dashNavLabel');
-        if (lbl) lbl.textContent = pr.label;
-        const next = document.getElementById('dashNavNext');
-        if (next) {
-          const today = new Date(); today.setHours(0,0,0,0);
-          next.disabled = (pr.end >= today);
-        }
-      }
-
-      // สลับโหมด — เริ่มที่ช่วงปัจจุบันเสมอ
-      function setDashMode(mode) {
-        _dashMode = mode;
-        _dashAnchor = new Date();
-        ['week','month','year'].forEach(function(m){
-          var btn = document.getElementById('dashMode' + m.charAt(0).toUpperCase() + m.slice(1));
-          if (btn) btn.classList.toggle('active', m === mode);
-        });
-        loadDash();
-      }
-
-      // เลื่อนช่วงก่อนหน้า/ถัดไป
-      function dashNav(dir) {
-        const a = new Date(_dashAnchor);
-        if (_dashMode === 'week')      a.setDate(a.getDate() + dir * 7);
-        else if (_dashMode === 'year') a.setFullYear(a.getFullYear() + dir);
-        else                           a.setMonth(a.getMonth() + dir);
-        _dashAnchor = a;
-        loadDash();
-      }
-
       /* ─── KPI strip (4 cards with change badges) ─── */
       function renderDashKpis(curRows, prevRows, planByDateCur, planByDatePrev) {
         const eodCur  = (curRows  || []).filter(r => r.submit_time_slot === "สิ้นวัน");
@@ -6715,8 +6672,40 @@ body { background: var(--bg); color: var(--txt); }
       ════════════════════════════════════════════ */
       let _ddView = { level: "company", zone: null, branch: null };
       let _ddRange = { startDate: null, endDate: null, periodDays: 30 };
-      let _ddTrendChart = null, _ddDonutChart = null;
-      let _ddZoneItems = [], _ddBranchItems = [];
+
+      // ── 3 พาร์ทตามช่วงเวลา (วัน / สัปดาห์ / เดือน) ──
+      let _secAnchor = { day: new Date(), week: new Date(), month: new Date() };
+      let _secData = {
+        day:   { rows: [], planByDate: {}, planByBranch: {}, range: null },
+        week:  { rows: [], planByDate: {}, planByBranch: {}, range: null },
+        month: { rows: [], planByDate: {}, planByBranch: {}, range: null }
+      };
+      let _secCharts = { day: { trend: null, donut: null }, week: { trend: null, donut: null }, month: { trend: null, donut: null } };
+      let _secItems = { day: { zones: [], branches: [] }, week: { zones: [], branches: [] }, month: { zones: [], branches: [] } };
+      function _cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+      function _secPlan(map, codes) { return (codes || []).reduce((s, bc) => s + (parseFloat((map || {})[bc]) || 0), 0); }
+      // คำนวณช่วงของพาร์ท: day=วันเดียว · week=จ–อา · month=ทั้งเดือน
+      function _secPeriodRange(sec, anchor) {
+        const a = new Date(anchor); a.setHours(0, 0, 0, 0);
+        let start, end, label;
+        if (sec === 'day') {
+          start = new Date(a); end = new Date(a);
+          label = fmtThaiDate(_fmtDate(a));
+        } else if (sec === 'week') {
+          const day = a.getDay();
+          const diffToMon = (day === 0 ? -6 : 1 - day);
+          start = new Date(a); start.setDate(a.getDate() + diffToMon);
+          end = new Date(start); end.setDate(start.getDate() + 6);
+          label = start.getDate() + ' ' + _TH_MONTH_SHORT[start.getMonth()] + ' – ' +
+                  end.getDate() + ' ' + _TH_MONTH_SHORT[end.getMonth()] + ' ' + (end.getFullYear() + 543);
+        } else { // month
+          const y = a.getFullYear(), m = a.getMonth();
+          start = new Date(y, m, 1); end = new Date(y, m + 1, 0);
+          label = _TH_MONTH_FULL[m] + ' ' + (y + 543);
+        }
+        const periodDays = Math.round((end - start) / 86400000) + 1;
+        return { startDate: _fmtDate(start), endDate: _fmtDate(end), periodDays, label, end };
+      }
 
       const _DD_TRANS_KEY = {
         sale_dine_in: "trans_dine_in", sale_take_away: "trans_take_away",
@@ -6730,8 +6719,9 @@ body { background: var(--bg); color: var(--txt); }
         _ddCodes().forEach(bc => { const z = _ddZoneOf(bc); (m[z] = m[z] || []).push(bc); });
         return m;
       }
-      function _ddPlan(codes) {
-        return (codes || []).reduce((s, bc) => s + (parseFloat(_dashPlanByBranch[bc]) || 0), 0);
+      function _ddPlan(codes, map) {
+        map = map || _dashPlanByBranch;
+        return (codes || []).reduce((s, bc) => s + (parseFloat(map[bc]) || 0), 0);
       }
       function _ddAgg(rows) {
         const eod = (rows || []).filter(r => r.submit_time_slot === "สิ้นวัน");
@@ -6751,8 +6741,8 @@ body { background: var(--bg); color: var(--txt); }
         return a;
       }
 
-      function _ddKpiCards(a, codes) {
-        const plan = _ddPlan(codes);
+      function _ddKpiCards(a, codes, map) {
+        const plan = _ddPlan(codes, map);
         const pct    = plan > 0 ? a.actual / plan : 0;
         const ticket = a.bills > 0 ? a.actual / a.bills : 0;
         const labPct = a.actual > 0 ? a.labBaht / a.actual : 0;
@@ -6774,13 +6764,13 @@ body { background: var(--bg); color: var(--txt); }
           </div>`).join("");
       }
 
-      function _ddBarList(items, onClick) {
+      function _ddBarList(items, onClick, sec) {
         if (!items.length) return `<div class="dd-empty">ไม่มีข้อมูลในช่วงนี้</div>`;
         const max = Math.max(...items.map(i => i.actual), 1);
         const rows = items.map((i, idx) => {
           const w = (i.actual / max * 100).toFixed(1);
           const col = _ddAchvColor(i.pct);
-          return `<button class="dd-bar" onclick="${onClick}(${idx})">
+          return `<button class="dd-bar" onclick="${onClick}('${sec}',${idx})">
             <span class="dd-bar-name">${i.code ? `<b>${escHtml(i.code)}</b>` : ""}${escHtml(i.label)}${i.n ? ` <b>· ${i.n} สาขา</b>` : ""}</span>
             <span class="dd-bar-track"><span class="dd-bar-fill" style="width:${w}%"></span></span>
             <span class="dd-bar-val">฿${fmt(Math.round(i.actual))}<i style="color:${col}">${i.pct ? (i.pct * 100).toFixed(0) + "%" : "-"}</i></span>
@@ -6789,9 +6779,9 @@ body { background: var(--bg); color: var(--txt); }
         return `<div class="dd-bar-head"><span>สาขา / โซน</span><span>ยอดขายจริง</span><span>จริง · %เป้า</span></div><div class="dd-bar-scroll">${rows}</div>`;
       }
 
-      function _ddBranchHero(rows, codes) {
+      function _ddBranchHero(rows, codes, map) {
         const a = _ddAgg(rows);
-        const plan = _ddPlan(codes);
+        const plan = _ddPlan(codes, map);
         const pct = plan > 0 ? a.actual / plan : 0;
         const emoji = pct >= 1 ? "🎉" : pct >= 0.85 ? "💪" : "⚠️";
         const msg = plan <= 0 ? "ยังไม่มีเป้าในช่วงนี้" : pct >= 1 ? "เกินเป้าแล้ว!" : pct >= 0.85 ? "ใกล้ถึงเป้า ดันอีกนิด" : "ต่ำกว่าเป้า ต้องเร่งมือ";
@@ -6821,11 +6811,12 @@ body { background: var(--bg); color: var(--txt); }
         return `<table class="dd-table"><thead><tr><th>ช่องทาง</th><th>ยอดขาย (฿)</th><th>สัดส่วน</th><th>บิลเฉลี่ย</th></tr></thead><tbody>${body}</tbody></table>`;
       }
 
-      function _ddRenderDonut(rows) {
+      function _ddRenderDonut(rows, sec) {
+        const C = _cap(sec || 'month');
         const a = _ddAgg(rows);
         const totals = CHANNEL_DEFS.map(c => ({ ...c, value: a.sale[c.key] }));
         const grand = totals.reduce((s, t) => s + t.value, 0);
-        const legEl = document.getElementById("ddDonutLegend");
+        const legEl = document.getElementById("sec" + C + "DonutLeg");
         if (legEl) {
           legEl.innerHTML = grand <= 0
             ? '<span style="color:var(--txt2);font-size:12px">ไม่มีข้อมูล</span>'
@@ -6834,10 +6825,11 @@ body { background: var(--bg); color: var(--txt); }
                 return `<span class="lg-item"><span class="lg-dot" style="background:${t.color}"></span>${escHtml(t.label)} <span style="color:var(--txt);font-weight:600;margin-left:2px">${pc}</span></span>`;
               }).join("");
         }
-        const cv = document.getElementById("ddDonut");
+        const cv = document.getElementById("sec" + C + "Donut");
         if (!cv) return;
-        if (_ddDonutChart) { _ddDonutChart.destroy(); _ddDonutChart = null; }
-        _ddDonutChart = new Chart(cv, {
+        const _st = _secCharts[sec || 'month'];
+        if (_st.donut) { _st.donut.destroy(); _st.donut = null; }
+        _st.donut = new Chart(cv, {
           type: "doughnut",
           data: {
             labels: CHANNEL_DEFS.map(c => c.label),
@@ -6854,14 +6846,15 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       // เก็บ label/byDate/มี-ข้อมูล จากช่วงที่เลือก (ใช้ร่วมกันทั้งเส้นและแท่ง)
-      function _ddTrendSeries(rows) {
+      function _ddTrendSeries(rows, range) {
+        range = range || _ddRange;
         const eod = (rows || []).filter(r => r.submit_time_slot === "สิ้นวัน");
         const byDate = {};
         eod.forEach(r => { byDate[r.submit_date] = (byDate[r.submit_date] || 0) + (parseFloat(r.actual_sale) || 0); });
         const TH = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
         const labels = [], data = [];
-        const sD = new Date(_ddRange.startDate + "T00:00:00");
-        const eD = new Date(_ddRange.endDate + "T00:00:00");
+        const sD = new Date(range.startDate + "T00:00:00");
+        const eD = new Date(range.endDate + "T00:00:00");
         for (let d = new Date(sD); d <= eD; d.setDate(d.getDate() + 1)) {
           const k = _fmtDate(d);
           labels.push(d.getDate() + " " + TH[d.getMonth()]);
@@ -6873,17 +6866,20 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       // company / zone — กราฟเส้นรวม
-      function _ddRenderTrend(rows) {
-        const box = document.getElementById("ddTrendBox");
+      function _ddRenderTrend(rows, sec, d) {
+        sec = sec || 'month';
+        const C = _cap(sec);
+        const box = document.getElementById("sec" + C + "TrendBox");
         if (!box) return;
-        if (_ddTrendChart) { _ddTrendChart.destroy(); _ddTrendChart = null; }
-        const s = _ddTrendSeries(rows);
+        const _st = _secCharts[sec];
+        if (_st.trend) { _st.trend.destroy(); _st.trend = null; }
+        const s = _ddTrendSeries(rows, d && d.range);
         if (!s.dataDays) {
           box.innerHTML = `<div class="dd-empty">📭 ยังไม่มียอดขายในช่วงที่เลือก</div>`;
           return;
         }
-        box.innerHTML = `<div style="position:relative;height:280px"><canvas id="ddTrend"></canvas></div>`;
-        _ddTrendChart = new Chart(document.getElementById("ddTrend"), {
+        box.innerHTML = `<div style="position:relative;height:280px"><canvas id="sec${C}Trend"></canvas></div>`;
+        _st.trend = new Chart(document.getElementById("sec" + C + "Trend"), {
           type: "line",
           data: { labels: s.labels, datasets: [{ label: "ยอดขาย", data: s.data, borderColor: "rgba(242,108,28,1)", backgroundColor: "rgba(242,108,28,0.12)", borderWidth: 2.5, fill: true, tension: 0.35, pointRadius: 0, pointHoverRadius: 5 }] },
           options: {
@@ -6898,24 +6894,28 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       // สาขา — แท่งรายวัน เทียบเป้า (เขียว=ถึงเป้า · ส้ม=ต่ำกว่า) + เส้นเป้า/วัน
-      function _ddRenderBranchTrend(rows, codes) {
-        const box = document.getElementById("ddTrendBox");
+      function _ddRenderBranchTrend(rows, codes, sec, d) {
+        sec = sec || 'month';
+        const C = _cap(sec);
+        const box = document.getElementById("sec" + C + "TrendBox");
         if (!box) return;
-        if (_ddTrendChart) { _ddTrendChart.destroy(); _ddTrendChart = null; }
-        const s = _ddTrendSeries(rows);
+        const _st = _secCharts[sec];
+        if (_st.trend) { _st.trend.destroy(); _st.trend = null; }
+        const range = (d && d.range) || _ddRange;
+        const s = _ddTrendSeries(rows, range);
         if (!s.dataDays) {
           box.innerHTML = `<div class="dd-empty">📭 สาขานี้ยังไม่มียอดขายในช่วงที่เลือก</div>`;
           return;
         }
-        const periodPlan = _ddPlan(codes);
-        const dailyTarget = _ddRange.periodDays > 0 ? periodPlan / _ddRange.periodDays : 0;
+        const periodPlan = _ddPlan(codes, d && d.planByBranch);
+        const dailyTarget = range.periodDays > 0 ? periodPlan / range.periodDays : 0;
         const colors = s.data.map(v => dailyTarget > 0 ? (v >= dailyTarget ? "rgba(34,197,94,0.85)" : "rgba(242,108,28,0.85)") : "rgba(148,163,184,0.65)");
         const datasets = [{ type: "bar", label: "ยอดขายจริง", data: s.data, backgroundColor: colors, borderRadius: 4, borderSkipped: false, order: 2 }];
         if (dailyTarget > 0) {
           datasets.unshift({ type: "line", label: "เป้า/วัน", data: s.labels.map(() => dailyTarget), borderColor: "#94a3b8", borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 0, fill: false, order: 1 });
         }
-        box.innerHTML = `<div style="position:relative;height:280px"><canvas id="ddTrend"></canvas></div>`;
-        _ddTrendChart = new Chart(document.getElementById("ddTrend"), {
+        box.innerHTML = `<div style="position:relative;height:280px"><canvas id="sec${C}Trend"></canvas></div>`;
+        _st.trend = new Chart(document.getElementById("sec" + C + "Trend"), {
           data: { labels: s.labels, datasets },
           options: {
             responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
@@ -6936,10 +6936,13 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       // เลือกวันเดียว — แสดงช่องทางการขายของวันนั้นเป็นแท่งแนวนอน (฿) แทนกราฟแนวโน้ม
-      function _ddRenderDayChannels(rows) {
-        const box = document.getElementById("ddTrendBox");
+      function _ddRenderDayChannels(rows, sec) {
+        sec = sec || 'day';
+        const C = _cap(sec);
+        const box = document.getElementById("sec" + C + "TrendBox");
         if (!box) return;
-        if (_ddTrendChart) { _ddTrendChart.destroy(); _ddTrendChart = null; }
+        const _st = _secCharts[sec];
+        if (_st.trend) { _st.trend.destroy(); _st.trend = null; }
         const a = _ddAgg(rows);
         const items = CHANNEL_DEFS.map(c => ({ label: c.label, color: c.color, value: a.sale[c.key] }))
           .sort((x, y) => y.value - x.value);
@@ -6948,8 +6951,8 @@ body { background: var(--bg); color: var(--txt); }
           box.innerHTML = `<div class="dd-empty">📭 วันนี้ยังไม่มียอดขาย</div>`;
           return;
         }
-        box.innerHTML = `<div style="position:relative;height:280px"><canvas id="ddTrend"></canvas></div>`;
-        _ddTrendChart = new Chart(document.getElementById("ddTrend"), {
+        box.innerHTML = `<div style="position:relative;height:280px"><canvas id="sec${C}Trend"></canvas></div>`;
+        _st.trend = new Chart(document.getElementById("sec" + C + "Trend"), {
           type: "bar",
           data: { labels: items.map(t => t.label), datasets: [{ data: items.map(t => t.value), backgroundColor: items.map(t => t.color), borderRadius: 4, borderSkipped: false }] },
           options: {
@@ -6976,14 +6979,14 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       // navigation
-      function _ddDrillZone(i) { const z = _ddZoneItems[i]; if (!z) return; _ddView = { level: "zone", zone: z.id, branch: null }; renderDashDrill(); }
-      function _ddDrillBranch(i) { const b = _ddBranchItems[i]; if (!b) return; _ddView = { level: "branch", zone: _ddView.zone, branch: b.id }; renderDashDrill(); }
-      function _ddGoCompany() { _ddView = { level: "company", zone: null, branch: null }; renderDashDrill(); }
-      function _ddGoZone() { _ddView = { level: "zone", zone: _ddView.zone, branch: null }; renderDashDrill(); }
+      function _ddDrillZone(sec, i) { const z = ((_secItems[sec] || {}).zones || [])[i]; if (!z) return; _ddView = { level: "zone", zone: z.id, branch: null }; renderAllSections(false); }
+      function _ddDrillBranch(sec, i) { const b = ((_secItems[sec] || {}).branches || [])[i]; if (!b) return; _ddView = { level: "branch", zone: _ddView.zone, branch: b.id }; renderAllSections(false); }
+      function _ddGoCompany() { _ddView = { level: "company", zone: null, branch: null }; renderAllSections(false); }
+      function _ddGoZone() { _ddView = { level: "zone", zone: _ddView.zone, branch: null }; renderAllSections(false); }
 
       function _ddCrumb() {
         const role = (typeof S !== "undefined" && S && S.role) || "";
-        if (role === "branch") {
+        if (role === "branch" || role === "franchise") {
           // หน้าสาขาเห็นแค่สาขาตัวเอง — ไม่ต้องโชว์ breadcrumb (ซ้ำกับหัวข้อ/ซับไตเติล)
           return "";
         }
@@ -7004,28 +7007,31 @@ body { background: var(--bg); color: var(--txt); }
         return h;
       }
 
-      function renderDashDrill(reset) {
-        const bodyEl = document.getElementById("dashDrillBody");
-        const kpiEl  = document.getElementById("dashDrillKpis");
-        const crumbEl = document.getElementById("dashCrumb");
-        if (!bodyEl || !kpiEl) return;
-        if (_ddTrendChart) { _ddTrendChart.destroy(); _ddTrendChart = null; }
-        if (_ddDonutChart) { _ddDonutChart.destroy(); _ddDonutChart = null; }
-
+      // ── รีเซ็ต/guard เอนทิตี (ใช้ร่วม) แล้ววาดทั้ง 3 พาร์ท ──
+      function renderAllSections(reset) {
         const role = (typeof S !== "undefined" && S && S.role) || "";
-        const zones = _ddZones();
+        const crumbEl = document.getElementById("dashCrumb");
+        const zones = _ddZones();                 // จากข้อมูลพาร์ท "เดือน" (โครงโซน/สาขา)
         const zoneNames = Object.keys(zones);
 
-        // empty data
+        // ยังไม่มีข้อมูล (เดือนว่าง) → fallback ใช้พาร์ทที่มี rows เป็นแหล่งโครง
+        if (!_ddCodes().length) {
+          const alt = ['month','week','day'].map(s => _secData[s]).find(d => d && d.rows && d.rows.length);
+          if (alt) { _dashRows = alt.rows; _dashPlanByBranch = alt.planByBranch; }
+        }
         if (!_ddCodes().length) {
           if (crumbEl) crumbEl.innerHTML = "";
-          kpiEl.innerHTML = "";
-          bodyEl.innerHTML = `<div class="dash2-card dash3-card"><div class="dd-empty">📭 ยังไม่มีข้อมูลยอดขายในช่วงที่เลือก</div></div>`;
+          ['day','week','month'].forEach(sec => {
+            const C = _cap(sec);
+            const k = document.getElementById('sec' + C + 'Kpis'); if (k) k.innerHTML = "";
+            const b = document.getElementById('sec' + C + 'Body');
+            if (b) b.innerHTML = `<div class="dash2-card dash3-card"><div class="dd-empty">📭 ยังไม่มีข้อมูลยอดขายในช่วงที่เลือก</div></div>`;
+          });
           return;
         }
 
         if (reset) {
-          if (role === "branch") {
+          if (role === "branch" || role === "franchise") {
             const bc = _ddCodes()[0] || null;
             _ddView = { level: "branch", zone: bc ? _ddZoneOf(bc) : null, branch: bc };
           } else if (role === "bzm") {
@@ -7034,7 +7040,7 @@ body { background: var(--bg); color: var(--txt); }
             _ddView = { level: "company", zone: null, branch: null };
           }
         }
-        // guard: drilled target no longer present in data
+        // guard: เป้าหมายที่เจาะอยู่หายไปจากข้อมูล
         if (_ddView.level === "zone" && !zones[_ddView.zone]) {
           _ddView = { level: (role === "admin" || role === "vp") ? "company" : "zone", zone: zoneNames[0] || null, branch: null };
         }
@@ -7043,41 +7049,71 @@ body { background: var(--bg); color: var(--txt); }
         }
 
         if (crumbEl) crumbEl.innerHTML = _ddCrumb();
+        ['day','week','month'].forEach(renderSection);
+      }
+
+      // ── วาด 1 พาร์ท (วัน/สัปดาห์/เดือน) สำหรับเอนทิตีที่กำลังดู ──
+      function renderSection(sec) {
+        const C = _cap(sec);
+        const d = _secData[sec];
+        const kpiEl = document.getElementById('sec' + C + 'Kpis');
+        const bodyEl = document.getElementById('sec' + C + 'Body');
+        if (!kpiEl || !bodyEl) return;
+        if (!d || !d.range) return;               // พาร์ทนี้ยังไม่โหลด
+        const role = (typeof S !== "undefined" && S && S.role) || "";
+        const zones = _ddZones();                 // โครงจากข้อมูลเดือน
+        const map = d.planByBranch;
 
         let topPanel, rows, codes;
         if (_ddView.level === "company") {
           codes = _ddCodes();
-          rows = _dashRows;
-          _ddZoneItems = zoneNames.map(z => {
-            const zr = _dashRows.filter(r => _ddZoneOf(r.branch_code) === z);
+          rows = d.rows;
+          _secItems[sec].zones = Object.keys(zones).map(z => {
+            const zr = d.rows.filter(r => _ddZoneOf(r.branch_code) === z);
             const a = _ddAgg(zr);
-            const pl = _ddPlan(zones[z]);
+            const pl = _secPlan(map, zones[z]);
             return { id: z, label: z, code: null, n: zones[z].length, actual: a.actual, pct: pl > 0 ? a.actual / pl : 0 };
           }).sort((x, y) => y.actual - x.actual);
-          topPanel = _ddPanel("🏆 เปรียบเทียบยอดขายรายโซน (BZM)", "คลิกที่โซนเพื่อเจาะดูสาขาภายใน", _ddBarList(_ddZoneItems, "_ddDrillZone"));
+          topPanel = _ddPanel("🏆 เปรียบเทียบยอดขายรายโซน (BZM)", "คลิกที่โซนเพื่อเจาะดูสาขาภายใน", _ddBarList(_secItems[sec].zones, "_ddDrillZone", sec));
         } else if (_ddView.level === "zone") {
           codes = zones[_ddView.zone] || [];
-          rows = _dashRows.filter(r => codes.includes(r.branch_code));
-          _ddBranchItems = codes.map(bc => {
+          rows = d.rows.filter(r => codes.includes(r.branch_code));
+          _secItems[sec].branches = codes.map(bc => {
             const br = rows.filter(r => r.branch_code === bc);
             const a = _ddAgg(br);
-            const pl = _ddPlan([bc]);
+            const pl = _secPlan(map, [bc]);
             const nm = (BRANCH_DM_MAP[bc] || {}).branch || bc;
             return { id: bc, label: nm.replace(/^\d+\s*/, ""), code: bc, actual: a.actual, pct: pl > 0 ? a.actual / pl : 0 };
           }).sort((x, y) => y.actual - x.actual);
-          topPanel = _ddPanel("🏬 สาขาในโซน " + escHtml(_ddView.zone), codes.length + " สาขา · คลิกที่สาขาเพื่อดูรายละเอียด", _ddBarList(_ddBranchItems, "_ddDrillBranch"));
+          topPanel = _ddPanel("🏬 สาขาในโซน " + escHtml(_ddView.zone), codes.length + " สาขา · คลิกที่สาขาเพื่อดูรายละเอียด", _ddBarList(_secItems[sec].branches, "_ddDrillBranch", sec));
         } else {
           codes = [_ddView.branch];
-          rows = _dashRows.filter(r => r.branch_code === _ddView.branch);
-          topPanel = _ddPanel("📊 สรุปผลสาขา", "สถานะเทียบเป้าในช่วงที่เลือก", _ddBranchHero(rows, codes));
+          rows = d.rows.filter(r => r.branch_code === _ddView.branch);
+          topPanel = _ddPanel("📊 สรุปผลสาขา", "สถานะเทียบเป้าในช่วงนี้", _ddBranchHero(rows, codes, map));
+          // หน้าสาขา + พาร์ทรายวัน → เพิ่มชิป รอบ 16:00 / สิ้นวัน
+          if (sec === 'day' && (role === 'branch' || role === 'franchise')) {
+            const dStr = d.range.startDate;
+            const rd = (slot) => {
+              const rs = d.rows.filter(r => r.submit_date === dStr && r.submit_time_slot === slot);
+              if (!rs.length) return null;
+              return { act: rs.reduce((s, r) => s + (parseFloat(r.actual_sale) || 0), 0), bills: rs.reduce((s, r) => s + (parseFloat(r.total_trans) || 0), 0) };
+            };
+            const chip = (x, icon, name) => x
+              ? `<div class="bd-round">${icon} ${name} ·<b>฿${fmt(Math.round(x.act))}</b>${fmt(x.bills)} บิล</div>`
+              : `<div class="bd-round bd-round-empty">${icon} ${name} · ยังไม่ส่ง</div>`;
+            const chips = `<div class="bd-rounds" style="margin-top:12px">${chip(rd('16.00'), '🕓', '16:00')}${chip(rd('สิ้นวัน'), '🌙', 'สิ้นวัน')}</div>`;
+            topPanel = _ddPanel("📊 สรุปผลสาขา", "รอบ 16:00 และสิ้นวัน", _ddBranchHero(rows, codes, map) + chips);
+          }
         }
 
         const isBranch = (_ddView.level === "branch");
-        const isSingleDay = !!(_ddRange.startDate && _ddRange.startDate === _ddRange.endDate);
         let trendTitle, trendSub;
-        if (isSingleDay) {
+        if (sec === 'day') {
           trendTitle = "🍽️ ช่องทางการขายวันนั้น";
-          trendSub = "ยอดขายแยกช่องทาง · " + fmtThaiDate(_ddRange.startDate);
+          trendSub = "ยอดขายแยกช่องทาง · " + fmtThaiDate(d.range.startDate);
+        } else if (sec === 'week') {
+          trendTitle = "📊 ยอดขายรายวัน (จ–อา) เทียบเป้า";
+          trendSub = "🟩 ถึงเป้า · 🟧 ต่ำกว่าเป้า (เทียบเป้าเฉลี่ย/วัน)";
         } else if (isBranch) {
           trendTitle = "📊 ยอดขายรายวัน เทียบเป้า";
           trendSub = "🟩 ถึงเป้า · 🟧 ต่ำกว่าเป้า (เทียบเป้าเฉลี่ย/วัน)";
@@ -7086,193 +7122,27 @@ body { background: var(--bg); color: var(--txt); }
           trendSub = "ยอดขายจริงรายวันในช่วงที่เลือก";
         }
 
-        kpiEl.innerHTML = _ddKpiCards(_ddAgg(rows), codes);
+        kpiEl.innerHTML = _ddKpiCards(_ddAgg(rows), codes, map);
         bodyEl.innerHTML = `
           <div class="dash3-row dd-grid2">
             ${topPanel}
-            ${_ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่ายอดขายแยกตามช่องทาง", `<div style="position:relative;height:220px"><canvas id="ddDonut"></canvas></div><div id="ddDonutLegend" class="dash2-chan-legend"></div>`)}
+            ${_ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่ายอดขายแยกตามช่องทาง", `<div style="position:relative;height:220px"><canvas id="sec${C}Donut"></canvas></div><div id="sec${C}DonutLeg" class="dash2-chan-legend"></div>`)}
           </div>
           <div class="dash3-row dd-grid2">
-            ${_ddPanel(trendTitle, trendSub, `<div id="ddTrendBox" style="position:relative;min-height:280px"></div>`)}
+            ${_ddPanel(trendTitle, trendSub, `<div id="sec${C}TrendBox" style="position:relative;min-height:280px"></div>`)}
             ${_ddPanel("📋 รายละเอียดช่องทาง", "ยอดขาย · สัดส่วน · บิลเฉลี่ย", _ddChannelTable(rows))}
           </div>`;
-        _ddRenderDonut(rows);
-        if (isSingleDay) _ddRenderDayChannels(rows);
-        else if (isBranch) _ddRenderBranchTrend(rows, codes);
-        else _ddRenderTrend(rows);
+        _ddRenderDonut(rows, sec);
+        if (sec === 'day') _ddRenderDayChannels(rows, sec);
+        else if (sec === 'week') _ddRenderBranchTrend(rows, codes, sec, d);
+        else if (isBranch) _ddRenderBranchTrend(rows, codes, sec, d);
+        else _ddRenderTrend(rows, sec, d);
       }
 
-      /* ════════════════════════════════════════════
-         สรุปรายวัน (รอบ 16:00 / สิ้นวัน) + รายสัปดาห์ (ทั้งเดือน) — เฉพาะหน้าสาขา
-      ════════════════════════════════════════════ */
-      let _daySumAnchor = new Date();   // วันที่ของกล่องรายวัน (ดีฟอลต์วันนี้)
-      let _daySumMonthKey = null;       // 'yyyy-m' ของข้อมูลที่โหลดไว้
-      let _daySumRows = [];             // rows ทั้งเดือนของสาขา
-      let _daySumPlanByDate = {};       // เป้าต่อวัน (ทั้งเดือน)
-
-      function loadBranchSummary() {
-        const wrap = document.getElementById('dashDaySumWrap');
-        if (!wrap) return;
-        const isBranch = (S.role === 'branch' || S.role === 'franchise');
-        wrap.style.display = isBranch ? '' : 'none';
-        if (!isBranch) return;
-
-        populateBranchFilter('dashBranchFilter');
-        const codes = getQueryBranchCodes('dashBranchFilter');
-
-        const a = new Date(_daySumAnchor); a.setHours(0,0,0,0);
-        const y = a.getFullYear(), m = a.getMonth();
-        const mStart = _fmtDate(new Date(y, m, 1));
-        const mEnd   = _fmtDate(new Date(y, m + 1, 0));
-        _daySumMonthKey = y + '-' + m;
-
-        let _h = null, _p = null, _n = 0;
-        function _onDone() {
-          if (++_n < 2) return;
-          _daySumRows = (_h && _h.ok && _h.rows) ? _h.rows : [];
-          _daySumPlanByDate = {};
-          if (_p && _p.ok && Array.isArray(_p.rows)) {
-            _p.rows.forEach(function(r){
-              const amt = parseFloat(r.plan_amount) || 0;
-              _daySumPlanByDate[r.plan_date] = (_daySumPlanByDate[r.plan_date] || 0) + amt;
-            });
-          }
-          renderBranchSummary();
-        }
-        apiCall({ mode:'history', branch_codes:codes, start_date:mStart, end_date:mEnd }, function(r){ _h = r; _onDone(); });
-        apiCall({ mode:'getPlan', branch_codes:codes, start_date:mStart, end_date:mEnd, raw:true }, function(r){ _p = r; _onDone(); });
-      }
-
-      function daySumNav(dir) {
-        const a = new Date(_daySumAnchor); a.setHours(0,0,0,0);
-        a.setDate(a.getDate() + dir);
-        const today = new Date(); today.setHours(0,0,0,0);
-        if (a > today) return;                              // ไม่ไปอนาคต
-        _daySumAnchor = a;
-        const key = a.getFullYear() + '-' + a.getMonth();
-        if (key !== _daySumMonthKey) loadBranchSummary();   // ข้ามเดือน → โหลดใหม่
-        else renderBranchSummary();
-      }
-
-      function renderBranchSummary() {
-        const wrap = document.getElementById('dashDaySumWrap');
-        if (!wrap) return;
-
-        const dStr = _fmtDate(_daySumAnchor);
-        const a = new Date(_daySumAnchor); const y = a.getFullYear(), m = a.getMonth();
-        const today = new Date(); today.setHours(0,0,0,0);
-        const a0 = new Date(_daySumAnchor); a0.setHours(0,0,0,0);
-        const isToday = (a0.getTime() === today.getTime());
-        const monName = _TH_MONTH_FULL[m] + ' ' + (y + 543);
-
-        // ── วันนี้ (รอบ 16:00 / สิ้นวัน) ──
-        const dayPlan = _daySumPlanByDate[dStr] || 0;
-        function roundData(slot) {
-          const rs = _daySumRows.filter(function(r){ return r.submit_date === dStr && r.submit_time_slot === slot; });
-          if (!rs.length) return null;
-          return {
-            act: rs.reduce(function(s,r){ return s + (parseFloat(r.actual_sale) || 0); }, 0),
-            bills: rs.reduce(function(s,r){ return s + (parseFloat(r.total_trans) || 0); }, 0)
-          };
-        }
-        const r16 = roundData('16.00'), reod = roundData('สิ้นวัน');
-        const dayAct = reod ? reod.act : (r16 ? r16.act : 0);
-        const dayPct = dayPlan > 0 ? dayAct / dayPlan : 0;
-        const dayCol = _ddAchvColor(dayPct);
-        const dayEmoji = dayAct <= 0 ? '🕓' : dayPct >= 1 ? '🎉' : dayPct >= 0.85 ? '💪' : '⚠️';
-        const dayW = Math.min(dayPct * 100, 100).toFixed(1);
-        function roundChip(d, icon, name) {
-          if (!d) return `<div class="bd-round bd-round-empty">${icon} ${name} · ยังไม่ส่ง</div>`;
-          return `<div class="bd-round">${icon} ${name} ·<b>฿${fmt(Math.round(d.act))}</b>${fmt(d.bills)} บิล</div>`;
-        }
-
-        // ── เดือนนี้ (MTD) ──
-        const mStart = _fmtDate(new Date(y, m, 1)), mEnd = _fmtDate(new Date(y, m + 1, 0));
-        const monEod = _daySumRows.filter(function(r){ return r.submit_time_slot === 'สิ้นวัน' && r.submit_date >= mStart && r.submit_date <= mEnd; });
-        const monAct = monEod.reduce(function(s,r){ return s + (parseFloat(r.actual_sale) || 0); }, 0);
-        const monBills = monEod.reduce(function(s,r){ return s + (parseFloat(r.total_trans) || 0); }, 0);
-        const monLab = monEod.reduce(function(s,r){ return s + (parseFloat(r.labour_baht) || 0); }, 0);
-        const dataDates = {}; monEod.forEach(function(r){ dataDates[r.submit_date] = 1; });
-        let monPlan = 0; Object.keys(_daySumPlanByDate).forEach(function(d){ if (dataDates[d]) monPlan += _daySumPlanByDate[d]; });
-        const monPct = monPlan > 0 ? monAct / monPlan : 0;
-        const monAvg = monBills > 0 ? monAct / monBills : 0;
-        const monLabPct = monAct > 0 ? monLab / monAct * 100 : 0;
-
-        // ── รายสัปดาห์ของเดือน ──
-        const lastDay = new Date(y, m + 1, 0).getDate();
-        const weeks = {};
-        for (let dn = 1; dn <= lastDay; dn++) {
-          const day = new Date(y, m, dn); const dow = day.getDay();
-          const mon = new Date(day); mon.setDate(day.getDate() + (dow === 0 ? -6 : 1 - dow));
-          const key = _fmtDate(mon);
-          if (!weeks[key]) weeks[key] = { start: dn, end: dn, act: 0, plan: 0 };
-          weeks[key].end = dn;
-          const ds = _fmtDate(day);
-          _daySumRows.forEach(function(r){ if (r.submit_date === ds && r.submit_time_slot === 'สิ้นวัน') weeks[key].act += parseFloat(r.actual_sale) || 0; });
-          weeks[key].plan += _daySumPlanByDate[ds] || 0;
-        }
-        const wkeys = Object.keys(weeks).sort();
-        const maxW = Math.max.apply(null, wkeys.map(function(k){ return weeks[k].act; }).concat([1]));
-        const wkHtml = wkeys.map(function(k, i){
-          const w = weeks[k]; const p = w.plan > 0 ? w.act / w.plan : 0; const c = _ddAchvColor(p);
-          const bw = (w.act / maxW * 100).toFixed(1);
-          return `<div class="dsum-wk"><div class="dsum-wk-name">สัปดาห์ ${i+1} <b>${w.start}–${w.end} ${_TH_MONTH_SHORT[m]}</b></div><div class="dsum-wk-track"><div class="dsum-wk-fill" style="width:${bw}%"></div></div><div class="dsum-wk-val">฿${fmt(Math.round(w.act))}<i style="color:${c}">${w.plan > 0 ? (p*100).toFixed(0)+'%' : '-'}</i></div></div>`;
-        }).join('');
-
-        // ── ประกอบหน้า ──
-        wrap.innerHTML = `
-          <div class="dash3-row" style="margin-bottom:18px">
-            <div class="dash2-card dash3-card">
-              <div class="dash2-cardhdr dsum-hdr">
-                <div><h3>📅 ${isToday ? 'วันนี้' : 'รายวัน'}</h3><div class="dash2-cardsub">รอบ 16:00 และสิ้นวัน</div></div>
-                <div class="dash3-nav">
-                  <button class="dash3-nav-btn" onclick="daySumNav(-1)" title="วันก่อนหน้า">◀</button>
-                  <span class="dash3-nav-lbl">${escHtml(fmtThaiDate(dStr))}</span>
-                  <button class="dash3-nav-btn" onclick="daySumNav(1)" title="วันถัดไป"${isToday ? ' disabled' : ''}>▶</button>
-                </div>
-              </div>
-              <div class="bd-today">
-                <div class="bd-today-emoji">${dayEmoji}</div>
-                <div class="bd-today-main">
-                  <div class="bd-today-big">฿${fmt(Math.round(dayAct))}</div>
-                  <div class="dd-hero-prog"><div class="dd-hero-prog-fill" style="width:${dayW}%;background:${dayCol}"></div></div>
-                  <div class="dd-hero-meta"><span>ทำได้ <b style="color:${dayCol}">${dayPlan > 0 ? (dayPct*100).toFixed(1)+'%' : '-'}</b></span><span>เป้า <b>฿${fmt(Math.round(dayPlan))}</b></span></div>
-                  <div class="bd-rounds">${roundChip(r16,'🕓','16:00')}${roundChip(reod,'🌙','สิ้นวัน')}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="dash3-row dd-grid2" style="margin-bottom:18px">
-            <div class="dash2-card dash3-card"><div class="dash2-cardhdr"><h3>📅 รายสัปดาห์</h3><div class="dash2-cardsub">${escHtml(monName)}</div></div>${wkHtml || '<div class="dd-empty">ไม่มีข้อมูล</div>'}</div>
-            <div class="dash2-card dash3-card"><div class="dash2-cardhdr"><h3>🍽️ สัดส่วนช่องทาง</h3><div class="dash2-cardsub">${escHtml(monName)}</div></div><div style="position:relative;height:220px"><canvas id="ddDonut"></canvas></div><div id="ddDonutLegend" class="dash2-chan-legend"></div></div>
-          </div>
-          <div class="dash3-kpis">
-            <div class="dash3-kpi dash3-kpi-hero"><div class="dash3-kpi-lbl">💰 ยอดเดือนนี้</div><div class="dash3-kpi-val">฿${fmt(Math.round(monAct))}</div><div class="dd-kpi-sub">${escHtml(monName)}</div></div>
-            <div class="dash3-kpi"><div class="dash3-kpi-lbl">🎯 % ของเป้า</div><div class="dash3-kpi-val">${monPlan > 0 ? (monPct*100).toFixed(1)+'%' : '-'}</div><div class="dd-kpi-sub" style="color:${_ddAchvColor(monPct)}">เป้า ฿${fmt(Math.round(monPlan))}</div></div>
-            <div class="dash3-kpi"><div class="dash3-kpi-lbl">🧾 จำนวนบิล</div><div class="dash3-kpi-val">${fmt(monBills)}</div><div class="dd-kpi-sub">บิลเฉลี่ย ฿${fmt(Math.round(monAvg))}</div></div>
-            <div class="dash3-kpi"><div class="dash3-kpi-lbl">👥 ค่าแรง %</div><div class="dash3-kpi-val">${monAct > 0 ? monLabPct.toFixed(1)+'%' : '-'}</div><div class="dd-kpi-sub">ของยอดขาย</div></div>
-          </div>`;
-
-        _ddRenderDonut(_daySumRows);
-      }
-
+      let _secResetPending = false;
       async function loadDash() {
         populateBranchFilter("dashBranchFilter");
-        // หน้าสาขาใช้เลย์เอาต์ของตัวเอง (วันนี้ + เดือนนี้) — ไม่ใช้ drill-down
-        if (S.role === "branch" || S.role === "franchise") { loadBranchSummary(); return; }
-        const queryCodes = getQueryBranchCodes("dashBranchFilter"); // array | null
-
-        // Compute date range from mode + anchor (สัปดาห์ จ–อา / เดือน / ปี)
-        const _pr = _dashPeriodRange();
-        const startDate = _pr.startDate, endDate = _pr.endDate;
-        const prevStartStr = _pr.prevStartStr, prevEndStr = _pr.prevEndStr;
-        _updateDashNav(_pr);
-
-        const sD = new Date(startDate + 'T00:00:00');
-        const eD = new Date(endDate   + 'T00:00:00');
-        const periodDays = Math.round((eD - sD) / 86400000) + 1;
-
-        // Subtitle
+        // Subtitle (บทบาท) — แต่ละพาร์ทมี label ช่วงของตัวเองอยู่แล้ว
         const sub = document.getElementById("dashPageSub");
         if (sub) {
           let prefix;
@@ -7280,60 +7150,71 @@ body { background: var(--bg); color: var(--txt); }
           else if (S.role === "vp")    prefix = (S.branch || "") + " · ภาพรวมทั้งระบบ";
           else if (S.role === "bzm")   prefix = "โซน BZM: " + (S.dm || "");
           else                         prefix = (S.branch || "") + (S.dm ? "  ·  BZM: " + S.dm : "");
-          sub.textContent = prefix + "  ·  " + fmtThaiDate(startDate) + " — " + fmtThaiDate(endDate);
+          sub.textContent = prefix;
         }
+        // โหลดทั้ง 3 พาร์ทพร้อมกัน (วัน / สัปดาห์ / เดือน) · เอนทิตีรีเซ็ตเมื่อข้อมูลเดือนถึง
+        _secResetPending = true;
+        ['day','week','month'].forEach(sec => loadSection(sec, true));
+      }
 
-        // Loading state
-        const _ddLoad = document.getElementById("dashDrillBody");
-        if (_ddLoad) _ddLoad.innerHTML = `<div class="dash2-card dash3-card"><div class="dd-loading">⏳ กำลังโหลดข้อมูล...</div></div>`;
+      // โหลดข้อมูลของพาร์ทเดียว (history + getPlan ของช่วงพาร์ทนั้น) แล้ววาด
+      function loadSection(sec, renderAfter) {
+        const queryCodes = getQueryBranchCodes("dashBranchFilter"); // array | null
+        const pr = _secPeriodRange(sec, _secAnchor[sec]);
+        _updateSecNav(sec, pr);
+        const C = _cap(sec);
+        const bodyEl = document.getElementById('sec' + C + 'Body');
+        if (bodyEl) bodyEl.innerHTML = `<div class="dash2-card dash3-card"><div class="dd-loading">⏳ กำลังโหลดข้อมูล...</div></div>`;
+        const kpiEl = document.getElementById('sec' + C + 'Kpis');
+        if (kpiEl) kpiEl.innerHTML = "";
 
-        // Fetch parallel: history + plans for current + prev
-        let _hist = null, _plan = null, _prevHist = null, _prevPlan = null, _done = 0;
-        const _needed = 4;
-        function _onDone() {
-          if (++_done < _needed) return;
-          if (!_hist || !_hist.ok) {
-            console.error("Dashboard: history load failed");
-            return;
-          }
-          const buildLookup = (planRes) => {
-            const planByDate = {}, planByBranch = {};
-            if (planRes && planRes.ok && Array.isArray(planRes.rows)) {
-              planRes.rows.forEach(r => {
-                const d = r.plan_date, bc = r.branch_code;
-                const amt = parseFloat(r.plan_amount) || 0;
-                planByDate[d] = (planByDate[d] || 0) + amt;
-                if (bc) planByBranch[bc] = (planByBranch[bc] || 0) + amt;
-              });
-            }
-            return { planByDate, planByBranch };
-          };
-          const cur  = buildLookup(_plan);
-          const prev = buildLookup(_prevPlan);
-          _dashPlans = cur.planByDate;
-          _dashPlanByBranch = cur.planByBranch;
-
-          _dashRows = (_hist.rows || []).map(r => ({
+        let _h = null, _p = null, _n = 0;
+        function done() {
+          if (++_n < 2) return;
+          const planByDate = {}, planByBranch = {};
+          if (_p && _p.ok && Array.isArray(_p.rows)) _p.rows.forEach(r => {
+            const amt = parseFloat(r.plan_amount) || 0;
+            planByDate[r.plan_date] = (planByDate[r.plan_date] || 0) + amt;
+            if (r.branch_code) planByBranch[r.branch_code] = (planByBranch[r.branch_code] || 0) + amt;
+          });
+          const rows = (_h && _h.ok && _h.rows) ? _h.rows.map(r => ({
             ...r,
-            plan_sale: cur.planByDate[r.submit_date] !== undefined
-              ? cur.planByDate[r.submit_date]
-              : (parseFloat(r.plan_sale) || 0)
-          }));
-          const prevRows = (_prevHist && _prevHist.ok && _prevHist.rows) ? _prevHist.rows : [];
-
-          // Drill-down dashboard (ทั้งบริษัท → BZM → สาขา) — รีเซ็ตไปที่ root ตามบทบาท
-          _ddRange = { startDate: startDate, endDate: endDate, periodDays: periodDays };
-          renderDashDrill(true);
+            plan_sale: planByDate[r.submit_date] !== undefined ? planByDate[r.submit_date] : (parseFloat(r.plan_sale) || 0)
+          })) : [];
+          _secData[sec] = { rows, planByDate, planByBranch, range: { startDate: pr.startDate, endDate: pr.endDate, periodDays: pr.periodDays } };
+          // พาร์ทเดือน = แหล่งโครงโซน/สาขา (กว้างสุด)
+          if (sec === 'month') { _dashRows = rows; _dashPlanByBranch = planByBranch; _dashPlans = planByDate; }
+          if (renderAfter) {
+            renderAllSections(_secResetPending);
+            if (sec === 'month') _secResetPending = false;
+          }
         }
+        apiCall({ mode: "history", branch_codes: queryCodes, start_date: pr.startDate, end_date: pr.endDate }, function (res) { _h = res; done(); });
+        apiCall({ mode: "getPlan", branch_codes: queryCodes, start_date: pr.startDate, end_date: pr.endDate, raw: true }, function (res) { _p = res; done(); });
+      }
 
-        apiCall({ mode:"history", branch_codes:queryCodes, start_date:startDate, end_date:endDate },
-                function(res) { _hist = res; _onDone(); });
-        apiCall({ mode:"getPlan", branch_codes:queryCodes, start_date:startDate, end_date:endDate, raw:true },
-                function(res) { _plan = res; _onDone(); });
-        apiCall({ mode:"history", branch_codes:queryCodes, start_date:prevStartStr, end_date:prevEndStr },
-                function(res) { _prevHist = res; _onDone(); });
-        apiCall({ mode:"getPlan", branch_codes:queryCodes, start_date:prevStartStr, end_date:prevEndStr, raw:true },
-                function(res) { _prevPlan = res; _onDone(); });
+      // เลื่อนช่วงของพาร์ท (เลื่อนเฉพาะพาร์ทนั้น · เอนทิตีคงเดิม)
+      function dashSecNav(sec, dir) {
+        const a = new Date(_secAnchor[sec]);
+        if (sec === 'day') a.setDate(a.getDate() + dir);
+        else if (sec === 'week') a.setDate(a.getDate() + dir * 7);
+        else a.setMonth(a.getMonth() + dir);
+        _secAnchor[sec] = a;
+        loadSection(sec, true);
+      }
+
+      // อัปเดต label + ปิดปุ่ม ▶ เมื่อช่วงรวมวันนี้แล้ว (กันไปอนาคต)
+      function _updateSecNav(sec, pr) {
+        const C = _cap(sec);
+        const lbl = document.getElementById('sec' + C + 'Label');
+        if (lbl) lbl.textContent = pr.label;
+        const sub = document.getElementById('sec' + C + 'Sub');
+        if (sub) sub.textContent = fmtThaiDate(pr.startDate) + (pr.startDate !== pr.endDate ? ' – ' + fmtThaiDate(pr.endDate) : '');
+        const next = document.getElementById('sec' + C + 'Next');
+        if (next) {
+          const today = new Date(); today.setHours(0, 0, 0, 0);
+          next.disabled = (pr.end >= today);
+        }
       }
 
       // เรียกเมื่อเปลี่ยนวันที่ใน date picker (ไม่ fetch ใหม่)
