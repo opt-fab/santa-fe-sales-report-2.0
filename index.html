@@ -723,6 +723,14 @@
       .dash3-nav-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
       .dash3-nav-btn:disabled { opacity: .35; cursor: not-allowed; }
       .dash3-nav-lbl { min-width: 132px; text-align: center; font-size: 13px; font-weight: 800; color: var(--txt); font-variant-numeric: tabular-nums; }
+      .dash3-pick {
+        background: var(--surface); border: 1px solid var(--bd); color: var(--txt);
+        height: 30px; border-radius: 9px; padding: 0 8px; cursor: pointer;
+        font-size: 13px; font-weight: 700; font-family: inherit; min-width: 132px; text-align: center;
+        transition: all .15s var(--ease);
+      }
+      .dash3-pick:hover { border-color: var(--brand); }
+      .dash3-pick:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 2px rgba(242,108,28,.18); }
       .dash3-branch {
         background: var(--surface);
         border: 1px solid var(--bd);
@@ -4341,7 +4349,7 @@ body { background: var(--bg); color: var(--txt); }
             <div><h3 style="margin:0">📅 รายวัน</h3><div class="dash2-cardsub" id="secDaySub"></div></div>
             <div class="dash3-nav">
               <button class="dash3-nav-btn" id="secDayPrev" onclick="dashSecNav('day',-1)" title="วันก่อนหน้า">◀</button>
-              <span class="dash3-nav-lbl" id="secDayLabel">—</span>
+              <input type="date" class="dash3-pick" id="secDayPick" onchange="dashSecPick('day',this.value)" title="เลือกวันจากปฏิทิน">
               <button class="dash3-nav-btn" id="secDayNext" onclick="dashSecNav('day',1)" title="วันถัดไป">▶</button>
             </div>
           </div>
@@ -4354,7 +4362,7 @@ body { background: var(--bg); color: var(--txt); }
             <div><h3 style="margin:0">🗓️ รายสัปดาห์</h3><div class="dash2-cardsub" id="secWeekSub"></div></div>
             <div class="dash3-nav">
               <button class="dash3-nav-btn" id="secWeekPrev" onclick="dashSecNav('week',-1)" title="สัปดาห์ก่อนหน้า">◀</button>
-              <span class="dash3-nav-lbl" id="secWeekLabel">—</span>
+              <input type="date" class="dash3-pick" id="secWeekPick" onchange="dashSecPick('week',this.value)" title="เลือกวันในสัปดาห์ที่ต้องการ">
               <button class="dash3-nav-btn" id="secWeekNext" onclick="dashSecNav('week',1)" title="สัปดาห์ถัดไป">▶</button>
             </div>
           </div>
@@ -4367,7 +4375,7 @@ body { background: var(--bg); color: var(--txt); }
             <div><h3 style="margin:0">📆 รายเดือน</h3><div class="dash2-cardsub" id="secMonthSub"></div></div>
             <div class="dash3-nav">
               <button class="dash3-nav-btn" id="secMonthPrev" onclick="dashSecNav('month',-1)" title="เดือนก่อนหน้า">◀</button>
-              <span class="dash3-nav-lbl" id="secMonthLabel">—</span>
+              <input type="month" class="dash3-pick" id="secMonthPick" onchange="dashSecPick('month',this.value)" title="เลือกเดือนจากปฏิทิน">
               <button class="dash3-nav-btn" id="secMonthNext" onclick="dashSecNav('month',1)" title="เดือนถัดไป">▶</button>
             </div>
           </div>
@@ -7203,17 +7211,36 @@ body { background: var(--bg); color: var(--txt); }
         loadSection(sec, true);
       }
 
-      // อัปเดต label + ปิดปุ่ม ▶ เมื่อช่วงรวมวันนี้แล้ว (กันไปอนาคต)
+      // เลือกช่วงจากปฏิทิน (day/week = วันที่ · month = เดือน)
+      function dashSecPick(sec, val) {
+        if (!val) return;
+        let a;
+        if (sec === 'month') {
+          const p = String(val).split('-');
+          a = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, 1);
+        } else {
+          a = new Date(val + 'T00:00:00');
+        }
+        if (isNaN(a.getTime())) return;
+        _secAnchor[sec] = a;
+        loadSection(sec, true);
+      }
+
+      // อัปเดตค่า input ปฏิทิน + max (กันไปอนาคต) + ปิดปุ่ม ▶ + ป้ายช่วง
       function _updateSecNav(sec, pr) {
         const C = _cap(sec);
-        const lbl = document.getElementById('sec' + C + 'Label');
-        if (lbl) lbl.textContent = pr.label;
+        const today = (typeof todayStr === 'function') ? todayStr() : _fmtDate(new Date());
+        const pick = document.getElementById('sec' + C + 'Pick');
+        if (pick) {
+          if (sec === 'month') { pick.value = pr.startDate.slice(0, 7); pick.max = today.slice(0, 7); }
+          else { pick.value = pr.startDate; pick.max = today; }
+        }
         const sub = document.getElementById('sec' + C + 'Sub');
-        if (sub) sub.textContent = fmtThaiDate(pr.startDate) + (pr.startDate !== pr.endDate ? ' – ' + fmtThaiDate(pr.endDate) : '');
+        if (sub) sub.textContent = pr.label;
         const next = document.getElementById('sec' + C + 'Next');
         if (next) {
-          const today = new Date(); today.setHours(0, 0, 0, 0);
-          next.disabled = (pr.end >= today);
+          const t = new Date(); t.setHours(0, 0, 0, 0);
+          next.disabled = (pr.end >= t);
         }
       }
 
