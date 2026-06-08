@@ -4340,11 +4340,19 @@ body { background: var(--bg); color: var(--txt); }
           </div>
         </div>
 
-        <!-- breadcrumb เอนทิตี (บริษัท › โซน › สาขา) — ใช้ร่วมทั้ง 3 พาร์ท -->
+        <!-- แท็บเลือกช่วง: วัน / สัปดาห์ / เดือน / ปี (โชว์ทีละอัน · กดถึงโหลด) -->
+        <div class="dash3-seg" id="dashSecTabs" style="margin-bottom:16px;flex-wrap:wrap">
+          <button class="dash3-seg-btn active" id="tabDay" onclick="showSecTab('day')">📅 รายวัน</button>
+          <button class="dash3-seg-btn" id="tabWeek" onclick="showSecTab('week')">🗓️ รายสัปดาห์</button>
+          <button class="dash3-seg-btn" id="tabMonth" onclick="showSecTab('month')">📆 รายเดือน</button>
+          <button class="dash3-seg-btn" id="tabYear" onclick="showSecTab('year')">📅 รายปี</button>
+        </div>
+
+        <!-- breadcrumb เอนทิตี (บริษัท › โซน › สาขา) — ใช้ร่วมทุกช่วง -->
         <div class="dd-crumb" id="dashCrumb"></div>
 
-        <!-- ═══════════════ 3 พาร์ทตามช่วงเวลา: วัน / สัปดาห์ / เดือน ═══════════════ -->
-        <section class="dash3-section" id="secDayWrap" style="margin-bottom:24px">
+        <!-- ═══════════════ 4 ช่วงเวลา (แสดงทีละอันตามแท็บ): วัน / สัปดาห์ / เดือน / ปี ═══════════════ -->
+        <section class="dash3-section" id="secDayWrap">
           <div class="dash2-cardhdr dsum-hdr" style="margin-bottom:12px">
             <div><h3 style="margin:0">📅 รายวัน</h3><div class="dash2-cardsub" id="secDaySub"></div></div>
             <div class="dash3-nav">
@@ -4357,7 +4365,7 @@ body { background: var(--bg); color: var(--txt); }
           <div id="secDayBody"></div>
         </section>
 
-        <section class="dash3-section" id="secWeekWrap" style="margin-bottom:24px">
+        <section class="dash3-section" id="secWeekWrap" style="display:none">
           <div class="dash2-cardhdr dsum-hdr" style="margin-bottom:12px">
             <div><h3 style="margin:0">🗓️ รายสัปดาห์</h3><div class="dash2-cardsub" id="secWeekSub"></div></div>
             <div class="dash3-nav">
@@ -4370,7 +4378,7 @@ body { background: var(--bg); color: var(--txt); }
           <div id="secWeekBody"></div>
         </section>
 
-        <section class="dash3-section" id="secMonthWrap">
+        <section class="dash3-section" id="secMonthWrap" style="display:none">
           <div class="dash2-cardhdr dsum-hdr" style="margin-bottom:12px">
             <div><h3 style="margin:0">📆 รายเดือน</h3><div class="dash2-cardsub" id="secMonthSub"></div></div>
             <div class="dash3-nav">
@@ -4381,6 +4389,19 @@ body { background: var(--bg); color: var(--txt); }
           </div>
           <div class="dash3-kpis dd-kpis" id="secMonthKpis"></div>
           <div id="secMonthBody"></div>
+        </section>
+
+        <section class="dash3-section" id="secYearWrap" style="display:none">
+          <div class="dash2-cardhdr dsum-hdr" style="margin-bottom:12px">
+            <div><h3 style="margin:0">📅 รายปี</h3><div class="dash2-cardsub" id="secYearSub"></div></div>
+            <div class="dash3-nav">
+              <button class="dash3-nav-btn" id="secYearPrev" onclick="dashSecNav('year',-1)" title="ปีก่อนหน้า">◀</button>
+              <span class="dash3-nav-lbl" id="secYearLabel">—</span>
+              <button class="dash3-nav-btn" id="secYearNext" onclick="dashSecNav('year',1)" title="ปีถัดไป">▶</button>
+            </div>
+          </div>
+          <div class="dash3-kpis dd-kpis" id="secYearKpis"></div>
+          <div id="secYearBody"></div>
         </section>
       </div>
     </div>
@@ -6682,14 +6703,16 @@ body { background: var(--bg); color: var(--txt); }
       let _ddRange = { startDate: null, endDate: null, periodDays: 30 };
 
       // ── 3 พาร์ทตามช่วงเวลา (วัน / สัปดาห์ / เดือน) ──
-      let _secAnchor = { day: new Date(), week: new Date(), month: new Date() };
+      let _secActive = 'day';   // แท็บที่กำลังแสดง (ดีฟอลต์ = รายวัน)
+      let _secAnchor = { day: new Date(), week: new Date(), month: new Date(), year: new Date() };
       let _secData = {
         day:   { rows: [], planByDate: {}, planByBranch: {}, range: null },
         week:  { rows: [], planByDate: {}, planByBranch: {}, range: null },
-        month: { rows: [], planByDate: {}, planByBranch: {}, range: null }
+        month: { rows: [], planByDate: {}, planByBranch: {}, range: null },
+        year:  { rows: [], planByDate: {}, planByBranch: {}, range: null }
       };
-      let _secCharts = { day: { trend: null, donut: null }, week: { trend: null, donut: null }, month: { trend: null, donut: null } };
-      let _secItems = { day: { zones: [], branches: [] }, week: { zones: [], branches: [] }, month: { zones: [], branches: [] } };
+      let _secCharts = { day: { trend: null, donut: null }, week: { trend: null, donut: null }, month: { trend: null, donut: null }, year: { trend: null, donut: null } };
+      let _secItems = { day: { zones: [], branches: [] }, week: { zones: [], branches: [] }, month: { zones: [], branches: [] }, year: { zones: [], branches: [] } };
       function _cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
       function _secPlan(map, codes) { return (codes || []).reduce((s, bc) => s + (parseFloat((map || {})[bc]) || 0), 0); }
       // คำนวณช่วงของพาร์ท: day=วันเดียว · week=จ–อา · month=ทั้งเดือน
@@ -6706,6 +6729,10 @@ body { background: var(--bg); color: var(--txt); }
           end = new Date(start); end.setDate(start.getDate() + 6);
           label = start.getDate() + ' ' + _TH_MONTH_SHORT[start.getMonth()] + ' – ' +
                   end.getDate() + ' ' + _TH_MONTH_SHORT[end.getMonth()] + ' ' + (end.getFullYear() + 543);
+        } else if (sec === 'year') {
+          const y = a.getFullYear();
+          start = new Date(y, 0, 1); end = new Date(y, 11, 31);
+          label = 'ปี ' + (y + 543);
         } else { // month
           const y = a.getFullYear(), m = a.getMonth();
           start = new Date(y, m, 1); end = new Date(y, m + 1, 0);
@@ -6987,10 +7014,10 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       // navigation
-      function _ddDrillZone(sec, i) { const z = ((_secItems[sec] || {}).zones || [])[i]; if (!z) return; _ddView = { level: "zone", zone: z.id, branch: null }; renderAllSections(false); }
-      function _ddDrillBranch(sec, i) { const b = ((_secItems[sec] || {}).branches || [])[i]; if (!b) return; _ddView = { level: "branch", zone: _ddView.zone, branch: b.id }; renderAllSections(false); }
-      function _ddGoCompany() { _ddView = { level: "company", zone: null, branch: null }; renderAllSections(false); }
-      function _ddGoZone() { _ddView = { level: "zone", zone: _ddView.zone, branch: null }; renderAllSections(false); }
+      function _ddDrillZone(sec, i) { const z = ((_secItems[sec] || {}).zones || [])[i]; if (!z) return; _ddView = { level: "zone", zone: z.id, branch: null }; renderActive(false); }
+      function _ddDrillBranch(sec, i) { const b = ((_secItems[sec] || {}).branches || [])[i]; if (!b) return; _ddView = { level: "branch", zone: _ddView.zone, branch: b.id }; renderActive(false); }
+      function _ddGoCompany() { _ddView = { level: "company", zone: null, branch: null }; renderActive(false); }
+      function _ddGoZone() { _ddView = { level: "zone", zone: _ddView.zone, branch: null }; renderActive(false); }
 
       function _ddCrumb() {
         const role = (typeof S !== "undefined" && S && S.role) || "";
@@ -7016,25 +7043,22 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       // ── รีเซ็ต/guard เอนทิตี (ใช้ร่วม) แล้ววาดทั้ง 3 พาร์ท ──
-      function renderAllSections(reset) {
+      // วาดเฉพาะช่วงที่ active (แท็บที่เลือก) · ใช้ข้อมูลของช่วงนั้นเป็นแหล่งโครงโซน/สาขา
+      function renderActive(reset) {
+        const sec = _secActive;
+        const C = _cap(sec);
         const role = (typeof S !== "undefined" && S && S.role) || "";
         const crumbEl = document.getElementById("dashCrumb");
-        const zones = _ddZones();                 // จากข้อมูลพาร์ท "เดือน" (โครงโซน/สาขา)
+        const d = _secData[sec];
+        if (d && d.rows && d.rows.length) { _dashRows = d.rows; _dashPlanByBranch = d.planByBranch; }
+        const zones = _ddZones();
         const zoneNames = Object.keys(zones);
 
-        // ยังไม่มีข้อมูล (เดือนว่าง) → fallback ใช้พาร์ทที่มี rows เป็นแหล่งโครง
-        if (!_ddCodes().length) {
-          const alt = ['month','week','day'].map(s => _secData[s]).find(d => d && d.rows && d.rows.length);
-          if (alt) { _dashRows = alt.rows; _dashPlanByBranch = alt.planByBranch; }
-        }
         if (!_ddCodes().length) {
           if (crumbEl) crumbEl.innerHTML = "";
-          ['day','week','month'].forEach(sec => {
-            const C = _cap(sec);
-            const k = document.getElementById('sec' + C + 'Kpis'); if (k) k.innerHTML = "";
-            const b = document.getElementById('sec' + C + 'Body');
-            if (b) b.innerHTML = `<div class="dash2-card dash3-card"><div class="dd-empty">📭 ยังไม่มีข้อมูลยอดขายในช่วงที่เลือก</div></div>`;
-          });
+          const k = document.getElementById('sec' + C + 'Kpis'); if (k) k.innerHTML = "";
+          const b = document.getElementById('sec' + C + 'Body');
+          if (b) b.innerHTML = `<div class="dash2-card dash3-card"><div class="dd-empty">📭 ยังไม่มีข้อมูลยอดขายในช่วงที่เลือก</div></div>`;
           return;
         }
 
@@ -7048,7 +7072,7 @@ body { background: var(--bg); color: var(--txt); }
             _ddView = { level: "company", zone: null, branch: null };
           }
         }
-        // guard: เป้าหมายที่เจาะอยู่หายไปจากข้อมูล
+        // guard: เป้าหมายที่เจาะอยู่หายไปจากข้อมูลของช่วงนี้
         if (_ddView.level === "zone" && !zones[_ddView.zone]) {
           _ddView = { level: (role === "admin" || role === "vp") ? "company" : "zone", zone: zoneNames[0] || null, branch: null };
         }
@@ -7057,7 +7081,7 @@ body { background: var(--bg); color: var(--txt); }
         }
 
         if (crumbEl) crumbEl.innerHTML = _ddCrumb();
-        ['day','week','month'].forEach(renderSection);
+        renderSection(sec);
       }
 
       // ── วาด 1 พาร์ท (วัน/สัปดาห์/เดือน) สำหรับเอนทิตีที่กำลังดู ──
@@ -7122,6 +7146,9 @@ body { background: var(--bg); color: var(--txt); }
         } else if (sec === 'week') {
           trendTitle = "📊 ยอดขายรายวัน (จ–อา) เทียบเป้า";
           trendSub = "🟩 ถึงเป้า · 🟧 ต่ำกว่าเป้า (เทียบเป้าเฉลี่ย/วัน)";
+        } else if (sec === 'year') {
+          trendTitle = "📈 แนวโน้มยอดขายตลอดปี";
+          trendSub = "ยอดขายจริงรายวันในปีที่เลือก";
         } else if (isBranch) {
           trendTitle = "📊 ยอดขายรายวัน เทียบเป้า";
           trendSub = "🟩 ถึงเป้า · 🟧 ต่ำกว่าเป้า (เทียบเป้าเฉลี่ย/วัน)";
@@ -7143,6 +7170,7 @@ body { background: var(--bg); color: var(--txt); }
         _ddRenderDonut(rows, sec);
         if (sec === 'day') _ddRenderDayChannels(rows, sec);
         else if (sec === 'week') _ddRenderBranchTrend(rows, codes, sec, d);
+        else if (sec === 'year') _ddRenderTrend(rows, sec, d);
         else if (isBranch) _ddRenderBranchTrend(rows, codes, sec, d);
         else _ddRenderTrend(rows, sec, d);
       }
@@ -7160,9 +7188,26 @@ body { background: var(--bg); color: var(--txt); }
           else                         prefix = (S.branch || "") + (S.dm ? "  ·  BZM: " + S.dm : "");
           sub.textContent = prefix;
         }
-        // โหลดทั้ง 3 พาร์ทพร้อมกัน (วัน / สัปดาห์ / เดือน) · เอนทิตีรีเซ็ตเมื่อข้อมูลเดือนถึง
+        // รีเซ็ตทุกช่วงเป็น "ยังไม่โหลด" + กลับมาแท็บรายวันเสมอ (โหลดเฉพาะแท็บที่กด)
+        ['day','week','month','year'].forEach(s => { _secData[s] = { rows: [], planByDate: {}, planByBranch: {}, range: null }; });
+        _secActive = 'day';
         _secResetPending = true;
-        ['day','week','month'].forEach(sec => loadSection(sec, true));
+        showSecTab('day');
+      }
+
+      // สลับแท็บช่วงเวลา — โชว์เฉพาะช่วงนั้น · โหลดถ้ายังไม่เคยโหลด (กดถึงจะแสดง)
+      function showSecTab(sec) {
+        _secActive = sec;
+        ['day','week','month','year'].forEach(s => {
+          const C = _cap(s);
+          const btn = document.getElementById('tab' + C);
+          if (btn) btn.classList.toggle('active', s === sec);
+          const wrap = document.getElementById('sec' + C + 'Wrap');
+          if (wrap) wrap.style.display = (s === sec) ? '' : 'none';
+        });
+        const d = _secData[sec];
+        if (!d || !d.range) loadSection(sec, true);   // ยังไม่โหลด → โหลด
+        else renderActive(false);                      // โหลดแล้ว → วาดใหม่ (เผื่อเอนทิตีเปลี่ยน)
       }
 
       // โหลดข้อมูลของพาร์ทเดียว (history + getPlan ของช่วงพาร์ทนั้น) แล้ววาด
@@ -7190,11 +7235,11 @@ body { background: var(--bg); color: var(--txt); }
             plan_sale: planByDate[r.submit_date] !== undefined ? planByDate[r.submit_date] : (parseFloat(r.plan_sale) || 0)
           })) : [];
           _secData[sec] = { rows, planByDate, planByBranch, range: { startDate: pr.startDate, endDate: pr.endDate, periodDays: pr.periodDays } };
-          // พาร์ทเดือน = แหล่งโครงโซน/สาขา (กว้างสุด)
-          if (sec === 'month') { _dashRows = rows; _dashPlanByBranch = planByBranch; _dashPlans = planByDate; }
-          if (renderAfter) {
-            renderAllSections(_secResetPending);
-            if (sec === 'month') _secResetPending = false;
+          // ช่วงที่กำลังดู = แหล่งโครงโซน/สาขา (drill source)
+          if (sec === _secActive) { _dashRows = rows; _dashPlanByBranch = planByBranch; _dashPlans = planByDate; }
+          if (renderAfter && sec === _secActive) {
+            renderActive(_secResetPending);
+            _secResetPending = false;
           }
         }
         apiCall({ mode: "history", branch_codes: queryCodes, start_date: pr.startDate, end_date: pr.endDate }, function (res) { _h = res; done(); });
@@ -7206,6 +7251,7 @@ body { background: var(--bg); color: var(--txt); }
         const a = new Date(_secAnchor[sec]);
         if (sec === 'day') a.setDate(a.getDate() + dir);
         else if (sec === 'week') a.setDate(a.getDate() + dir * 7);
+        else if (sec === 'year') a.setFullYear(a.getFullYear() + dir);
         else a.setMonth(a.getMonth() + dir);
         _secAnchor[sec] = a;
         loadSection(sec, true);
@@ -7235,6 +7281,7 @@ body { background: var(--bg); color: var(--txt); }
           if (sec === 'month') { pick.value = pr.startDate.slice(0, 7); pick.max = today.slice(0, 7); }
           else { pick.value = pr.startDate; pick.max = today; }
         }
+        if (sec === 'year') { const yl = document.getElementById('secYearLabel'); if (yl) yl.textContent = pr.label; }
         const sub = document.getElementById('sec' + C + 'Sub');
         if (sub) sub.textContent = pr.label;
         const next = document.getElementById('sec' + C + 'Next');
