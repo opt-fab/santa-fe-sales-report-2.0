@@ -4201,6 +4201,22 @@ body { background: var(--bg); color: var(--txt); }
 @media (max-width: 900px) {
   .dd-channel-combined { grid-template-columns: 1fr; gap: 14px; }
 }
+
+/* Day mode — donut + bars + table รวมเป็นการ์ดเดียว */
+.dd-channel-mega {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-rows: auto auto;
+  gap: 20px 22px;
+  align-items: start;
+}
+.dd-channel-mega .dd-cc-donut  { min-width: 0; }
+.dd-channel-mega .dd-cc-bars   { min-width: 0; }
+.dd-channel-mega .dd-cc-table  { grid-column: 1 / -1; min-width: 0; }
+@media (max-width: 900px) {
+  .dd-channel-mega { grid-template-columns: 1fr; gap: 14px; }
+  .dd-channel-mega .dd-cc-table { grid-column: 1 / -1; }
+}
     </style>
   </head>
 
@@ -7177,17 +7193,11 @@ body { background: var(--bg); color: var(--txt); }
               <span class="dd-rb-val"><b style="color:${fillColor}">฿${fmt(Math.round(val))}</b> · ${pct.toFixed(1)}% · ${billTxt}${overTag}</span>
             </div>`;
           };
+          // เหลือเฉพาะกราฟแท่ง 2 รอบ (16:00 / สิ้นวัน) — เต็มความกว้างการ์ด
           return `<div class="dd-hero dd-hero-day">
-            <div class="dd-hero-summary">
-              ${msg ? `<div class="dd-hero-msg">${msg}</div>` : ''}
-              <div class="dd-hero-big">฿${fmt(Math.round(total))} <span class="dd-hero-pct-inline" style="color:${colDone}">(${pctDone.toFixed(1)}%)</span></div>
-              <div class="dd-hero-target">Plan <b>฿${fmt(Math.round(p))}</b></div>
-            </div>
-            <div class="dd-hero-main">
-              <div class="dd-rounds-bars">
-                ${rowBar('🕓', '16:00',   a16,  pct16,  '#fbbf24', bills16,  false)}
-                ${rowBar('🌙', 'สิ้นวัน', aEod, pctEod, '#ea580c', billsEod, false)}
-              </div>
+            <div class="dd-rounds-bars">
+              ${rowBar('🕓', '16:00',   a16,  pct16,  '#fbbf24', bills16,  false)}
+              ${rowBar('🌙', 'สิ้นวัน', aEod, pctEod, '#ea580c', billsEod, false)}
             </div>
           </div>`;
         }
@@ -7557,26 +7567,38 @@ body { background: var(--bg); color: var(--txt); }
           trendSub = "ยอดขายจริงรายวันในช่วงที่เลือก";
         }
 
-        // โหมดรายวัน → รวม chart "ช่องทางการขายวันนั้น" + ตาราง "รายละเอียดช่องทาง" ให้เป็นการ์ดเดียว
+        // โหมดรายวัน → รวม donut + bars + table เป็นการ์ดเดียว · สรุปผลสาขาเต็มแถว
         const isDayMode = (sec === 'day');
-        const row2 = isDayMode
-          ? _ddPanel(trendTitle, trendSub,
-              `<div class="dd-channel-combined">
-                <div class="dd-channel-chart"><div id="sec${C}TrendBox" style="position:relative;min-height:280px"></div></div>
-                <div class="dd-channel-table">${_ddChannelTable(rows)}</div>
-              </div>`)
-          : `<div class="dash3-row dd-grid2">
+        kpiEl.innerHTML = _ddKpiCards(_ddAgg(rows), codes, map);
+        if (isDayMode) {
+          // 1) สรุปผลสาขา = เต็มความกว้าง
+          // 2) ช่องทางการขายวันนั้น = donut + bars + table รวมกัน
+          const channelMega = _ddPanel(trendTitle, trendSub,
+            `<div class="dd-channel-mega">
+              <div class="dd-cc-donut">
+                <div class="dd-donut-row">
+                  <div class="dd-donut-canvas"><canvas id="sec${C}Donut"></canvas></div>
+                  <div id="sec${C}DonutLeg" class="dash2-chan-legend dd-donut-legend"></div>
+                </div>
+              </div>
+              <div class="dd-cc-bars"><div id="sec${C}TrendBox" style="position:relative;min-height:280px"></div></div>
+              <div class="dd-cc-table">${_ddChannelTable(rows)}</div>
+            </div>`);
+          bodyEl.innerHTML = `
+            <div class="dash3-row">${topPanel}</div>
+            <div class="dash3-row">${channelMega}</div>`;
+        } else {
+          const row2 = `<div class="dash3-row dd-grid2">
               ${_ddPanel(trendTitle, trendSub, `<div id="sec${C}TrendBox" style="position:relative;min-height:280px"></div>`)}
               ${_ddPanel("📋 รายละเอียดช่องทาง", "ยอดขาย · สัดส่วน · บิลเฉลี่ย", _ddChannelTable(rows))}
             </div>`;
-
-        kpiEl.innerHTML = _ddKpiCards(_ddAgg(rows), codes, map);
-        bodyEl.innerHTML = `
-          <div class="dash3-row dd-grid2">
-            ${topPanel}
-            ${_ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่ายอดขายแยกตามช่องทาง", `<div class="dd-donut-row"><div class="dd-donut-canvas"><canvas id="sec${C}Donut"></canvas></div><div id="sec${C}DonutLeg" class="dash2-chan-legend dd-donut-legend"></div></div>`)}
-          </div>
-          ${row2}`;
+          bodyEl.innerHTML = `
+            <div class="dash3-row dd-grid2">
+              ${topPanel}
+              ${_ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่ายอดขายแยกตามช่องทาง", `<div class="dd-donut-row"><div class="dd-donut-canvas"><canvas id="sec${C}Donut"></canvas></div><div id="sec${C}DonutLeg" class="dash2-chan-legend dd-donut-legend"></div></div>`)}
+            </div>
+            ${row2}`;
+        }
         _ddRenderDonut(rows, sec);
         if (sec === 'day') _ddRenderDayChannels(rows, sec);
         else if (sec === 'week') _ddRenderBranchTrend(rows, codes, sec, d);
