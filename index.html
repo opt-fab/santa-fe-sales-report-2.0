@@ -4145,6 +4145,38 @@ body { background: var(--bg); color: var(--txt); }
   .dd-rb-val { grid-column: 1 / -1; text-align: right; }
 }
 
+/* Day-mode hero — สรุปด้านบน · กราฟอยู่ล่าง (เลย์เอาต์แนวตั้ง) */
+.dd-hero.dd-hero-day {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 14px;
+}
+.dd-hero.dd-hero-day .dd-hero-summary { width: 100%; min-width: 0; }
+.dd-hero.dd-hero-day .dd-hero-main    { width: 100%; }
+
+/* Donut card — รูปอยู่ซ้าย · legend อยู่ขวา (เลย์เอาต์แนวนอน) */
+.dd-donut-row {
+  display: flex; align-items: center; gap: 18px;
+}
+.dd-donut-row .dd-donut-canvas {
+  position: relative;
+  flex: 0 0 200px;
+  height: 200px;
+}
+.dd-donut-row .dd-donut-legend {
+  flex: 1; min-width: 0;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+  margin-top: 0 !important;
+}
+@media (max-width: 560px) {
+  .dd-donut-row { flex-direction: column; align-items: stretch; }
+  .dd-donut-row .dd-donut-canvas { flex: 0 0 auto; height: 200px; }
+  .dd-donut-row .dd-donut-legend { flex-direction: row !important; flex-wrap: wrap !important; align-items: center !important; }
+}
+
 /* Dashboard — day mode: combined channel chart + table panel */
 .dd-channel-combined {
   display: grid;
@@ -7134,7 +7166,7 @@ body { background: var(--bg); color: var(--txt); }
               <span class="dd-rb-val"><b style="color:${fillColor}">฿${fmt(Math.round(val))}</b> · ${pct.toFixed(1)}% · ${billTxt}</span>
             </div>`;
           };
-          return `<div class="dd-hero">
+          return `<div class="dd-hero dd-hero-day">
             <div class="dd-hero-summary">
               ${msg ? `<div class="dd-hero-msg">${msg}</div>` : ''}
               <div class="dd-hero-big">฿${fmt(Math.round(total))} <span class="dd-hero-pct-inline" style="color:${colDone}">(${pctDone.toFixed(1)}%)</span></div>
@@ -7531,7 +7563,7 @@ body { background: var(--bg); color: var(--txt); }
         bodyEl.innerHTML = `
           <div class="dash3-row dd-grid2">
             ${topPanel}
-            ${_ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่ายอดขายแยกตามช่องทาง", `<div style="position:relative;height:220px"><canvas id="sec${C}Donut"></canvas></div><div id="sec${C}DonutLeg" class="dash2-chan-legend"></div>`)}
+            ${_ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่ายอดขายแยกตามช่องทาง", `<div class="dd-donut-row"><div class="dd-donut-canvas"><canvas id="sec${C}Donut"></canvas></div><div id="sec${C}DonutLeg" class="dash2-chan-legend dd-donut-legend"></div></div>`)}
           </div>
           ${row2}`;
         _ddRenderDonut(rows, sec);
