@@ -3914,6 +3914,132 @@ body { background: var(--bg); color: var(--txt); }
   .dash2-card { padding: 16px; border-top: 3px solid var(--brand); }
   .dash2-pbtn { padding: 6px 10px; font-size: 12px; }
 }
+
+/* ════════════════════════════════════════════════════════
+   LOGIN PAGE  —  polish (smooth + refined)
+════════════════════════════════════════════════════════ */
+.login-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(255, 207, 159, .55) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 80% 100%, rgba(255, 222, 196, .45) 0%, transparent 55%),
+    #fef9f5 !important;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  border: 1px solid rgba(255, 255, 255, .8) !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, .03),
+    0 6px 14px -6px rgba(15, 23, 42, .08),
+    0 24px 56px -28px rgba(242, 108, 28, .18) !important;
+  animation: loginCardIn .55s cubic-bezier(.22, 1, .36, 1) both;
+}
+@keyframes loginCardIn {
+  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+
+.login-app-hdr {
+  padding: 28px 22px 22px !important;
+  border-bottom-color: rgba(15, 23, 42, .06) !important;
+}
+.login-app-logo {
+  box-shadow:
+    0 6px 16px -6px rgba(242, 108, 28, .45),
+    0 2px 4px rgba(242, 108, 28, .2) !important;
+  animation: logoFloat 4s ease-in-out infinite;
+  transition: transform .3s cubic-bezier(.22, 1, .36, 1);
+}
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+.login-app-name { letter-spacing: -.015em; }
+
+/* Tabs */
+.login-tabs {
+  margin: 22px 22px 0 !important;
+  padding: 5px !important;
+  background: #f4f4f7 !important;
+}
+.login-tab {
+  transition:
+    color .2s cubic-bezier(.4, 0, .2, 1),
+    background .2s cubic-bezier(.4, 0, .2, 1),
+    box-shadow .25s cubic-bezier(.4, 0, .2, 1),
+    transform .15s ease !important;
+}
+.login-tab:not(.active):hover {
+  color: var(--txt);
+  background: rgba(255, 255, 255, .65);
+}
+.login-tab:active { transform: scale(.97); }
+.login-tab.active {
+  box-shadow:
+    0 4px 12px rgba(242, 108, 28, .32),
+    0 1px 2px rgba(242, 108, 28, .22) !important;
+}
+
+/* Body + label */
+.login-body { padding: 22px 22px 18px !important; }
+.login-otp-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--txt2);
+  text-align: center;
+  margin-bottom: 16px;
+  letter-spacing: .005em;
+}
+
+/* PIN boxes */
+.login-otp { gap: 10px !important; }
+.login-otp-box {
+  width: 46px !important;
+  height: 56px !important;
+  border-radius: 13px !important;
+  border-width: 1.5px !important;
+  background: #fafbfc !important;
+  transition:
+    border-color .22s cubic-bezier(.4, 0, .2, 1),
+    background    .22s cubic-bezier(.4, 0, .2, 1),
+    box-shadow    .22s cubic-bezier(.4, 0, .2, 1),
+    transform     .18s cubic-bezier(.4, 0, .2, 1) !important;
+}
+.login-otp-box:focus {
+  border-color: var(--brand) !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 0 0 4px rgba(242, 108, 28, .14),
+    0 4px 10px -4px rgba(242, 108, 28, .25) !important;
+  transform: translateY(-1px);
+}
+.login-otp-box.filled {
+  border-color: var(--brand) !important;
+  background: linear-gradient(180deg, #fff8f1 0%, #ffefdb 100%) !important;
+  animation: pinPop .28s cubic-bezier(.4, 0, .2, 1);
+}
+@keyframes pinPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.09); }
+  100% { transform: scale(1); }
+}
+
+/* Footer */
+.login-footer {
+  padding: 0 22px 22px;
+  margin-top: 18px !important;
+  font-size: 11.5px !important;
+  letter-spacing: .015em;
+  opacity: .7;
+}
+
+/* Mobile compact tweaks */
+@media (max-width: 640px) {
+  .login-card { border-radius: 18px !important; }
+  .login-otp-box { width: 44px !important; height: 54px !important; border-radius: 12px !important; }
+  .login-tabs { margin: 18px 18px 0 !important; }
+  .login-body { padding: 18px 18px 14px !important; }
+}
     </style>
   </head>
 
