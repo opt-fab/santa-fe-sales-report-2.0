@@ -4043,6 +4043,19 @@ body { background: var(--bg); color: var(--txt); }
   .login-tabs { margin: 18px 18px 0 !important; }
   .login-body { padding: 18px 18px 14px !important; }
 }
+
+/* Dashboard — day mode: combined channel chart + table panel */
+.dd-channel-combined {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.dd-channel-combined .dd-channel-chart { min-width: 0; }
+.dd-channel-combined .dd-channel-table { min-width: 0; }
+@media (max-width: 900px) {
+  .dd-channel-combined { grid-template-columns: 1fr; gap: 14px; }
+}
     </style>
   </head>
 
@@ -7327,16 +7340,26 @@ body { background: var(--bg); color: var(--txt); }
           trendSub = "ยอดขายจริงรายวันในช่วงที่เลือก";
         }
 
+        // โหมดรายวัน → รวม chart "ช่องทางการขายวันนั้น" + ตาราง "รายละเอียดช่องทาง" ให้เป็นการ์ดเดียว
+        const isDayMode = (sec === 'day');
+        const row2 = isDayMode
+          ? _ddPanel(trendTitle, trendSub,
+              `<div class="dd-channel-combined">
+                <div class="dd-channel-chart"><div id="sec${C}TrendBox" style="position:relative;min-height:280px"></div></div>
+                <div class="dd-channel-table">${_ddChannelTable(rows)}</div>
+              </div>`)
+          : `<div class="dash3-row dd-grid2">
+              ${_ddPanel(trendTitle, trendSub, `<div id="sec${C}TrendBox" style="position:relative;min-height:280px"></div>`)}
+              ${_ddPanel("📋 รายละเอียดช่องทาง", "ยอดขาย · สัดส่วน · บิลเฉลี่ย", _ddChannelTable(rows))}
+            </div>`;
+
         kpiEl.innerHTML = _ddKpiCards(_ddAgg(rows), codes, map);
         bodyEl.innerHTML = `
           <div class="dash3-row dd-grid2">
             ${topPanel}
             ${_ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่ายอดขายแยกตามช่องทาง", `<div style="position:relative;height:220px"><canvas id="sec${C}Donut"></canvas></div><div id="sec${C}DonutLeg" class="dash2-chan-legend"></div>`)}
           </div>
-          <div class="dash3-row dd-grid2">
-            ${_ddPanel(trendTitle, trendSub, `<div id="sec${C}TrendBox" style="position:relative;min-height:280px"></div>`)}
-            ${_ddPanel("📋 รายละเอียดช่องทาง", "ยอดขาย · สัดส่วน · บิลเฉลี่ย", _ddChannelTable(rows))}
-          </div>`;
+          ${row2}`;
         _ddRenderDonut(rows, sec);
         if (sec === 'day') _ddRenderDayChannels(rows, sec);
         else if (sec === 'week') _ddRenderBranchTrend(rows, codes, sec, d);
