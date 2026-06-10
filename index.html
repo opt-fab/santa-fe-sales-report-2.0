@@ -4045,17 +4045,29 @@ body { background: var(--bg); color: var(--txt); }
 }
 
 /* Dashboard — day mode: big % (แทนไอคอน) + 2 แท่งแนวนอนต่อรอบ */
+.dd-hero-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 4px;
+  min-width: 180px;
+  flex-shrink: 0;
+}
 .dd-hero-pct {
   font-size: 2.6rem;
   font-weight: 800;
   letter-spacing: -.025em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  min-width: 110px;
-  flex-shrink: 0;
-  align-self: center;
-  text-align: center;
+  text-align: left;
 }
+.dd-hero-target {
+  font-size: 13px;
+  color: var(--txt2);
+  margin-top: 4px;
+}
+.dd-hero-target b { color: var(--txt); font-weight: 700; }
 .dd-rounds-bars {
   display: flex;
   flex-direction: column;
@@ -4094,7 +4106,8 @@ body { background: var(--bg); color: var(--txt); }
 }
 .dd-rb-val b { color: var(--brand); font-weight: 700; }
 @media (max-width: 560px) {
-  .dd-hero-pct { font-size: 2.1rem; min-width: 90px; }
+  .dd-hero-summary { min-width: 0; width: 100%; align-items: center; text-align: center; }
+  .dd-hero-pct { font-size: 2.1rem; text-align: center; }
   .dd-rb-row { grid-template-columns: 70px 1fr; row-gap: 4px; }
   .dd-rb-val { grid-column: 1 / -1; text-align: right; }
 }
@@ -7073,15 +7086,17 @@ body { background: var(--bg); color: var(--txt); }
               <span class="dd-rb-val">฿${fmt(Math.round(val))} · <b>${pct.toFixed(1)}%</b></span>
             </div>`;
           return `<div class="dd-hero">
-            <div class="dd-hero-pct" style="color:${colDone}">${pctDone.toFixed(1)}%</div>
-            <div class="dd-hero-main">
+            <div class="dd-hero-summary">
+              <div class="dd-hero-pct" style="color:${colDone}">${pctDone.toFixed(1)}%</div>
               ${msg ? `<div class="dd-hero-msg">${msg}</div>` : ''}
               <div class="dd-hero-big">฿${fmt(Math.round(total))}</div>
+              <div class="dd-hero-target">เป้า <b>฿${fmt(Math.round(p))}</b></div>
+            </div>
+            <div class="dd-hero-main">
               <div class="dd-rounds-bars">
                 ${rowBar('🕓', '16:00',  a16,  pct16,  '#fbbf24')}
                 ${rowBar('🌙', 'สิ้นวัน', aEod, pctEod, '#ea580c')}
               </div>
-              <div class="dd-hero-meta"><span></span><span>เป้า <b>฿${fmt(Math.round(p))}</b></span></div>
             </div>
           </div>`;
         }
