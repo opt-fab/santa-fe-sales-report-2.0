@@ -4054,13 +4054,12 @@ body { background: var(--bg); color: var(--txt); }
   min-width: 180px;
   flex-shrink: 0;
 }
-.dd-hero-pct {
-  font-size: 2.6rem;
+.dd-hero-pct-inline {
+  font-size: 0.55em;
   font-weight: 800;
-  letter-spacing: -.025em;
-  line-height: 1;
+  letter-spacing: -.005em;
+  margin-left: 6px;
   font-variant-numeric: tabular-nums;
-  text-align: left;
 }
 .dd-hero-target {
   font-size: 13px;
@@ -4104,16 +4103,33 @@ body { background: var(--bg); color: var(--txt); }
   white-space: nowrap;
 }
 .dd-rb-track {
-  height: 10px;
+  position: relative;
+  height: 14px;
   background: #f1f5f9;
-  border-radius: 5px;
-  overflow: hidden;
+  border-radius: 7px;
+  overflow: visible;
 }
 .dd-rb-fill {
   height: 100%;
-  border-radius: 5px;
+  border-radius: 7px;
   transition: width .6s var(--ease, ease);
   min-width: 4px;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.06);
+}
+.dd-rb-overbadge {
+  position: absolute;
+  right: -2px; top: 50%;
+  transform: translate(100%, -50%);
+  margin-left: 6px;
+  padding: 1px 7px;
+  background: #16a34a; color: #fff;
+  font-size: 10.5px; font-weight: 800;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(22,163,74,.25);
+}
+.dd-rb-row.dd-rb-over .dd-rb-fill {
+  box-shadow: 0 0 0 1.5px rgba(22,163,74,.35), inset 0 -1px 0 rgba(0,0,0,.06);
 }
 .dd-rb-val {
   color: var(--txt);
@@ -7102,18 +7118,27 @@ body { background: var(--bg); color: var(--txt); }
             const liveDot = isLive ? `<span class="dd-rb-live" title="กำลังเก็บยอด"></span>` : '';
             const sent = (val > 0 || bills > 0);
             const billTxt = sent ? `${fmt(bills)} บิล` : `<span style="color:var(--txt3)">ยังไม่ส่ง</span>`;
-            return `<div class="dd-rb-row${sent ? '' : ' dd-rb-empty'}">
+            // ถ้าทะลุเป้า (>100%) → ใช้สีเขียว + ขยับบาร์ให้เต็ม
+            const overshoot = pct > 100;
+            const fillColor = overshoot ? '#16a34a' : color;
+            const fillW = Math.min(pct, 100);
+            const overBadge = overshoot
+              ? `<span class="dd-rb-overbadge">+${(pct - 100).toFixed(1)}%</span>`
+              : '';
+            return `<div class="dd-rb-row${sent ? '' : ' dd-rb-empty'}${overshoot ? ' dd-rb-over' : ''}">
               <span class="dd-rb-label">${icon} ${name}${liveDot}</span>
-              <div class="dd-rb-track"><div class="dd-rb-fill" style="width:${Math.min(pct, 100).toFixed(2)}%;background:${color}"></div></div>
-              <span class="dd-rb-val"><b style="color:${color}">฿${fmt(Math.round(val))}</b> · ${pct.toFixed(1)}% · ${billTxt}</span>
+              <div class="dd-rb-track">
+                <div class="dd-rb-fill" style="width:${fillW.toFixed(2)}%;background:${fillColor}"></div>
+                ${overBadge}
+              </div>
+              <span class="dd-rb-val"><b style="color:${fillColor}">฿${fmt(Math.round(val))}</b> · ${pct.toFixed(1)}% · ${billTxt}</span>
             </div>`;
           };
           return `<div class="dd-hero">
             <div class="dd-hero-summary">
-              <div class="dd-hero-pct" style="color:${colDone}">${pctDone.toFixed(1)}%</div>
               ${msg ? `<div class="dd-hero-msg">${msg}</div>` : ''}
-              <div class="dd-hero-big">฿${fmt(Math.round(total))}</div>
-              <div class="dd-hero-target">เป้า <b>฿${fmt(Math.round(p))}</b></div>
+              <div class="dd-hero-big">฿${fmt(Math.round(total))} <span class="dd-hero-pct-inline" style="color:${colDone}">(${pctDone.toFixed(1)}%)</span></div>
+              <div class="dd-hero-target">Plan <b>฿${fmt(Math.round(p))}</b></div>
             </div>
             <div class="dd-hero-main">
               <div class="dd-rounds-bars">
@@ -7458,9 +7483,7 @@ body { background: var(--bg); color: var(--txt); }
             };
             const r16  = rd('16.00');
             const rEod = rd('สิ้นวัน');
-            const sub = planForDay > 0
-              ? `รอบ 16:00 และสิ้นวัน · เทียบเป้า ฿${fmt(Math.round(planForDay))}`
-              : "รอบ 16:00 และสิ้นวัน";
+            const sub = ""; // ตัด subtitle ออก — ข้อมูลครบใน hero แล้ว
             const slots = planForDay > 0
               ? { act16:  r16  ? r16.act  : 0, actEod:  rEod ? rEod.act  : 0,
                   bills16: r16 ? r16.bills : 0, billsEod: rEod ? rEod.bills : 0,
