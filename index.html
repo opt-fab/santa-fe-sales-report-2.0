@@ -4045,12 +4045,32 @@ body { background: var(--bg); color: var(--txt); }
 }
 
 /* Dashboard — day mode: stacked progress bar (16:00 / สิ้นวัน) */
-.dd-hero-prog-stack { display: flex; gap: 0; height: 100%; }
-.dd-hero-seg { height: 100%; transition: width .6s var(--ease, ease); }
-.dd-hero-seg.dd-seg-16  { background: linear-gradient(90deg, #fdba74, #fb923c); }
-.dd-hero-seg.dd-seg-eod { background: linear-gradient(90deg, #ea580c, #c2410c); }
+.dd-hero-prog-stack {
+  display: flex; gap: 3px; height: 100%;
+  /* ตัวพื้นหลังเทาของ .dd-hero-prog จะโผล่ในช่อง gap → ทำหน้าที่เป็นเส้นแบ่ง */
+}
+.dd-hero-seg {
+  height: 100%;
+  transition: width .6s var(--ease, ease);
+  min-width: 6px;          /* กันส่วนเล็กมาก (เช่น 16:00 = 4%) หายไป */
+}
+.dd-hero-seg.dd-seg-16  { background: #fde68a; }                    /* เหลือง-ครีม — รอบ 16:00 */
+.dd-hero-seg.dd-seg-eod { background: linear-gradient(90deg, #f97316, #ea580c); }  /* ส้มแบรนด์ — สิ้นวัน */
 .dd-hero-seg:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
 .dd-hero-seg:last-child  { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+
+/* legend ใต้แท่ง — บอกว่าสีไหนคืออะไร */
+.dd-hero-prog-legend {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  margin-top: 6px;
+  font-size: 11.5px; color: var(--txt2); font-weight: 500;
+}
+.dd-hero-prog-legend .lg-item { display: inline-flex; align-items: center; gap: 5px; }
+.dd-hero-prog-legend .lg-sw {
+  display: inline-block; width: 11px; height: 11px; border-radius: 3px;
+}
+.dd-hero-prog-legend .lg-sw.lg-16  { background: #fde68a; }
+.dd-hero-prog-legend .lg-sw.lg-eod { background: #ea580c; }
 
 /* Dashboard — day mode: combined channel chart + table panel */
 .dd-channel-combined {
@@ -7026,8 +7046,12 @@ body { background: var(--bg); color: var(--txt); }
               ${msg ? `<div class="dd-hero-msg">${msg}</div>` : ''}
               <div class="dd-hero-big">฿${fmt(Math.round(total))}</div>
               <div class="dd-hero-prog dd-hero-prog-stack">
-                ${w16  > 0 ? `<div class="dd-hero-seg dd-seg-16"  style="width:${w16.toFixed(2)}%"  title="ถึง 16:00"></div>` : ''}
-                ${wAdd > 0 ? `<div class="dd-hero-seg dd-seg-eod" style="width:${wAdd.toFixed(2)}%" title="ส่วนเพิ่มหลัง 16:00"></div>` : ''}
+                ${w16  > 0 ? `<div class="dd-hero-seg dd-seg-16"  style="width:${w16.toFixed(2)}%"  title="ถึง 16:00 · ฿${fmt(Math.round(slots.act16 || 0))}"></div>` : ''}
+                ${wAdd > 0 ? `<div class="dd-hero-seg dd-seg-eod" style="width:${wAdd.toFixed(2)}%" title="ส่วนเพิ่มหลัง 16:00 · ฿${fmt(Math.round((slots.actEod || 0) - (slots.act16 || 0)))}"></div>` : ''}
+              </div>
+              <div class="dd-hero-prog-legend">
+                <span class="lg-item"><span class="lg-sw lg-16"></span>16:00 (${(w16).toFixed(1)}%)</span>
+                <span class="lg-item"><span class="lg-sw lg-eod"></span>หลัง 16:00 ถึงสิ้นวัน (${(wAdd).toFixed(1)}%)</span>
               </div>
               <div class="dd-hero-meta"><span>ทำได้ <b style="color:${colDone}">${pctDone.toFixed(1)}%</b></span><span>เป้า <b>฿${fmt(Math.round(p))}</b></span></div>
             </div>
