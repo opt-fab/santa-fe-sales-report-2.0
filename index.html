@@ -4136,7 +4136,13 @@ body { background: var(--bg); color: var(--txt); }
   white-space: nowrap;
   font-size: 12px;
 }
-.dd-rb-val b { color: var(--brand); font-weight: 700; }
+/* ยอด ฿ ในแถวกราฟแท่ง — ใหญ่กว่าข้อความอื่น */
+.dd-rb-val b {
+  color: var(--brand);
+  font-weight: 800;
+  font-size: 1.55em;
+  letter-spacing: -.01em;
+}
 @media (max-width: 560px) {
   .dd-hero-summary { min-width: 0; width: 100%; align-items: center; text-align: center; }
   .dd-hero-pct { font-size: 2.1rem; text-align: center; }
@@ -7563,15 +7569,10 @@ body { background: var(--bg); color: var(--txt); }
         kpiEl.innerHTML = _ddKpiCards(_ddAgg(rows), codes, map);
         if (isDayMode) {
           // 1) สรุปยอดขาย = เต็มความกว้าง
-          // 2) ช่องทางการขาย = donut + ตาราง (เอากราฟแท่งช่องทางออก เหลือกราฟเดียว)
+          // 2) ช่องทางการขาย = กราฟแท่งช่องทาง + ตาราง (ถอด donut ออก)
           const channelMega = _ddPanel(trendTitle, trendSub,
             `<div class="dd-channel-mega">
-              <div class="dd-cc-donut">
-                <div class="dd-donut-row">
-                  <div class="dd-donut-canvas"><canvas id="sec${C}Donut"></canvas></div>
-                  <div id="sec${C}DonutLeg" class="dash2-chan-legend dd-donut-legend"></div>
-                </div>
-              </div>
+              <div class="dd-cc-bars"><div id="sec${C}TrendBox" style="position:relative;min-height:300px"></div></div>
               <div class="dd-cc-table">${_ddChannelTable(rows)}</div>
             </div>`);
           bodyEl.innerHTML = `
