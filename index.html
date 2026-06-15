@@ -6043,8 +6043,8 @@ body { background: var(--bg); color: var(--txt); }
           if (title) title.innerHTML = "📊 แดชบอร์ด";
           if (sub) sub.style.display = "none";
         } else {
-          var roleTxt = (S.role === "admin") ? "ADMIN" : (S.role === "vp") ? "VP" : (S.role === "bzm") ? "BZM TEAM" : "OVERVIEW";
-          if (tag) { tag.style.display = ""; tag.textContent = roleTxt; }
+          // ซ่อนป้าย role (ADMIN/VP/BZM/OVERVIEW) บนหัวข้อ — เลือกขอบเขตได้จาก dropdown แทน
+          if (tag) tag.style.display = "none";
           if (title) title.innerHTML = "📊 ภาพรวมทีม";
           if (sub) { sub.style.display = ""; sub.textContent = "ผลรวมหลายสาขาในขอบเขตที่ดูแล"; }
         }
@@ -7996,17 +7996,13 @@ body { background: var(--bg); color: var(--txt); }
           // หน้าสาขาเห็นแค่สาขาตัวเอง — ไม่ต้องโชว์ breadcrumb (ซ้ำกับหัวข้อ/ซับไตเติล)
           return "";
         }
+        // หมายเหตุ: ปุ่ม "🏢 ทั้งบริษัท" ถูกถอดออก — ใช้ dropdown เลือกขอบเขตแทน
         let h = "";
-        const canCompany = (role === "admin" || role === "vp");
-        if (canCompany) {
-          h += `<button class="${_ddView.level === "company" ? "here" : ""}" onclick="_ddGoCompany()">🏢 ทั้งบริษัท</button>`;
-        }
         if (_ddView.zone) {
-          if (h) h += `<span class="dd-sep">›</span>`;
           h += `<button class="${_ddView.level === "zone" ? "here" : ""}" onclick="_ddGoZone()">👥 ${escHtml(_ddView.zone)}</button>`;
         }
         if (_ddView.branch) {
-          h += `<span class="dd-sep">›</span>`;
+          if (h) h += `<span class="dd-sep">›</span>`;
           const nm = (BRANCH_DM_MAP[_ddView.branch] || {}).branch || _ddView.branch;
           h += `<button class="here">🏬 ${escHtml(nm)}</button>`;
         }
