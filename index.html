@@ -4103,15 +4103,19 @@ body { background: var(--bg); color: var(--txt); }
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  align-items: stretch !important; /* override .dd-hero center → ให้ children ยืดเต็มกว้าง */
+  width: 100%;
 }
 .dd-hero.dd-hero-noico .dd-hero-main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 .dash3-card .dd-rounds-bars.dd-rounds-bars-compact {
   flex: 1 1 auto;
   justify-content: space-evenly;
+  width: 100%;
 }
 /* hero ใหม่ — จัดให้บาร์อยู่กึ่งกลางแนวตั้งกับสรุปฝั่งซ้าย */
 .dd-hero { align-items: center !important; }
