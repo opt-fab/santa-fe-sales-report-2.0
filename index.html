@@ -7451,7 +7451,12 @@ body { background: var(--bg); color: var(--txt); }
         // ── โหมดอื่น (สัปดาห์/เดือน/ปี) → แท่งเดียวแบบเดิม ──
         const pct = plan > 0 ? a.actual / plan : 0;
         const emoji = pct >= 1 ? "🎉" : pct >= 0.85 ? "💪" : "⚠️";
-        const msg = plan <= 0 ? "ยังไม่มีเป้าในช่วงนี้" : pct >= 1 ? "เกินเป้าแล้ว!" : pct >= 0.85 ? "ใกล้ถึงเป้า ดันอีกนิด" : "ต่ำกว่าเป้า ต้องเร่งมือ";
+        const gap = plan - a.actual;
+        // แทนข้อความ motivational ด้วย "ขาดอีก ฿X" / "เกินเป้า ฿X" / "ยังไม่มีเป้า"
+        let msg;
+        if (plan <= 0)        msg = "ยังไม่มีเป้าในช่วงนี้";
+        else if (a.actual >= plan) msg = `เกินเป้า <b style="color:#16a34a">฿${fmt(Math.round(-gap))}</b>`;
+        else                  msg = `ขาดอีก <b style="color:#dc2626">฿${fmt(Math.round(gap))}</b>`;
         const col = _ddAchvColor(pct);
         const w = Math.min(pct * 100, 100).toFixed(1);
         return `<div class="dd-hero">
