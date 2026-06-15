@@ -4236,8 +4236,12 @@ body { background: var(--bg); color: var(--txt); }
   letter-spacing: -.01em;
   text-align: right;
   min-width: 52px;
-  padding-right: 4px;
+  padding: 0 6px 0 4px;
   border-right: 1px solid rgba(15,23,42,.08);
+}
+.dd-chan-stat-amount .dd-chan-stat-val {
+  font-size: 15px;
+  letter-spacing: -.015em;
 }
 .dd-chan-stat-cells {
   display: contents;
@@ -7625,9 +7629,9 @@ body { background: var(--bg); color: var(--txt); }
           const isEmpty = t.value <= 0 && (!t.trans || t.trans <= 0);
           return `<div class="dd-chan-stat${isEmpty ? ' is-empty' : ''}" style="--c:${t.color}">
             <span class="dd-chan-stat-name"><span class="dd-chan-stat-dot" style="background:${t.color}"></span><b>${escHtml(t.label)}</b></span>
+            <span class="dd-chan-stat-cell dd-chan-stat-amount"><span class="dd-chan-stat-val">฿${fmt(Math.round(t.value))}</span></span>
             <span class="dd-chan-stat-pct">${pct.toFixed(1)}%</span>
             <span class="dd-chan-stat-cell"><span class="dd-chan-stat-val">${fmt(t.trans || 0)}</span><span class="dd-chan-stat-lbl">บิล</span></span>
-            <span class="dd-chan-stat-cell"><span class="dd-chan-stat-val">฿${fmt(Math.round(t.value))}</span></span>
             <span class="dd-chan-stat-cell"><span class="dd-chan-stat-val">${avg ? '฿' + fmt(avg) : '-'}</span><span class="dd-chan-stat-lbl">/บิล</span></span>
           </div>`;
         }).join("");
@@ -7640,9 +7644,11 @@ body { background: var(--bg); color: var(--txt); }
           <div class="dd-chan-donut-wrap">
             <div class="dd-chan-donut-side">
               <div class="dd-chan-donut-canvas"><canvas id="sec${C}Trend"></canvas></div>
-              ${summaryRow}
             </div>
-            <div class="dd-chan-stats">${legendRows}</div>
+            <div class="dd-chan-stats">
+              ${summaryRow}
+              ${legendRows}
+            </div>
           </div>`;
         _st.trend = new Chart(document.getElementById("sec" + C + "Trend"), {
           type: "doughnut",
