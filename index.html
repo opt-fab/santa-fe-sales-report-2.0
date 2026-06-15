@@ -7488,24 +7488,80 @@ body { background: var(--bg); color: var(--txt); }
           box.innerHTML = `<div class="dd-empty">📭 วันนี้ยังไม่มียอดขาย</div>`;
           return;
         }
-        // helper: ผสมสีอ่อนกับสีเข้ม (gradient) สำหรับ fill
-        const lighten = (hex) => hex; // ใช้ inline gradient จากสีเดียวด้วย transparency overlay
-        const rowsHtml = items.map(t => {
-          const pct = t.value > 0 ? (t.value / total) * 100 : 0;
-          const avgBill = t.trans > 0 ? Math.round(t.value / t.trans) : 0;
-          const billBadge = (t.trans > 0)
-            ? `<span class="dd-chan-bill" style="--c:${t.color}">฿${fmt(avgBill)}<em>/บิล</em></span>`
-            : `<span class="dd-chan-bill" style="--c:#cbd5e1;opacity:.55">—<em>/บิล</em></span>`;
-          const fillBg = `linear-gradient(90deg, ${t.color}cc 0%, ${t.color} 100%)`;
-          return `<div class="dd-chan-row">
-            <div class="dd-chan-head">${billBadge}<span class="dd-chan-name">${escHtml(t.label)}</span></div>
-            <div class="dd-chan-track">
-              <div class="dd-chan-fill" style="width:${pct.toFixed(2)}%;background:${fillBg}"></div>
-            </div>
-            <span class="dd-chan-val"><b>฿${fmt(Math.round(t.value))}</b><span class="dd-chan-pct">${pct.toFixed(1)}%</span></span>
-          </div>`;
-        }).join("");
-        box.innerHTML = `<div class="dd-chan-bars">${rowsHtml}</div>`;
+        // กราฟแท่งแนวนอนของจริง (Chart.js) — แสดงยอดของแต่ละช่องทาง พร้อมแกน ฿
+        const chartH = Math.max(220, items.length * 38 + 40);
+        box.innerHTML = `<div style="position:relative;height:${chartH}px"><canvas id="sec${C}Trend"></canvas></div>`;
+        _st.trend = new Chart(document.getElementById("sec" + C + "Trend"), {
+          type: "bar",
+          data: {
+            labels: items.map(t => t.label),
+            datasets: [{
+              data: items.map(t => t.value),
+              backgroundColor: items.map(t => t.color),
+              borderRadius: 6,
+              borderSkipped: false,
+              maxBarThickness: 28
+            }]
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true, maintainAspectRatio: false,
+            layout: { padding: { right: 60 } },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (c) => {
+                    const v = c.parsed.x;
+                    const pc = total > 0 ? (v / total * 100).toFixed(1) + "%" : "-";
+                    const it = items[c.dataIndex];
+                    const avg = it.trans > 0 ? Math.round(v / it.trans) : 0;
+                    return [
+                      "ยอดขาย: ฿" + v.toLocaleString() + " (" + pc + ")",
+                      it.trans > 0 ? "บิลเฉลี่ย: ฿" + avg.toLocaleString() + " · " + fmt(it.trans) + " บิล" : "บิล: 0"
+                    ];
+                  }
+                }
+              },
+              // วาดยอด ฿ ต่อท้ายแท่งแต่ละแถว
+              dataValueLabels: true
+            },
+            scales: {
+              x: {
+                beginAtZero: true,
+                ticks: {
+                  font: { size: 10 }, color: "#94a3b8",
+                  callback: (v) => v >= 1000 ? "฿" + (v / 1000).toFixed(0) + "k" : "฿" + v
+                },
+                grid: { color: "rgba(0,0,0,.05)", drawBorder: false }
+              },
+              y: {
+                ticks: { font: { size: 12, weight: 600 }, color: "#334155" },
+                grid: { display: false }
+              }
+            }
+          },
+          plugins: [{
+            id: "channelValueLabels",
+            afterDatasetsDraw(chart) {
+              const { ctx, scales: { x, y } } = chart;
+              const meta = chart.getDatasetMeta(0);
+              ctx.save();
+              ctx.font = "700 12px Sarabun, sans-serif";
+              ctx.textAlign = "left";
+              ctx.textBaseline = "middle";
+              meta.data.forEach((bar, i) => {
+                const v = items[i].value;
+                if (v <= 0) return;
+                const pc = total > 0 ? (v / total * 100).toFixed(1) + "%" : "";
+                const txt = "฿" + Math.round(v).toLocaleString() + "  " + pc;
+                ctx.fillStyle = "#0f172a";
+                ctx.fillText(txt, bar.x + 8, bar.y);
+              });
+              ctx.restore();
+            }
+          }]
+        });
       }
 
       function _ddPanel(title, sub, inner, extraClass) {
