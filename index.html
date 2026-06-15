@@ -7448,9 +7448,8 @@ body { background: var(--bg); color: var(--txt); }
           </div>`;
         }
 
-        // ── โหมดอื่น (สัปดาห์/เดือน/ปี) → แท่งเดียวแบบเดิม ──
+        // ── โหมดอื่น (สัปดาห์/เดือน/ปี) → แท่งเดียวแบบเดิม (ไม่มีไอคอน) ──
         const pct = plan > 0 ? a.actual / plan : 0;
-        const emoji = pct >= 1 ? "🎉" : pct >= 0.85 ? "💪" : "⚠️";
         const gap = plan - a.actual;
         // แทนข้อความ motivational ด้วย "ขาดอีก ฿X" / "เกินเป้า ฿X" / "ยังไม่มีเป้า"
         let msg;
@@ -7459,8 +7458,7 @@ body { background: var(--bg); color: var(--txt); }
         else                  msg = `ขาดอีก <b style="color:#dc2626">฿${fmt(Math.round(gap))}</b>`;
         const col = _ddAchvColor(pct);
         const w = Math.min(pct * 100, 100).toFixed(1);
-        return `<div class="dd-hero">
-          <div class="dd-hero-emoji">${emoji}</div>
+        return `<div class="dd-hero dd-hero-noico">
           <div class="dd-hero-main">
             <div class="dd-hero-msg">${msg}</div>
             <div class="dd-hero-big">฿${fmt(Math.round(a.actual))}</div>
@@ -7472,15 +7470,13 @@ body { background: var(--bg); color: var(--txt); }
 
       function _ddChannelTable(rows) {
         const a = _ddAgg(rows);
-        const grand = CHANNEL_DEFS.reduce((s, c) => s + a.sale[c.key], 0);
         const body = CHANNEL_DEFS.slice().map(c => ({ c, s: a.sale[c.key], t: a.trans[c.key] }))
           .sort((x, y) => y.s - x.s)
           .map(({ c, s, t }) => {
-            const pc = grand > 0 ? (s / grand * 100).toFixed(1) + "%" : "-";
             return `<tr><td class="dd-ch"><span class="lg-dot" style="background:${c.color}"></span>${escHtml(c.label)}</td>
-              <td>${fmt(Math.round(s))}</td><td>${pc}</td><td>${t ? fmt(Math.round(s / t)) : 0}</td></tr>`;
+              <td>${fmt(Math.round(s))}</td><td>${fmt(t || 0)}</td><td>${t ? fmt(Math.round(s / t)) : 0}</td></tr>`;
           }).join("");
-        return `<table class="dd-table"><thead><tr><th>ช่องทาง</th><th>ยอดขาย (฿)</th><th>สัดส่วน</th><th>บิลเฉลี่ย</th></tr></thead><tbody>${body}</tbody></table>`;
+        return `<table class="dd-table"><thead><tr><th>ช่องทาง</th><th>ยอดขาย (฿)</th><th>จำนวนบิล</th><th>บิลเฉลี่ย</th></tr></thead><tbody>${body}</tbody></table>`;
       }
 
       function _ddRenderDonut(rows, sec) {
