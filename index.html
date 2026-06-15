@@ -4098,7 +4098,7 @@ body { background: var(--bg); color: var(--txt); }
 }
 /* รายปี (ไม่มี chip) → label แคบ → กราฟชิดซ้ายมากขึ้น */
 .dd-rounds-bars.dd-rounds-bars-narrow .dd-rb-row {
-  grid-template-columns: 110px minmax(0, 1fr) auto;
+  grid-template-columns: 86px minmax(0, 1fr) auto;
 }
 /* รายเดือน (มี chip) → label กว้างพอใส่ชื่ออาทิตย์ + chip ช่วงวันที่ */
 .dd-rounds-bars.dd-rounds-bars-with-chip .dd-rb-row {
@@ -7700,41 +7700,84 @@ body { background: var(--bg); color: var(--txt); }
         const _st = _secCharts[sec];
         if (_st.trend) { _st.trend.destroy(); _st.trend = null; }
 
-        // ── โหมดรายปี → รวมเป็นรายเดือน (12 แท่ง) ──
+        // ── โหมดรายปี → รวมเป็นรายเดือน (12 แท่ง) + เทียบเป้ารายเดือน ──
         if (sec === 'year' && d && d.range) {
           const _Y = new Date(d.range.startDate + 'T00:00:00').getFullYear();
           const TH_SHORT = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-          const monthVals = new Array(12).fill(0);
+          const monthVals  = new Array(12).fill(0);
+          const monthPlans = new Array(12).fill(0);
           (rows || []).forEach(r => {
             if (r.submit_time_slot !== "สิ้นวัน") return;
             const d0 = new Date(r.submit_date + "T00:00:00");
             if (isNaN(d0.getTime()) || d0.getFullYear() !== _Y) return;
             monthVals[d0.getMonth()] += parseFloat(r.actual_sale) || 0;
           });
+          // รวม plan ของแต่ละเดือนจาก planByDate
+          Object.keys((d && d.planByDate) || {}).forEach(k => {
+            const parts = String(k).split('-');
+            if (parts.length < 3 || parseInt(parts[0], 10) !== _Y) return;
+            const mi = parseInt(parts[1], 10) - 1;
+            if (mi >= 0 && mi < 12) monthPlans[mi] += parseFloat(d.planByDate[k]) || 0;
+          });
           const hasData = monthVals.some(v => v > 0);
+          const hasPlan = monthPlans.some(v => v > 0);
           if (!hasData) {
             box.innerHTML = `<div class="dd-empty">📭 ยังไม่มียอดขายในปีที่เลือก</div>`;
             return;
           }
+          // สีแท่ง: เขียวถ้าถึงเป้าเดือนนั้น · ส้มถ้าต่ำกว่า · เทาถ้าไม่มีเป้า
+          const barColors = monthVals.map((v, i) => {
+            if (monthPlans[i] > 0) return v >= monthPlans[i] ? "rgba(34,197,94,0.85)" : "rgba(242,108,28,0.85)";
+            return "rgba(148,163,184,0.65)";
+          });
+          const datasets = [{
+            type: "bar",
+            label: "ยอดขายจริง",
+            data: monthVals,
+            backgroundColor: barColors,
+            borderRadius: 6,
+            borderSkipped: false,
+            maxBarThickness: 38,
+            order: 2
+          }];
+          if (hasPlan) {
+            datasets.unshift({
+              type: "line",
+              label: "เป้า/เดือน",
+              data: monthPlans,
+              borderColor: "#64748b",
+              borderDash: [6, 4],
+              borderWidth: 2,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "#fff",
+              pointBorderColor: "#475569",
+              pointBorderWidth: 2,
+              fill: false,
+              tension: 0.2,
+              order: 1
+            });
+          }
           box.innerHTML = `<div style="position:relative;height:280px"><canvas id="sec${C}Trend"></canvas></div>`;
           _st.trend = new Chart(document.getElementById("sec" + C + "Trend"), {
-            type: "bar",
-            data: {
-              labels: TH_SHORT,
-              datasets: [{
-                label: "ยอดขายรายเดือน",
-                data: monthVals,
-                backgroundColor: "rgba(242,108,28,0.85)",
-                borderRadius: 6,
-                borderSkipped: false,
-                maxBarThickness: 38
-              }]
-            },
+            data: { labels: TH_SHORT, datasets },
             options: {
               responsive: true, maintainAspectRatio: false,
+              interaction: { mode: "index", intersect: false },
               plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: (c) => "ยอดขาย: ฿" + Math.round(c.parsed.y).toLocaleString() } }
+                legend: { display: hasPlan, position: "bottom", labels: { boxWidth: 12, font: { size: 11 }, color: "#475569" } },
+                tooltip: {
+                  callbacks: {
+                    label: (c) => {
+                      if (c.dataset.type === "line") return "เป้า: ฿" + Math.round(c.parsed.y).toLocaleString();
+                      const v = c.parsed.y;
+                      const mp = monthPlans[c.dataIndex] || 0;
+                      const hit = mp > 0 && v >= mp;
+                      const diff = mp > 0 ? (v >= mp ? " ✓ เกินเป้า ฿" + Math.round(v - mp).toLocaleString() : " · ขาดอีก ฿" + Math.round(mp - v).toLocaleString()) : "";
+                      return "ยอดขาย: ฿" + Math.round(v).toLocaleString() + diff;
+                    }
+                  }
+                }
               },
               scales: {
                 x: { grid: { display: false }, ticks: { font: { size: 11, weight: 600 }, color: "#475569" } },
@@ -8174,7 +8217,7 @@ body { background: var(--bg); color: var(--txt); }
           trendSub = "🟩 ถึงเป้า · 🟧 ต่ำกว่าเป้า (เทียบเป้าเฉลี่ย/วัน)";
         } else if (sec === 'year') {
           trendTitle = "📈 แนวโน้มยอดขายตลอดปี";
-          trendSub = "ยอดขายจริงรายเดือนในปีที่เลือก";
+          trendSub = "🟩 ถึงเป้า · 🟧 ต่ำกว่าเป้า · เส้นประ = เป้า/เดือน";
         } else if (isBranch) {
           trendTitle = "📊 ยอดขายรายวัน เทียบเป้า";
           trendSub = "🟩 ถึงเป้า · 🟧 ต่ำกว่าเป้า (เทียบเป้าเฉลี่ย/วัน)";
