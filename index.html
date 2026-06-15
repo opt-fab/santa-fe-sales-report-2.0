@@ -4093,8 +4093,22 @@ body { background: var(--bg); color: var(--txt); }
   padding: 8px 0 4px;
 }
 .dd-rounds-bars.dd-rounds-bars-compact .dd-rb-row {
-  grid-template-columns: 130px minmax(0, 1fr) auto;
+  grid-template-columns: 160px minmax(0, 1fr) auto;
   padding: 3px 0;
+}
+/* ป้ายช่วงวันที่ของรายอาทิตย์ (1–7 ก.พ.) — มี chip เทาให้อ่านง่าย */
+.dd-rb-sub {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  background: rgba(15, 23, 42, .06);
+  color: var(--txt2);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  letter-spacing: -.005em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 /* ทำการ์ดสรุปยอดขายให้สูงเท่ากล่องข้างๆ + ดัน breakdown bars ให้กระจายเต็มความสูง */
 .dash3-card { display: flex; flex-direction: column; }
@@ -7553,22 +7567,25 @@ body { background: var(--bg); color: var(--txt); }
             const pctV = b.plan > 0 ? (b.val / b.plan) * 100 : 0;
             const fillW = Math.min(pctV, 100);
             const sent = b.val > 0;
-            const overshoot = pctV > 100;
+            const overshoot = pctV >= 100;
             // ≥ 100% = ถึงเป้า (เขียว) · 80–99% = amber · < 80% = ส้มแบรนด์ · ไม่มียอด = เทา
-            const fillColor = (pctV >= 100) ? '#16a34a' : (pctV >= 80 ? '#f59e0b' : (b.val > 0 ? '#fb923c' : '#cbd5e1'));
-            const valHtml = sent
-              ? `<b style="color:${fillColor}">฿${fmt(Math.round(b.val))}</b>${b.plan > 0 ? ` <span style="color:var(--txt2);font-weight:600">${pctV.toFixed(0)}%</span>` : ''}`
-              : `<span style="color:var(--txt3)">ยังไม่มียอด</span>`;
-            const overTag = overshoot
-              ? ` <span class="dd-rb-over-tag">+${(pctV - 100).toFixed(1)}%</span>`
+            const fillColor = overshoot ? '#16a34a' : (pctV >= 80 ? '#f59e0b' : (b.val > 0 ? '#fb923c' : '#cbd5e1'));
+            // ทะลุเป้า → แสดง % เป็นเลขเขียวตัวเดียว (เช่น 101.7%) · ไม่มีป้ายแยก
+            const pctTxt = b.plan > 0
+              ? (overshoot
+                  ? `<span style="color:#15803d;font-weight:800">${pctV.toFixed(1)}%</span>`
+                  : `<span style="color:var(--txt2);font-weight:600">${pctV.toFixed(0)}%</span>`)
               : '';
-            const sub = b.sub ? `<span style="color:var(--txt3);font-weight:500;margin-left:6px;font-size:11px">${escHtml(b.sub)}</span>` : '';
+            const valHtml = sent
+              ? `<b style="color:${fillColor}">฿${fmt(Math.round(b.val))}</b>${pctTxt ? ' ' + pctTxt : ''}`
+              : `<span style="color:var(--txt3)">ยังไม่มียอด</span>`;
+            const sub = b.sub ? `<span class="dd-rb-sub">${escHtml(b.sub)}</span>` : '';
             return `<div class="dd-rb-row${sent ? '' : ' dd-rb-empty'}">
               <span class="dd-rb-label">${escHtml(b.label)}${sub}</span>
               <div class="dd-rb-track">
                 <div class="dd-rb-fill" style="width:${fillW.toFixed(2)}%;background:${fillColor}"></div>
               </div>
-              <span class="dd-rb-val">${valHtml}${overTag}</span>
+              <span class="dd-rb-val">${valHtml}</span>
             </div>`;
           };
           slotBarsHtml = `
