@@ -4074,6 +4074,11 @@ body { background: var(--bg); color: var(--txt); }
   height: 100%;
   justify-content: center;
 }
+.dd-hero-slot-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(15,23,42,.10), transparent);
+  margin: 16px 0 12px;
+}
 /* hero ใหม่ — จัดให้บาร์อยู่กึ่งกลางแนวตั้งกับสรุปฝั่งซ้าย */
 .dd-hero { align-items: center !important; }
 .dd-hero-main { display: flex; flex-direction: column; justify-content: center; }
@@ -7458,12 +7463,52 @@ body { background: var(--bg); color: var(--txt); }
         else                  msg = `ขาดอีก <b style="color:#dc2626">฿${fmt(Math.round(gap))}</b>`;
         const col = _ddAchvColor(pct);
         const w = Math.min(pct * 100, 100).toFixed(1);
+
+        // ── ส่วนเสริม: ถ้ามี slots (อาทิตย์/เดือน/ปี ของระดับสาขา) → แสดงแท่งสรุปรอบ 16:00 / สิ้นวัน ใต้แท่งหลัก ──
+        let slotBarsHtml = '';
+        if (slots && slots.plan > 0) {
+          const p2 = slots.plan;
+          const a16  = Math.max(0, slots.act16  || 0);
+          const aEod = Math.max(0, slots.actEod || 0);
+          const pct16  = (a16  / p2) * 100;
+          const pctEod = (aEod / p2) * 100;
+          const fillW16  = Math.min(pct16, 100);
+          const fillWEod = Math.min(pctEod, 100);
+          const overshootEod = pctEod > 100;
+          const colEod = overshootEod ? '#16a34a' : '#ea580c';
+          // % โต 16:00 → สิ้นวัน (ผลรวมของช่วง)
+          const growthPct = (a16 > 0 && aEod > 0) ? ((aEod - a16) / a16) * 100 : null;
+          const growthTag = growthPct !== null
+            ? ` <span class="dd-rb-growth" title="เติบโตเทียบรอบ 16:00 (ผลรวมของช่วง)">↑ +${growthPct.toFixed(1)}% จาก 16:00</span>`
+            : '';
+          const r = (icon, name, val, pctV, color, fillW, extraTag) => {
+            const sent = val > 0;
+            const valTxt = sent
+              ? `<b style="color:${color}">฿${fmt(Math.round(val))}</b>`
+              : `<span style="color:var(--txt3)">ยังไม่มีข้อมูล</span>`;
+            return `<div class="dd-rb-row${sent ? '' : ' dd-rb-empty'}">
+              <span class="dd-rb-label">${icon} ${name}</span>
+              <div class="dd-rb-track">
+                <div class="dd-rb-fill" style="width:${fillW.toFixed(2)}%;background:${color}"></div>
+              </div>
+              <span class="dd-rb-val">${valTxt}${sent && extraTag ? extraTag : ''}</span>
+            </div>`;
+          };
+          slotBarsHtml = `
+            <div class="dd-hero-slot-divider"></div>
+            <div class="dd-rounds-bars">
+              ${r('🕓', '16:00 รวม',   a16,  pct16,  '#fbbf24', fillW16,  '')}
+              ${r('🌙', 'สิ้นวัน รวม', aEod, pctEod, colEod,    fillWEod, growthTag)}
+            </div>`;
+        }
+
         return `<div class="dd-hero dd-hero-noico">
           <div class="dd-hero-main">
             <div class="dd-hero-msg">${msg}</div>
             <div class="dd-hero-big">฿${fmt(Math.round(a.actual))}</div>
             <div class="dd-hero-prog"><div class="dd-hero-prog-fill" style="width:${w}%;background:${col}"></div></div>
             <div class="dd-hero-meta"><span>ทำได้ <b style="color:${col}">${plan > 0 ? (pct * 100).toFixed(1) + "%" : "-"}</b></span><span>เป้า <b>฿${fmt(Math.round(plan))}</b></span></div>
+            ${slotBarsHtml}
           </div>
         </div>`;
       }
@@ -7850,7 +7895,17 @@ body { background: var(--bg); color: var(--txt); }
         } else {
           codes = [_ddView.branch];
           rows = d.rows.filter(r => r.branch_code === _ddView.branch);
-          topPanel = _ddPanel("📊 สรุปยอดขาย", "สถานะเทียบเป้าในช่วงนี้", _ddBranchHero(rows, codes, map));
+          // สำหรับ สัปดาห์/เดือน/ปี → ส่ง slots (รวม 16:00 / สิ้นวัน ของทั้งช่วง) ให้ hero แสดงเพิ่มใต้แท่งหลัก
+          let _heroSlots = null;
+          if (sec !== 'day' && (role === 'branch' || role === 'franchise')) {
+            const _periodPlan = _ddPlan(codes, map);
+            if (_periodPlan > 0) {
+              const _sum16  = rows.filter(r => r.submit_time_slot === "16.00").reduce((s, r) => s + (parseFloat(r.actual_sale) || 0), 0);
+              const _sumEod = rows.filter(r => r.submit_time_slot === "สิ้นวัน").reduce((s, r) => s + (parseFloat(r.actual_sale) || 0), 0);
+              _heroSlots = { act16: _sum16, actEod: _sumEod, plan: _periodPlan, bills16: 0, billsEod: 0 };
+            }
+          }
+          topPanel = _ddPanel("📊 สรุปยอดขาย", "สถานะเทียบเป้าในช่วงนี้", _ddBranchHero(rows, codes, map, _heroSlots));
           // หน้าสาขา + พาร์ทรายวัน → เพิ่มชิป รอบ 16:00 / สิ้นวัน
           if (sec === 'day' && (role === 'branch' || role === 'franchise')) {
             const dStr = d.range.startDate;
