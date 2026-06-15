@@ -5941,7 +5941,7 @@ body { background: var(--bg); color: var(--txt); }
         showScreen("sDash");
         setMobTab("mnDash");
         // เปิดแดชบอร์ดมา = ทุกพาร์ทกลับมาช่วงปัจจุบันเสมอ
-        _secAnchor = { day: new Date(), week: new Date(), month: new Date() };
+        _secAnchor = { day: new Date(), week: new Date(), month: new Date(), year: new Date() };
         _applyDashRoleView();
         loadDash();
       }
@@ -7575,13 +7575,31 @@ body { background: var(--bg); color: var(--txt); }
           box.innerHTML = `<div class="dd-empty">📭 สาขานี้ยังไม่มียอดขายในช่วงที่เลือก</div>`;
           return;
         }
-        const periodPlan = _ddPlan(codes, d && d.planByBranch);
-        const dailyTarget = range.periodDays > 0 ? periodPlan / range.periodDays : 0;
-        const colors = s.data.map(v => dailyTarget > 0 ? (v >= dailyTarget ? "rgba(34,197,94,0.85)" : "rgba(242,108,28,0.85)") : "rgba(148,163,184,0.65)");
-        const datasets = [{ type: "bar", label: "ยอดขายจริง", data: s.data, backgroundColor: colors, borderRadius: 4, borderSkipped: false, order: 2 }];
-        if (dailyTarget > 0) {
-          datasets.unshift({ type: "line", label: "เป้า/วัน", data: s.labels.map(() => dailyTarget), borderColor: "#94a3b8", borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 0, fill: false, order: 1 });
+        // ── เป้ารายวัน (ดึงจาก planByDate ของจริง · ไม่ใช่เฉลี่ย) ──
+        const planByDate = (d && d.planByDate) || {};
+        const planSeries = [];
+        const _sD = new Date(range.startDate + "T00:00:00");
+        const _eD = new Date(range.endDate + "T00:00:00");
+        for (let dt = new Date(_sD); dt <= _eD; dt.setDate(dt.getDate() + 1)) {
+          planSeries.push(planByDate[_fmtDate(dt)] || 0);
         }
+        const hasAnyPlan = planSeries.some(v => v > 0);
+        // สีแท่ง: เทียบเป้าของวันนั้นๆ (ไม่ใช่เป้าเฉลี่ย)
+        const colors = s.data.map((v, i) => {
+          const dayPlan = planSeries[i];
+          if (dayPlan > 0) return v >= dayPlan ? "rgba(34,197,94,0.85)" : "rgba(242,108,28,0.85)";
+          return "rgba(148,163,184,0.65)";
+        });
+        const datasets = [{ type: "bar", label: "ยอดขายจริง", data: s.data, backgroundColor: colors, borderRadius: 4, borderSkipped: false, order: 2 }];
+        if (hasAnyPlan) {
+          datasets.unshift({
+            type: "line", label: "เป้า/วัน",
+            data: planSeries,
+            borderColor: "#94a3b8", borderDash: [6, 4], borderWidth: 1.5,
+            pointRadius: 0, pointHoverRadius: 4, fill: false, order: 1, stepped: false
+          });
+        }
+        const dailyTarget = hasAnyPlan ? 1 : 0;  // ใช้แค่เป็น flag เปิดป้าย/legend
         box.innerHTML = `<div style="position:relative;height:280px"><canvas id="sec${C}Trend"></canvas></div>`;
         _st.trend = new Chart(document.getElementById("sec" + C + "Trend"), {
           data: { labels: s.labels, datasets },
@@ -7591,8 +7609,10 @@ body { background: var(--bg); color: var(--txt); }
               legend: { display: dailyTarget > 0, position: "bottom", labels: { boxWidth: 12, font: { size: 11 }, color: "#475569" } },
               tooltip: { callbacks: { label: (c) => {
                 if (c.dataset.type === "line") return "เป้า/วัน: ฿" + Math.round(c.parsed.y).toLocaleString();
-                const v = c.parsed.y; const hit = dailyTarget > 0 && v >= dailyTarget;
-                return "ยอดขาย: ฿" + v.toLocaleString() + (dailyTarget > 0 ? (hit ? " ✓ ถึงเป้า" : " · ต่ำกว่าเป้า") : "");
+                const v = c.parsed.y;
+                const dayPlan = planSeries[c.dataIndex] || 0;
+                const hit = dayPlan > 0 && v >= dayPlan;
+                return "ยอดขาย: ฿" + v.toLocaleString() + (dayPlan > 0 ? (hit ? " ✓ ถึงเป้า" : " · ต่ำกว่าเป้า ฿" + Math.round(dayPlan - v).toLocaleString()) : "");
               } } }
             },
             scales: {
