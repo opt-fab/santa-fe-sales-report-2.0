@@ -7580,9 +7580,11 @@ body { background: var(--bg); color: var(--txt); }
         }
         // ── subBars: รายสัปดาห์ (โหมดเดือน) / รายเดือน (โหมดปี) ──
         if (Array.isArray(subBars) && subBars.length) {
+          // อ้างอิงความกว้างแท่งจากยอดจริง — สูงสุดในกลุ่ม = 100% ของ track (เห็นเปรียบเทียบยอดได้)
+          const _maxRefVal = subBars.reduce((m, b) => Math.max(m, b.val || 0, b.plan || 0), 0);
           const _rowBar = (b) => {
-            const pctV = b.plan > 0 ? (b.val / b.plan) * 100 : 0;
-            const fillW = Math.min(pctV, 100);
+            const pctV  = b.plan > 0 ? (b.val / b.plan) * 100 : 0;     // % ของเป้า — ใช้กับ %/สี
+            const fillW = _maxRefVal > 0 ? (b.val / _maxRefVal) * 100 : 0; // ความกว้าง — อิงยอดจริง
             const sent = b.val > 0;
             const overshoot = pctV >= 100;
             // ≥ 100% = ถึงเป้า (เขียว) · 80–99% = amber · < 80% = ส้มแบรนด์ · ไม่มียอด = เทา
