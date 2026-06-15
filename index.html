@@ -4211,18 +4211,20 @@ body { background: var(--bg); color: var(--txt); }
   min-width: 5px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.30), inset 0 -2px 4px rgba(0,0,0,.10);
 }
-/* ยอดและ % สิ้นสุดติดท้ายแท่งเลย */
+/* ยอดและ % ติดท้ายแท่ง — สลับใน/นอกตามความกว้างของแท่ง */
 .dd-chan-val {
   position: absolute;
-  left: 100%;
   top: 50%;
-  transform: translate(10px, -50%);
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+.dd-chan-val.is-out { left: 100%; transform: translate(10px, -50%); }
+.dd-chan-val.is-in  { right: 10px; transform: translateY(-50%); color: #fff; }
+.dd-chan-val.is-in b { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.15); }
+.dd-chan-val.is-in .dd-chan-pct { color: rgba(255,255,255,.85); }
 .dd-chan-val b {
   color: var(--txt);
   font-weight: 800;
@@ -4242,16 +4244,24 @@ body { background: var(--bg); color: var(--txt); }
 .dd-rb-row.dd-rb-over .dd-rb-fill {
   box-shadow: 0 0 0 1.5px rgba(22,163,74,.35), inset 0 -1px 0 rgba(0,0,0,.06);
 }
-/* ยอดติดท้ายแท่งเลย (absolute ที่ปลายขวาของ fill) */
+/* ยอดติดท้ายแท่ง — อยู่นอก fill ถ้าแท่งสั้น, อยู่ในถ้าแท่งกว้าง (กันหลุดกรอบ) */
 .dd-rb-val {
   position: absolute;
-  left: 100%;
   top: 50%;
-  transform: translate(10px, -50%);
   color: var(--txt);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   font-size: 12px;
+}
+.dd-rb-val.is-out { left: 100%; transform: translate(10px, -50%); }
+.dd-rb-val.is-in  { right: 10px; transform: translateY(-50%); color: #fff; }
+.dd-rb-val.is-in b { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.15); }
+.dd-rb-val.is-in .dd-rb-growth {
+  background: rgba(255,255,255,.22);
+  color: #fff;
+  box-shadow: none;
+  animation: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,.15);
 }
 .dd-rb-val b {
   color: var(--brand);
@@ -7298,11 +7308,13 @@ body { background: var(--bg); color: var(--txt); }
               ? `<b style="color:${fillColor}">฿${fmt(Math.round(val))}</b>`
               : `<span style="color:var(--txt3)">ยังไม่ส่ง</span>`;
             const tag = (sent && extraTag) ? extraTag : '';
+            // ถ้าแท่งกว้าง > 70% → ยอดอยู่ในแท่ง (กันหลุดกรอบ) มิฉะนั้นติดท้ายแท่ง
+            const valPos = (fillW >= 70) ? 'is-in' : 'is-out';
             return `<div class="dd-rb-row${sent ? '' : ' dd-rb-empty'}${overshoot ? ' dd-rb-over' : ''}">
               <span class="dd-rb-label">${icon} ${name}${liveDot}</span>
               <div class="dd-rb-track">
                 <div class="dd-rb-fill" style="width:${fillW.toFixed(2)}%;background:${fillColor}">
-                  <span class="dd-rb-val">${valTxt}${tag}</span>
+                  <span class="dd-rb-val ${valPos}">${valTxt}${tag}</span>
                 </div>
               </div>
             </div>`;
@@ -7503,11 +7515,13 @@ body { background: var(--bg); color: var(--txt); }
             ? `<span class="dd-chan-bill" style="--c:${t.color}">฿${fmt(avgBill)}<em>/บิล</em></span>`
             : `<span class="dd-chan-bill" style="--c:#cbd5e1;opacity:.55">—<em>/บิล</em></span>`;
           const fillBg = `linear-gradient(90deg, ${t.color}cc 0%, ${t.color} 100%)`;
+          // ถ้าแท่งกว้าง > 70% → ยอดอยู่ในแท่ง · มิฉะนั้นติดท้ายแท่ง
+          const valPos = (pct >= 70) ? 'is-in' : 'is-out';
           return `<div class="dd-chan-row">
             <div class="dd-chan-head">${billBadge}<span class="dd-chan-name">${escHtml(t.label)}</span></div>
             <div class="dd-chan-track">
               <div class="dd-chan-fill" style="width:${pct.toFixed(2)}%;background:${fillBg}">
-                <span class="dd-chan-val"><b>฿${fmt(Math.round(t.value))}</b><span class="dd-chan-pct">${pct.toFixed(1)}%</span></span>
+                <span class="dd-chan-val ${valPos}"><b>฿${fmt(Math.round(t.value))}</b><span class="dd-chan-pct">${pct.toFixed(1)}%</span></span>
               </div>
             </div>
           </div>`;
