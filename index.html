@@ -5391,7 +5391,7 @@ body { background: var(--bg); color: var(--txt); }
               <label>ชื่อเล่น</label>
               <input id="au_nick" type="text" placeholder="เช่น พี่นพ">
             </div>
-            <div class="field">
+            <div class="field" style="grid-column:1/-1">
               <label>Role *</label>
               <select id="au_role">
                 <option value="admin">Admin</option>
@@ -5400,12 +5400,7 @@ body { background: var(--bg); color: var(--txt); }
                 <option value="branch">สาขา</option>
               </select>
             </div>
-            <div class="field">
-              <label>Brand</label>
-              <select id="au_brand">
-                <option value="santafe" selected>Santa Fe</option>
-              </select>
-            </div>
+            <input id="au_brand" type="hidden" value="santafe">
             <input id="au_cross" type="hidden" value="">
             <div class="field" id="au_branchFields" style="grid-column:1/-1;display:none">
               <div style="display:grid;grid-template-columns:140px 1fr;gap:10px">
