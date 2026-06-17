@@ -4629,6 +4629,9 @@ body { background: var(--bg); color: var(--txt); }
         <button class="desk-nav-btn" id="dnHistory" onclick="showHistory()">
           <span class="desk-nav-ico">🗂️</span>ประวัติ
         </button>
+        <button class="desk-nav-btn tm-nav" id="dnManpower" onclick="showManpower()" style="display:none">
+          <span class="desk-nav-ico">👥</span>Manpower
+        </button>
         <!-- Admin sub-menu (visible only when logged in as Admin) -->
         <button class="desk-nav-btn admin-only-nav" id="dnAdminBranches" onclick="showAdmin('branches')" style="display:none">
           <span class="desk-nav-ico">🏢</span>จัดการสาขา
@@ -4706,6 +4709,9 @@ body { background: var(--bg); color: var(--txt); }
         </button>
         <button class="md-nav-btn" id="mdHistory" onclick="showHistory(); closeMobDrawer()">
           <span class="md-nav-ico">🗂️</span><span class="md-nav-lbl">ประวัติ</span>
+        </button>
+        <button class="md-nav-btn tm-nav" id="mdManpower" onclick="showManpower(); closeMobDrawer()" style="display:none">
+          <span class="md-nav-ico">👥</span><span class="md-nav-lbl">Manpower</span>
         </button>
       </nav>
 
@@ -5213,59 +5219,25 @@ body { background: var(--bg); color: var(--txt); }
 
         <!-- ── Tab: Zones ── -->
         <div class="admin-tab-pane" data-tab="zones" style="display:none">
-          <!-- sub-mode toggle: จัดโซน vs Manpower -->
-          <div style="display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--bd);padding-bottom:10px">
-            <button id="zoneSubBtnZone" class="btn btn-brand"     onclick="zoneSubSwitch('zone')" style="font-size:13px">🗺️ จัดโซน</button>
-            <button id="zoneSubBtnMan"  class="btn btn-outline"   onclick="zoneSubSwitch('manpower')" style="font-size:13px">👥 กรอก Manpower</button>
-          </div>
-
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
             <label style="font-size:13px;font-weight:600">เลือก BZM:</label>
-            <select id="adminZoneBzm" onchange="renderAdminZone();renderManpowerList();"
+            <select id="adminZoneBzm" onchange="renderAdminZone()"
                     style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;min-width:240px"></select>
             <span id="adminZoneCount" style="font-size:12px;color:var(--txt2);font-weight:600;margin-left:auto">— สาขาในโซน</span>
           </div>
 
-          <!-- sub-pane: zone editor -->
-          <div id="zoneSubPaneZone">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start" id="adminZoneGrid">
-              <!-- LEFT: branches in this BZM zone -->
-              <div class="dash-card-wrap" style="padding:14px">
-                <div style="font-weight:700;margin-bottom:10px;color:var(--brand)">✅ สาขาในโซนนี้</div>
-                <div id="adminZoneIn" style="max-height:420px;overflow-y:auto"></div>
-              </div>
-              <!-- RIGHT: other branches (not in this zone) -->
-              <div class="dash-card-wrap" style="padding:14px">
-                <div style="font-weight:700;margin-bottom:10px;color:var(--txt2)">📋 สาขาอื่น (คลิก ⇆ เพื่อย้ายมาโซนนี้)</div>
-                <input type="text" id="adminZoneOutSearch" placeholder="🔍 ค้นหา..." oninput="renderAdminZone()"
-                       style="width:100%;background:var(--bg-2);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;font-family:inherit;font-size:12px;margin-bottom:8px;outline:none">
-                <div id="adminZoneOut" style="max-height:380px;overflow-y:auto"></div>
-              </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start" id="adminZoneGrid">
+            <!-- LEFT: branches in this BZM zone -->
+            <div class="dash-card-wrap" style="padding:14px">
+              <div style="font-weight:700;margin-bottom:10px;color:var(--brand)">✅ สาขาในโซนนี้</div>
+              <div id="adminZoneIn" style="max-height:420px;overflow-y:auto"></div>
             </div>
-          </div>
-
-          <!-- sub-pane: manpower -->
-          <div id="zoneSubPaneMan" style="display:none">
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
-              <label style="font-size:13px;font-weight:600">เดือน:</label>
-              <select id="manpowerMonth" onchange="renderManpowerList()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px"></select>
-              <select id="manpowerYear"  onchange="renderManpowerList()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px"></select>
-              <span id="manpowerHint" style="font-size:12px;color:var(--txt2);margin-left:auto">— สาขา</span>
-            </div>
-            <div class="dash-card-wrap" style="padding:0;overflow:hidden">
-              <table class="adm-tbl" style="width:100%;border-collapse:collapse;font-size:13px">
-                <thead>
-                  <tr style="background:var(--bg-2);border-bottom:1px solid var(--bd)">
-                    <th style="text-align:left;padding:10px 12px;font-weight:700">รหัส</th>
-                    <th style="text-align:left;padding:10px 12px;font-weight:700">สาขา</th>
-                    <th style="text-align:center;padding:10px 12px;font-weight:700">👔 ผู้จัดการ</th>
-                    <th style="text-align:center;padding:10px 12px;font-weight:700">🍳 ครัว</th>
-                    <th style="text-align:center;padding:10px 12px;font-weight:700">🍽️ บริการ</th>
-                    <th style="text-align:right;padding:10px 12px;font-weight:700"></th>
-                  </tr>
-                </thead>
-                <tbody id="manpowerBody"><tr><td colspan="6" style="padding:30px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr></tbody>
-              </table>
+            <!-- RIGHT: other branches (not in this zone) -->
+            <div class="dash-card-wrap" style="padding:14px">
+              <div style="font-weight:700;margin-bottom:10px;color:var(--txt2)">📋 สาขาอื่น (คลิก ⇆ เพื่อย้ายมาโซนนี้)</div>
+              <input type="text" id="adminZoneOutSearch" placeholder="🔍 ค้นหา..." oninput="renderAdminZone()"
+                     style="width:100%;background:var(--bg-2);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;font-family:inherit;font-size:12px;margin-bottom:8px;outline:none">
+              <div id="adminZoneOut" style="max-height:380px;overflow-y:auto"></div>
             </div>
           </div>
         </div>
@@ -5348,6 +5320,46 @@ body { background: var(--bg); color: var(--txt); }
           </div>
         </div>
 
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+     SCREEN: MANPOWER (admin / vp / bzm)
+════════════════════════════════════════ -->
+    <div id="sManpower" class="screen">
+      <div class="dash-wrap">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+          <h2 style="margin:0;font-size:22px">👥 กรอก Manpower</h2>
+          <span style="font-size:13px;color:var(--txt2)" id="mpScopeHint">— ขอบเขต</span>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+          <div id="mpBzmWrap" style="display:flex;gap:6px;align-items:center">
+            <label style="font-size:13px;font-weight:600">BZM:</label>
+            <select id="mpBzmSel" onchange="renderManpowerList()"
+                    style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;min-width:220px"></select>
+          </div>
+          <label style="font-size:13px;font-weight:600">เดือน:</label>
+          <select id="manpowerMonth" onchange="renderManpowerList()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px"></select>
+          <select id="manpowerYear"  onchange="renderManpowerList()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px"></select>
+          <span id="manpowerHint" style="font-size:12px;color:var(--txt2);margin-left:auto">— สาขา</span>
+        </div>
+
+        <div class="dash-card-wrap" style="padding:0;overflow:hidden">
+          <table class="adm-tbl" style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="background:var(--bg-2);border-bottom:1px solid var(--bd)">
+                <th style="text-align:left;padding:10px 12px;font-weight:700">รหัส</th>
+                <th style="text-align:left;padding:10px 12px;font-weight:700">สาขา</th>
+                <th style="text-align:center;padding:10px 12px;font-weight:700">👔 ผู้จัดการ</th>
+                <th style="text-align:center;padding:10px 12px;font-weight:700">🍳 ครัว</th>
+                <th style="text-align:center;padding:10px 12px;font-weight:700">🍽️ บริการ</th>
+                <th style="text-align:right;padding:10px 12px;font-weight:700"></th>
+              </tr>
+            </thead>
+            <tbody id="manpowerBody"><tr><td colspan="6" style="padding:30px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -6266,6 +6278,12 @@ body { background: var(--bg); color: var(--txt); }
         });
         const mnAdminBtn = document.getElementById("mnAdmin");
         if (mnAdminBtn) mnAdminBtn.style.display = isAdmin ? "flex" : "none";
+
+        // Manpower sidebar: admin / vp / bzm มองเห็น
+        const showMp = (S.role === "admin" || S.role === "vp" || S.role === "bzm");
+        document.querySelectorAll(".tm-nav").forEach(el => {
+          el.style.display = showMp ? "flex" : "none";
+        });
 
         // Refresh test mode banner (อาจถูก toggle จาก admin อื่นระหว่าง user offline)
         loadTestModeFromDB();
@@ -7299,19 +7317,35 @@ body { background: var(--bg); color: var(--txt); }
       var _mpData = {};  // { branch_code: { rgm:..., k_basic_pt:..., ... } }
       var _MP_MONTHS_TH = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
 
-      function zoneSubSwitch(mode) {
-        const isMan = (mode === "manpower");
-        document.getElementById("zoneSubPaneZone").style.display = isMan ? "none" : "";
-        document.getElementById("zoneSubPaneMan").style.display  = isMan ? "" : "none";
-        const bz = document.getElementById("zoneSubBtnZone");
-        const bm = document.getElementById("zoneSubBtnMan");
-        bz.className = isMan ? "btn btn-outline" : "btn btn-brand";
-        bm.className = isMan ? "btn btn-brand" : "btn btn-outline";
-        bz.style.fontSize = "13px"; bm.style.fontSize = "13px";
-        if (isMan) {
-          _ensureManpowerYearMonth();
-          renderManpowerList();
+      function showManpower() {
+        showScreen("sManpower");
+        _ensureManpowerYearMonth();
+        _populateManpowerBzm();
+        const isBzm = (S.role === "bzm");
+        const wrap = document.getElementById("mpBzmWrap");
+        if (wrap) wrap.style.display = isBzm ? "none" : "flex";
+        const hint = document.getElementById("mpScopeHint");
+        if (hint) {
+          hint.textContent = isBzm
+            ? `โซน: ${S.dm || "—"}`
+            : "ดูได้ทุกโซน";
         }
+        renderManpowerList();
+      }
+
+      function _populateManpowerBzm() {
+        const sel = document.getElementById("mpBzmSel");
+        if (!sel) return;
+        if (S.role === "bzm") return;  // BZM ใช้ S.dm — ไม่ต้องโชว์ dropdown
+        const dms = {};
+        Object.keys(BRANCH_DM_MAP).forEach(c => {
+          const d = BRANCH_DM_MAP[c] && BRANCH_DM_MAP[c].dm;
+          if (d) dms[d] = (dms[d] || 0) + 1;
+        });
+        const list = Object.keys(dms).sort();
+        const cur = sel.value;
+        sel.innerHTML = list.map(d => `<option value="${escHtml(d)}">${escHtml(d)} (${dms[d]})</option>`).join("");
+        if (cur && list.includes(cur)) sel.value = cur;
       }
 
       function _ensureManpowerYearMonth() {
@@ -7352,14 +7386,20 @@ body { background: var(--bg); color: var(--txt); }
       function renderManpowerList() {
         const body = document.getElementById("manpowerBody");
         if (!body) return;
-        const targetBzm = document.getElementById("adminZoneBzm").value;
-        const inZone = _adminBranches.filter(b => b.district_manager === targetBzm);
         const ySel = document.getElementById("manpowerYear");
         const mSel = document.getElementById("manpowerMonth");
         if (!ySel || !mSel) return;
         _ensureManpowerYearMonth();
         const y = parseInt(ySel.value, 10);
         const m = parseInt(mSel.value, 10);
+        // สาขาที่จะแสดง: BZM → ดูเฉพาะของตน · admin/vp → ตาม dropdown
+        let targetBzm = "";
+        if (S.role === "bzm") targetBzm = S.dm || "";
+        else targetBzm = (document.getElementById("mpBzmSel") || {}).value || "";
+        const inZone = Object.keys(BRANCH_DM_MAP)
+          .filter(c => BRANCH_DM_MAP[c] && BRANCH_DM_MAP[c].dm === targetBzm)
+          .map(c => ({ branch_code: c, branch_name: BRANCH_DM_MAP[c].branch }))
+          .sort((a, b) => a.branch_code.localeCompare(b.branch_code));
         document.getElementById("manpowerHint").textContent = `${inZone.length} สาขา · ${_MP_MONTHS_TH[m-1]} ${y+543}`;
         if (!inZone.length) {
           body.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:#94a3b8">ยังไม่มีสาขาในโซนนี้</td></tr>`;
@@ -7394,14 +7434,14 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       function manpowerOpen(branchCode) {
-        const b = _adminBranches.find(x => x.branch_code === branchCode);
-        if (!b) return;
+        const bInfo = BRANCH_DM_MAP[branchCode] || {};
+        const bName = bInfo.branch || branchCode;
         const y = parseInt(document.getElementById("manpowerYear").value, 10);
         const m = parseInt(document.getElementById("manpowerMonth").value, 10);
         document.getElementById("mp_branchCode").value = branchCode;
         document.getElementById("mp_year").value = y;
         document.getElementById("mp_month").value = m;
-        document.getElementById("mpTitle").textContent = `Manpower · ${b.branch_name || branchCode} · ${_MP_MONTHS_TH[m-1]} ${y+543}`;
+        document.getElementById("mpTitle").textContent = `Manpower · ${bName} · ${_MP_MONTHS_TH[m-1]} ${y+543}`;
         const r = _mpData[branchCode] || {};
         const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = (v == null ? 0 : v); };
         setV("mp_rgm", r.rgm); setV("mp_sam", r.sam); setV("mp_am", r.am); setV("mp_ss", r.ss);
