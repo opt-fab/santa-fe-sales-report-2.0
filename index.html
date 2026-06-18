@@ -11567,7 +11567,7 @@ body { background: var(--bg); color: var(--txt); }
       // Close modal on backdrop click — เฉพาะ modal ที่ไม่มี form data หรือไม่ต้อง explicit action
       // mEdit/mReview ห้ามปิด เพราะอาจเสียข้อมูล
       // mAlert ห้ามปิด — บังคับให้กด X หรือ ปุ่ม OK
-      const NO_BACKDROP_CLOSE = ["mEdit", "mReview", "mAlert"];
+      const NO_BACKDROP_CLOSE = ["mEdit", "mReview", "mAlert", "mManpower", "mUser"];
       document.querySelectorAll(".modal-bg").forEach(bg => {
         if (NO_BACKDROP_CLOSE.indexOf(bg.id) >= 0) return;
         bg.addEventListener("click", function (e) {
