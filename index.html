@@ -7583,16 +7583,12 @@ body { background: var(--bg); color: var(--txt); }
         const ptRef = kPT + sPT;
         document.getElementById("mp_pt_ref").value = ptRef;
         const ptMatch = document.getElementById("mpPtMatch");
-        const ptDiff = ptTot - ptRef;
-        if (ptDiff === 0) {
+        if (ptTot === ptRef) {
           ptMatch.className = "mp-chk ok";
-          ptMatch.innerHTML = `✓ แยกประเภท PT ครบแล้ว (${ptTot} คน)`;
-        } else if (ptDiff < 0) {
-          ptMatch.className = "mp-chk bad";
-          ptMatch.innerHTML = `❌ ยังต้องกรอกอีก ${-ptDiff} คน — รวมต้องได้ ${ptRef} คน (ตอนนี้ ${ptTot})`;
+          ptMatch.innerHTML = `✓ ผลรวมตรงกับ PT พนักงานครัว+บริการ (${ptRef} คน)`;
         } else {
           ptMatch.className = "mp-chk bad";
-          ptMatch.innerHTML = `❌ กรอกเกินไป ${ptDiff} คน — รวมต้องได้ ${ptRef} คน (ตอนนี้ ${ptTot})`;
+          ptMatch.innerHTML = `❌ ผลรวมต้องเท่ากับ PT พนักงานครัว+บริการ = ${ptRef} คน (ตอนนี้ ${ptTot})`;
         }
 
         // ทวิภาคี
@@ -7816,9 +7812,7 @@ body { background: var(--bg); color: var(--txt); }
         const ptSum = payload.pt_8h + payload.pt_dual40 + payload.pt_45h;
         const ptRef = kPT + sPT;
         if (ptSum !== ptRef) {
-          const diff = ptSum - ptRef;
-          if (diff < 0) return fail(`Part-time ยังต้องกรอกอีก ${-diff} คน — รวมต้องได้ ${ptRef}`);
-          return fail(`Part-time กรอกเกินไป ${diff} คน — รวมต้องได้ ${ptRef}`);
+          return fail(`Part-time: ผลรวมต้องเท่ากับ PT พนักงานครัว+บริการ = ${ptRef} คน (ตอนนี้ ${ptSum})`);
         }
         const btn = document.getElementById("mpSaveBtn");
         if (btn) { btn.disabled = true; btn.textContent = "⏳ กำลังบันทึก..."; }
