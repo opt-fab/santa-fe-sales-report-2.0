@@ -3242,6 +3242,21 @@ body { background: var(--bg); color: var(--txt); }
 .mp-hist-tbl td.l { text-align:left; font-weight:700; }
 .mp-hist-tbl tr:hover td { background:#fafbfc; }
 
+/* detailed history (per-field breakdown) */
+.mp-hist-detail { font-size:12px; min-width:1280px; }
+.mp-hist-detail th, .mp-hist-detail td { padding:7px 8px; white-space:nowrap; }
+.mp-hist-detail .mp-grp th { font-size:13px; padding:8px 10px; border-bottom:1px solid #cbd5e1; }
+.mp-hist-detail .mp-grp-mgr { background:#faf5ff; color:#7c3aed; }
+.mp-hist-detail .mp-grp-kit { background:#fff7ed; color:#ea580c; }
+.mp-hist-detail .mp-grp-srv { background:#f0fdf4; color:#16a34a; }
+.mp-hist-detail th.mp-c-mgr, .mp-hist-detail th.mp-tot-mgr { background:#faf5ff; color:#7c3aed; font-size:10.5px; }
+.mp-hist-detail th.mp-c-kit, .mp-hist-detail th.mp-st-kit, .mp-hist-detail th.mp-tot-kit { background:#fff7ed; color:#ea580c; font-size:10.5px; }
+.mp-hist-detail th.mp-c-srv, .mp-hist-detail th.mp-st-srv, .mp-hist-detail th.mp-tot-srv { background:#f0fdf4; color:#16a34a; font-size:10.5px; }
+.mp-hist-detail td.mp-tot-mgr { background:#faf5ff; color:#7c3aed; font-weight:800; font-size:14px; }
+.mp-hist-detail td.mp-tot-kit { background:#fff7ed; color:#ea580c; font-weight:800; font-size:14px; }
+.mp-hist-detail td.mp-tot-srv { background:#f0fdf4; color:#16a34a; font-weight:800; font-size:14px; }
+.mp-hist-detail td.mp-st-kit, .mp-hist-detail td.mp-st-srv { background:#fafbfc; font-weight:700; color:#475569; }
+
 /* ─── MODALS — Apple style ─── */
 .modal-bg  { background: rgba(0,0,0,.30) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .modal-box { border-radius: 14px !important; border: 1px solid var(--bd) !important; box-shadow: 0 10px 40px rgba(0,0,0,.10) !important; overflow: hidden; background: var(--surface) !important; }
@@ -7590,37 +7605,57 @@ body { background: var(--bg); color: var(--txt); }
           }
           const sum = (...keys) => (r) => keys.reduce((t,k)=>t+(parseInt(r[k],10)||0),0);
           const totMgr = sum("rgm","sam","am","ss");
-          const totKit = sum("k_basic_pt","k_basic_ft","k_silver_pt","k_silver_ft","k_gold_pt","k_gold_ft");
-          const totSrv = sum("s_basic_pt","s_basic_ft","s_silver_pt","s_silver_ft","s_gold_pt","s_gold_ft");
+          const totKitPT = sum("k_basic_pt","k_silver_pt","k_gold_pt");
+          const totKitFT = sum("k_basic_ft","k_silver_ft","k_gold_ft");
+          const totSrvPT = sum("s_basic_pt","s_silver_pt","s_gold_pt");
+          const totSrvFT = sum("s_basic_ft","s_silver_ft","s_gold_ft");
           // เรียงใหม่สุด → เก่า
           rows.sort((a,b) => (b.year - a.year) || (b.month - a.month));
           body.innerHTML = `
-            <table class="mp-hist-tbl">
+            <div style="overflow-x:auto">
+            <table class="mp-hist-tbl mp-hist-detail">
               <thead>
+                <tr class="mp-grp">
+                  <th class="l" rowspan="2">เดือน</th>
+                  <th colspan="5" class="mp-grp-mgr">👔 ทีมผู้จัดการสาขา</th>
+                  <th colspan="9" class="mp-grp-kit">🍳 พนักงานครัว</th>
+                  <th colspan="9" class="mp-grp-srv">🍽️ พนักงานบริการ</th>
+                  <th rowspan="2">แก้ล่าสุด</th>
+                </tr>
                 <tr>
-                  <th class="l">เดือน</th>
-                  <th style="color:#7c3aed">RGM</th><th style="color:#7c3aed">SAM</th><th style="color:#7c3aed">AM</th><th style="color:#7c3aed">SS</th>
-                  <th style="background:#faf5ff;color:#7c3aed">👔 รวม</th>
-                  <th style="background:#fff7ed;color:#ea580c">🍳 รวม</th>
-                  <th style="background:#f0fdf4;color:#16a34a">🍽️ รวม</th>
-                  <th>แก้ล่าสุด</th>
+                  <th class="mp-c-mgr">RGM</th><th class="mp-c-mgr">SAM</th><th class="mp-c-mgr">AM</th><th class="mp-c-mgr">SS</th><th class="mp-tot-mgr">รวม</th>
+                  <th class="mp-c-kit">B·PT</th><th class="mp-c-kit">B·FT</th><th class="mp-c-kit">S·PT</th><th class="mp-c-kit">S·FT</th><th class="mp-c-kit">G·PT</th><th class="mp-c-kit">G·FT</th><th class="mp-st-kit">PT</th><th class="mp-st-kit">FT</th><th class="mp-tot-kit">รวม</th>
+                  <th class="mp-c-srv">B·PT</th><th class="mp-c-srv">B·FT</th><th class="mp-c-srv">S·PT</th><th class="mp-c-srv">S·FT</th><th class="mp-c-srv">G·PT</th><th class="mp-c-srv">G·FT</th><th class="mp-st-srv">PT</th><th class="mp-st-srv">FT</th><th class="mp-tot-srv">รวม</th>
                 </tr>
               </thead>
               <tbody>
                 ${rows.map(r => {
                   const period = `${_MP_MONTHS_TH[r.month-1]} ${r.year+543}`;
                   const upd = r.updated_at ? new Date(r.updated_at).toLocaleDateString("th-TH", { day:"2-digit", month:"short", year:"2-digit" }) : "—";
+                  const v = (k) => r[k] || 0;
+                  const dim = (n) => n > 0 ? "" : "color:#cbd5e1";
+                  const kPT = totKitPT(r), kFT = totKitFT(r);
+                  const sPT = totSrvPT(r), sFT = totSrvFT(r);
                   return `<tr>
                     <td class="l">${period}</td>
-                    <td>${r.rgm||0}</td><td>${r.sam||0}</td><td>${r.am||0}</td><td>${r.ss||0}</td>
-                    <td style="background:#faf5ff;font-weight:800;color:#7c3aed;font-size:15px">${totMgr(r)}</td>
-                    <td style="background:#fff7ed;font-weight:800;color:#ea580c;font-size:15px">${totKit(r)}</td>
-                    <td style="background:#f0fdf4;font-weight:800;color:#16a34a;font-size:15px">${totSrv(r)}</td>
-                    <td style="color:var(--txt2);font-size:11px">${upd}</td>
+                    <td style="${dim(v('rgm'))}">${v('rgm')}</td><td style="${dim(v('sam'))}">${v('sam')}</td><td style="${dim(v('am'))}">${v('am')}</td><td style="${dim(v('ss'))}">${v('ss')}</td>
+                    <td class="mp-tot-mgr">${totMgr(r)}</td>
+                    <td style="${dim(v('k_basic_pt'))}">${v('k_basic_pt')}</td><td style="${dim(v('k_basic_ft'))}">${v('k_basic_ft')}</td>
+                    <td style="${dim(v('k_silver_pt'))}">${v('k_silver_pt')}</td><td style="${dim(v('k_silver_ft'))}">${v('k_silver_ft')}</td>
+                    <td style="${dim(v('k_gold_pt'))}">${v('k_gold_pt')}</td><td style="${dim(v('k_gold_ft'))}">${v('k_gold_ft')}</td>
+                    <td class="mp-st-kit">${kPT}</td><td class="mp-st-kit">${kFT}</td>
+                    <td class="mp-tot-kit">${kPT + kFT}</td>
+                    <td style="${dim(v('s_basic_pt'))}">${v('s_basic_pt')}</td><td style="${dim(v('s_basic_ft'))}">${v('s_basic_ft')}</td>
+                    <td style="${dim(v('s_silver_pt'))}">${v('s_silver_pt')}</td><td style="${dim(v('s_silver_ft'))}">${v('s_silver_ft')}</td>
+                    <td style="${dim(v('s_gold_pt'))}">${v('s_gold_pt')}</td><td style="${dim(v('s_gold_ft'))}">${v('s_gold_ft')}</td>
+                    <td class="mp-st-srv">${sPT}</td><td class="mp-st-srv">${sFT}</td>
+                    <td class="mp-tot-srv">${sPT + sFT}</td>
+                    <td style="color:var(--txt2);font-size:11px;white-space:nowrap">${upd}</td>
                   </tr>`;
                 }).join("")}
               </tbody>
-            </table>`;
+            </table>
+            </div>`;
         });
       }
 
@@ -7641,6 +7676,12 @@ body { background: var(--bg); color: var(--txt); }
           s_silver_pt: get("mp_s_silver_pt"), s_silver_ft: get("mp_s_silver_ft"),
           s_gold_pt: get("mp_s_gold_pt"), s_gold_ft: get("mp_s_gold_ft")
         };
+        // ─── validation: ผลรวมแต่ละหมวดต้องไม่เป็น 0 ───
+        const totMgr = payload.rgm + payload.sam + payload.am + payload.ss;
+        const totKitSrv = payload.k_basic_pt + payload.k_basic_ft + payload.k_silver_pt + payload.k_silver_ft + payload.k_gold_pt + payload.k_gold_ft
+                        + payload.s_basic_pt + payload.s_basic_ft + payload.s_silver_pt + payload.s_silver_ft + payload.s_gold_pt + payload.s_gold_ft;
+        if (totMgr === 0) return fail("ทีมผู้จัดการสาขาต้องมีอย่างน้อย 1 คน (รวมต้องไม่เท่ากับ 0)");
+        if (totKitSrv === 0) return fail("พนักงานครัว+บริการต้องมีอย่างน้อย 1 คน (รวมต้องไม่เท่ากับ 0)");
         const btn = document.getElementById("mpSaveBtn");
         if (btn) { btn.disabled = true; btn.textContent = "⏳ กำลังบันทึก..."; }
         apiCall(payload, function(res) {
