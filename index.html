@@ -3186,15 +3186,48 @@ body { background: var(--bg); color: var(--txt); }
 .d-ok    { color: #1a7838 !important; font-weight: 600 !important; }
 .d-low   { color: #d70015 !important; font-weight: 600 !important; }
 
-/* ─── MANPOWER modal cells ─── */
-.mp-cell { display:flex; flex-direction:column; gap:4px; }
-.mp-cell label { font-size:11px; color:var(--txt2); font-weight:600; }
-.mp-cell input { width:100%; padding:8px 10px; border:1px solid var(--bd); border-radius:8px; font-family:inherit; font-size:14px; font-weight:700; text-align:center; background:#fff; outline:none; }
+/* ─── MANPOWER modal — polished ─── */
+.mp-sec { border-radius:14px; padding:16px 18px 18px; margin-bottom:14px; border:1px solid; }
+.mp-sec-mgr { background:linear-gradient(135deg,#faf5ff 0%,#f5f3ff 100%); border-color:#e9d5ff; }
+.mp-sec-kit { background:linear-gradient(135deg,#fff7ed 0%,#fef2e2 100%); border-color:#fed7aa; }
+.mp-sec-srv { background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%); border-color:#bbf7d0; }
+.mp-sec-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.mp-sec-title { font-size:15px; font-weight:800; letter-spacing:-.01em; }
+.mp-sec-mgr .mp-sec-title { color:#7c3aed; }
+.mp-sec-kit .mp-sec-title { color:#ea580c; }
+.mp-sec-srv .mp-sec-title { color:#16a34a; }
+.mp-sec-tot { font-size:13px; color:var(--txt2); font-weight:600; display:flex; align-items:baseline; gap:6px; background:#fff; padding:5px 12px; border-radius:999px; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+.mp-sec-tot b { font-size:18px; font-weight:800; font-variant-numeric:tabular-nums; }
+.mp-sec-mgr .mp-sec-tot b { color:#7c3aed; }
+.mp-sec-kit .mp-sec-tot b { color:#ea580c; }
+.mp-sec-srv .mp-sec-tot b { color:#16a34a; }
+
+.mp-grid-mgr { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.mp-cell { display:flex; flex-direction:column; gap:5px; }
+.mp-cell label { font-size:11px; color:var(--txt2); font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.mp-cell input { width:100%; padding:10px 8px; border:1px solid #e2e8f0; border-radius:9px; font-family:inherit; font-size:16px; font-weight:800; text-align:center; background:#fff; outline:none; color:#0f172a; transition:border-color .15s, box-shadow .15s; font-variant-numeric:tabular-nums; }
 .mp-cell input:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(234,88,12,.12); }
-.mp-cell-row { display:grid; grid-template-columns:auto 1fr auto 1fr; gap:6px; align-items:center; }
-.mp-cell-row label { font-size:10px; color:var(--txt2); font-weight:700; }
-.mp-cell-row input { padding:6px 8px; border:1px solid var(--bd); border-radius:6px; font-family:inherit; font-size:13px; font-weight:700; text-align:center; background:#fff; outline:none; width:100%; }
-.mp-cell-row input:focus { border-color:var(--brand); box-shadow:0 0 0 2px rgba(234,88,12,.12); }
+
+.mp-grid-staff { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.mp-staff-col { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:10px 10px 12px; }
+.mp-staff-lbl { text-align:center; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; padding-bottom:6px; border-bottom:1px dashed #e2e8f0; }
+.mp-pair { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.mp-pt, .mp-ft { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.mp-pt span, .mp-ft span { font-size:10px; font-weight:800; color:#94a3b8; letter-spacing:.06em; }
+.mp-pt input, .mp-ft input { width:100%; padding:7px 4px; border:1px solid #e2e8f0; border-radius:7px; font-family:inherit; font-size:14px; font-weight:800; text-align:center; background:#f8fafc; outline:none; color:#0f172a; font-variant-numeric:tabular-nums; }
+.mp-pt input:focus, .mp-ft input:focus { background:#fff; border-color:var(--brand); box-shadow:0 0 0 2px rgba(234,88,12,.12); }
+
+/* main list page month/year picker */
+.mp-period-pill { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%); border:1px solid #fed7aa; border-radius:999px; padding:8px 16px; font-weight:700; color:#9a3412; }
+.mp-period-pill select { background:transparent; border:none; font-family:inherit; font-size:14px; font-weight:800; color:#9a3412; outline:none; cursor:pointer; }
+
+/* history table */
+.mp-hist-tbl { width:100%; border-collapse:collapse; font-size:13px; }
+.mp-hist-tbl th { background:#f8fafc; padding:10px 8px; font-weight:800; text-align:center; border-bottom:2px solid #e2e8f0; position:sticky; top:0; }
+.mp-hist-tbl th.l { text-align:left; }
+.mp-hist-tbl td { padding:8px; text-align:center; border-bottom:1px solid #f1f5f9; font-variant-numeric:tabular-nums; }
+.mp-hist-tbl td.l { text-align:left; font-weight:700; }
+.mp-hist-tbl tr:hover td { background:#fafbfc; }
 
 /* ─── MODALS — Apple style ─── */
 .modal-bg  { background: rgba(0,0,0,.30) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
@@ -5328,36 +5361,38 @@ body { background: var(--bg); color: var(--txt); }
 ════════════════════════════════════════ -->
     <div id="sManpower" class="screen">
       <div class="dash-wrap">
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
-          <h2 style="margin:0;font-size:22px">👥 กรอก Manpower</h2>
-          <span style="font-size:13px;color:var(--txt2)" id="mpScopeHint">— ขอบเขต</span>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div>
+            <h2 style="margin:0;font-size:24px;letter-spacing:-.01em">👥 กรอก Manpower</h2>
+            <div style="font-size:13px;color:var(--txt2);margin-top:4px" id="mpScopeHint">— ขอบเขต</div>
+          </div>
+          <div class="mp-period-pill">
+            <span>📅</span>
+            <select id="manpowerMonth" onchange="renderManpowerList()"></select>
+            <select id="manpowerYear"  onchange="renderManpowerList()"></select>
+          </div>
         </div>
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
-          <div id="mpBzmWrap" style="display:flex;gap:6px;align-items:center">
-            <label style="font-size:13px;font-weight:600">BZM:</label>
-            <select id="mpBzmSel" onchange="renderManpowerList()"
-                    style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;min-width:220px"></select>
-          </div>
-          <label style="font-size:13px;font-weight:600">เดือน:</label>
-          <select id="manpowerMonth" onchange="renderManpowerList()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px"></select>
-          <select id="manpowerYear"  onchange="renderManpowerList()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px"></select>
-          <span id="manpowerHint" style="font-size:12px;color:var(--txt2);margin-left:auto">— สาขา</span>
+        <div id="mpBzmWrap" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+          <label style="font-size:13px;font-weight:700;color:var(--txt2)">BZM:</label>
+          <select id="mpBzmSel" onchange="renderManpowerList()"
+                  style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:700;min-width:240px"></select>
+          <span id="manpowerHint" style="font-size:12px;color:var(--txt2);margin-left:auto;font-weight:600">— สาขา</span>
         </div>
 
         <div class="dash-card-wrap" style="padding:0;overflow:hidden">
-          <table class="adm-tbl" style="width:100%;border-collapse:collapse;font-size:13px">
+          <table class="adm-tbl" style="width:100%;border-collapse:collapse;font-size:13.5px">
             <thead>
-              <tr style="background:var(--bg-2);border-bottom:1px solid var(--bd)">
-                <th style="text-align:left;padding:10px 12px;font-weight:700">รหัส</th>
-                <th style="text-align:left;padding:10px 12px;font-weight:700">สาขา</th>
-                <th style="text-align:center;padding:10px 12px;font-weight:700">👔 ผู้จัดการ</th>
-                <th style="text-align:center;padding:10px 12px;font-weight:700">🍳 ครัว</th>
-                <th style="text-align:center;padding:10px 12px;font-weight:700">🍽️ บริการ</th>
-                <th style="text-align:right;padding:10px 12px;font-weight:700"></th>
+              <tr style="background:linear-gradient(135deg,#fafafa,#f1f5f9);border-bottom:2px solid #e2e8f0">
+                <th style="text-align:left;padding:12px 14px;font-weight:800;color:#475569;width:80px">รหัส</th>
+                <th style="text-align:left;padding:12px 14px;font-weight:800;color:#475569">สาขา</th>
+                <th style="text-align:center;padding:12px 10px;font-weight:800;color:#7c3aed;width:110px">👔 ผู้จัดการ</th>
+                <th style="text-align:center;padding:12px 10px;font-weight:800;color:#ea580c;width:110px">🍳 ครัว</th>
+                <th style="text-align:center;padding:12px 10px;font-weight:800;color:#16a34a;width:110px">🍽️ บริการ</th>
+                <th style="text-align:right;padding:12px 14px;font-weight:800;color:#475569;width:230px"></th>
               </tr>
             </thead>
-            <tbody id="manpowerBody"><tr><td colspan="6" style="padding:30px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr></tbody>
+            <tbody id="manpowerBody"><tr><td colspan="6" style="padding:40px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -5494,23 +5529,23 @@ body { background: var(--bg); color: var(--txt); }
      MODAL: MANPOWER
 ════════════════════════════════════════ -->
     <div id="mManpower" class="modal-bg">
-      <div class="modal" style="max-width:780px">
-        <div class="modal-header">
+      <div class="modal" style="max-width:820px">
+        <div class="modal-hdr">
           <h3 id="mpTitle">กรอก Manpower</h3>
           <button class="modal-close" onclick="closeM('mManpower')">×</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="padding:18px 22px">
           <input type="hidden" id="mp_branchCode">
           <input type="hidden" id="mp_year">
           <input type="hidden" id="mp_month">
 
-          <!-- ── ผู้จัดการสาขา ── -->
-          <div style="background:#f8fafc;border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-              <div style="font-weight:800;color:#7c3aed">👔 ทีมผู้จัดการสาขา</div>
-              <div style="font-size:13px;color:var(--txt2)">รวม: <b id="mpTotMgr" style="color:#7c3aed;font-size:18px">0</b></div>
+          <!-- ── ทีมผู้จัดการสาขา ── -->
+          <div class="mp-sec mp-sec-mgr">
+            <div class="mp-sec-hdr">
+              <div class="mp-sec-title">👔 ทีมผู้จัดการสาขา</div>
+              <div class="mp-sec-tot">รวม: <b id="mpTotMgr">0</b></div>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+            <div class="mp-grid-mgr">
               <div class="mp-cell"><label>RGM</label><input id="mp_rgm" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
               <div class="mp-cell"><label>SAM</label><input id="mp_sam" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
               <div class="mp-cell"><label>AM</label><input id="mp_am"  type="number" min="0" value="0" oninput="_mpRecalc()"></div>
@@ -5518,35 +5553,65 @@ body { background: var(--bg); color: var(--txt); }
             </div>
           </div>
 
-          <!-- ── ครัว ── -->
-          <div style="background:#fef9f3;border:1px solid #fed7aa;border-radius:10px;padding:14px;margin-bottom:14px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-              <div style="font-weight:800;color:#ea580c">🍳 พนักงานครัว</div>
-              <div style="font-size:13px;color:var(--txt2)">รวม: <b id="mpTotKit" style="color:#ea580c;font-size:18px">0</b></div>
+          <!-- ── พนักงานครัว ── -->
+          <div class="mp-sec mp-sec-kit">
+            <div class="mp-sec-hdr">
+              <div class="mp-sec-title">🍳 พนักงานครัว</div>
+              <div class="mp-sec-tot">รวม: <b id="mpTotKit">0</b></div>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;font-size:11px;color:var(--txt2);text-align:center;margin-bottom:4px">
-              <div>Basic</div><div>Silver</div><div>Gold</div>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-              <div class="mp-cell-row"><label>PT</label><input id="mp_k_basic_pt"  type="number" min="0" value="0" oninput="_mpRecalc()"><label>FT</label><input id="mp_k_basic_ft"  type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-              <div class="mp-cell-row"><label>PT</label><input id="mp_k_silver_pt" type="number" min="0" value="0" oninput="_mpRecalc()"><label>FT</label><input id="mp_k_silver_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-              <div class="mp-cell-row"><label>PT</label><input id="mp_k_gold_pt"   type="number" min="0" value="0" oninput="_mpRecalc()"><label>FT</label><input id="mp_k_gold_ft"   type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+            <div class="mp-grid-staff">
+              <div class="mp-staff-col">
+                <div class="mp-staff-lbl">Basic</div>
+                <div class="mp-pair">
+                  <div class="mp-pt"><span>PT</span><input id="mp_k_basic_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                  <div class="mp-ft"><span>FT</span><input id="mp_k_basic_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                </div>
+              </div>
+              <div class="mp-staff-col">
+                <div class="mp-staff-lbl">Silver</div>
+                <div class="mp-pair">
+                  <div class="mp-pt"><span>PT</span><input id="mp_k_silver_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                  <div class="mp-ft"><span>FT</span><input id="mp_k_silver_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                </div>
+              </div>
+              <div class="mp-staff-col">
+                <div class="mp-staff-lbl">Gold</div>
+                <div class="mp-pair">
+                  <div class="mp-pt"><span>PT</span><input id="mp_k_gold_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                  <div class="mp-ft"><span>FT</span><input id="mp_k_gold_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- ── บริการ ── -->
-          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-bottom:14px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-              <div style="font-weight:800;color:#16a34a">🍽️ พนักงานบริการ</div>
-              <div style="font-size:13px;color:var(--txt2)">รวม: <b id="mpTotSrv" style="color:#16a34a;font-size:18px">0</b></div>
+          <!-- ── พนักงานบริการ ── -->
+          <div class="mp-sec mp-sec-srv">
+            <div class="mp-sec-hdr">
+              <div class="mp-sec-title">🍽️ พนักงานบริการ</div>
+              <div class="mp-sec-tot">รวม: <b id="mpTotSrv">0</b></div>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;font-size:11px;color:var(--txt2);text-align:center;margin-bottom:4px">
-              <div>Basic</div><div>Silver</div><div>Gold</div>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-              <div class="mp-cell-row"><label>PT</label><input id="mp_s_basic_pt"  type="number" min="0" value="0" oninput="_mpRecalc()"><label>FT</label><input id="mp_s_basic_ft"  type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-              <div class="mp-cell-row"><label>PT</label><input id="mp_s_silver_pt" type="number" min="0" value="0" oninput="_mpRecalc()"><label>FT</label><input id="mp_s_silver_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-              <div class="mp-cell-row"><label>PT</label><input id="mp_s_gold_pt"   type="number" min="0" value="0" oninput="_mpRecalc()"><label>FT</label><input id="mp_s_gold_ft"   type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+            <div class="mp-grid-staff">
+              <div class="mp-staff-col">
+                <div class="mp-staff-lbl">Basic</div>
+                <div class="mp-pair">
+                  <div class="mp-pt"><span>PT</span><input id="mp_s_basic_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                  <div class="mp-ft"><span>FT</span><input id="mp_s_basic_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                </div>
+              </div>
+              <div class="mp-staff-col">
+                <div class="mp-staff-lbl">Silver</div>
+                <div class="mp-pair">
+                  <div class="mp-pt"><span>PT</span><input id="mp_s_silver_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                  <div class="mp-ft"><span>FT</span><input id="mp_s_silver_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                </div>
+              </div>
+              <div class="mp-staff-col">
+                <div class="mp-staff-lbl">Gold</div>
+                <div class="mp-pair">
+                  <div class="mp-pt"><span>PT</span><input id="mp_s_gold_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                  <div class="mp-ft"><span>FT</span><input id="mp_s_gold_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -5555,6 +5620,24 @@ body { background: var(--bg); color: var(--txt); }
         <div class="modal-footer">
           <button class="btn btn-outline" onclick="closeM('mManpower')">ยกเลิก</button>
           <button class="btn btn-brand" id="mpSaveBtn" onclick="manpowerSave()">บันทึก ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+     MODAL: MANPOWER HISTORY
+════════════════════════════════════════ -->
+    <div id="mManpowerHist" class="modal-bg">
+      <div class="modal" style="max-width:900px">
+        <div class="modal-hdr">
+          <h3 id="mpHistTitle">📜 ประวัติ Manpower</h3>
+          <button class="modal-close" onclick="closeM('mManpowerHist')">×</button>
+        </div>
+        <div class="modal-body" style="padding:14px 18px;max-height:70vh;overflow:auto">
+          <div id="mpHistBody"><div style="padding:30px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</div></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeM('mManpowerHist')">ปิด</button>
         </div>
       </div>
     </div>
@@ -7418,14 +7501,15 @@ body { background: var(--bg); color: var(--txt); }
             const totKit = r ? (r.k_basic_pt + r.k_basic_ft + r.k_silver_pt + r.k_silver_ft + r.k_gold_pt + r.k_gold_ft) : 0;
             const totSrv = r ? (r.s_basic_pt + r.s_basic_ft + r.s_silver_pt + r.s_silver_ft + r.s_gold_pt + r.s_gold_ft) : 0;
             const has = !!r;
-            const cellSty = (n) => `font-weight:800;font-variant-numeric:tabular-nums;color:${n > 0 ? '#0f172a' : '#94a3b8'}`;
-            return `<tr style="border-bottom:1px solid var(--bd-2)">
-              <td style="padding:10px 12px;font-variant-numeric:tabular-nums;font-weight:700">${escHtml(b.branch_code)}</td>
-              <td style="padding:10px 12px">${escHtml(b.branch_name || "-")}</td>
-              <td style="padding:10px 12px;text-align:center;${cellSty(totMgr)}">${totMgr}</td>
-              <td style="padding:10px 12px;text-align:center;${cellSty(totKit)}">${totKit}</td>
-              <td style="padding:10px 12px;text-align:center;${cellSty(totSrv)}">${totSrv}</td>
-              <td style="padding:8px 12px;text-align:right;white-space:nowrap">
+            const numStyle = (n, col) => `font-weight:800;font-variant-numeric:tabular-nums;font-size:16px;color:${n > 0 ? col : '#cbd5e1'}`;
+            return `<tr style="border-bottom:1px solid #f1f5f9">
+              <td style="padding:12px 14px;font-variant-numeric:tabular-nums;font-weight:700;color:#64748b">${escHtml(b.branch_code)}</td>
+              <td style="padding:12px 14px;font-weight:700">${escHtml(b.branch_name || "-")}</td>
+              <td style="padding:12px 10px;text-align:center;${numStyle(totMgr, '#7c3aed')}">${totMgr}</td>
+              <td style="padding:12px 10px;text-align:center;${numStyle(totKit, '#ea580c')}">${totKit}</td>
+              <td style="padding:12px 10px;text-align:center;${numStyle(totSrv, '#16a34a')}">${totSrv}</td>
+              <td style="padding:8px 14px;text-align:right;white-space:nowrap">
+                <button class="btn btn-sm" onclick="manpowerHistOpen('${escHtml(b.branch_code)}')" style="background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;font-size:12px;padding:6px 10px;border-radius:8px;margin-right:4px">📜 ประวัติ</button>
                 <button class="btn-edit-row btn btn-sm" onclick="manpowerOpen('${escHtml(b.branch_code)}')">${has ? "✏️ แก้ไข" : "➕ กรอก"}</button>
               </td>
             </tr>`;
@@ -7456,6 +7540,59 @@ body { background: var(--bg); color: var(--txt); }
         openM("mManpower");
       }
 
+      function manpowerHistOpen(branchCode) {
+        const bInfo = BRANCH_DM_MAP[branchCode] || {};
+        const bName = bInfo.branch || branchCode;
+        document.getElementById("mpHistTitle").textContent = `📜 ประวัติ Manpower · ${bName}`;
+        const body = document.getElementById("mpHistBody");
+        body.innerHTML = `<div style="padding:30px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</div>`;
+        openM("mManpowerHist");
+        apiCall({ mode: "histManpower", branch_code: branchCode, limit: 12 }, function(res) {
+          if (!res || !res.ok) {
+            body.innerHTML = `<div style="padding:30px;text-align:center;color:#dc2626">โหลดประวัติไม่สำเร็จ: ${escHtml((res && res.error) || "—")}</div>`;
+            return;
+          }
+          const rows = res.rows || [];
+          if (!rows.length) {
+            body.innerHTML = `<div style="padding:40px;text-align:center;color:var(--txt2)">ยังไม่มีประวัติการกรอก<br><span style="font-size:12px">กรอกเดือนแรกที่ปุ่ม ➕ กรอก ในตารางหลัก</span></div>`;
+            return;
+          }
+          const sum = (...keys) => (r) => keys.reduce((t,k)=>t+(parseInt(r[k],10)||0),0);
+          const totMgr = sum("rgm","sam","am","ss");
+          const totKit = sum("k_basic_pt","k_basic_ft","k_silver_pt","k_silver_ft","k_gold_pt","k_gold_ft");
+          const totSrv = sum("s_basic_pt","s_basic_ft","s_silver_pt","s_silver_ft","s_gold_pt","s_gold_ft");
+          // เรียงใหม่สุด → เก่า
+          rows.sort((a,b) => (b.year - a.year) || (b.month - a.month));
+          body.innerHTML = `
+            <table class="mp-hist-tbl">
+              <thead>
+                <tr>
+                  <th class="l">เดือน</th>
+                  <th style="color:#7c3aed">RGM</th><th style="color:#7c3aed">SAM</th><th style="color:#7c3aed">AM</th><th style="color:#7c3aed">SS</th>
+                  <th style="background:#faf5ff;color:#7c3aed">👔 รวม</th>
+                  <th style="background:#fff7ed;color:#ea580c">🍳 รวม</th>
+                  <th style="background:#f0fdf4;color:#16a34a">🍽️ รวม</th>
+                  <th>แก้ล่าสุด</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(r => {
+                  const period = `${_MP_MONTHS_TH[r.month-1]} ${r.year+543}`;
+                  const upd = r.updated_at ? new Date(r.updated_at).toLocaleDateString("th-TH", { day:"2-digit", month:"short", year:"2-digit" }) : "—";
+                  return `<tr>
+                    <td class="l">${period}</td>
+                    <td>${r.rgm||0}</td><td>${r.sam||0}</td><td>${r.am||0}</td><td>${r.ss||0}</td>
+                    <td style="background:#faf5ff;font-weight:800;color:#7c3aed;font-size:15px">${totMgr(r)}</td>
+                    <td style="background:#fff7ed;font-weight:800;color:#ea580c;font-size:15px">${totKit(r)}</td>
+                    <td style="background:#f0fdf4;font-weight:800;color:#16a34a;font-size:15px">${totSrv(r)}</td>
+                    <td style="color:var(--txt2);font-size:11px">${upd}</td>
+                  </tr>`;
+                }).join("")}
+              </tbody>
+            </table>`;
+        });
+      }
+
       function manpowerSave() {
         const warn = document.getElementById("mp_warn");
         const fail = (m) => { warn.style.display = ""; warn.textContent = "⚠️ " + m; };
@@ -7480,6 +7617,9 @@ body { background: var(--bg); color: var(--txt); }
           if (!res || !res.ok) { fail(res && res.error || "บันทึกไม่สำเร็จ"); return; }
           closeM("mManpower");
           renderManpowerList();
+          const bInfo = BRANCH_DM_MAP[payload.branch_code] || {};
+          const m = payload.month, y = payload.year;
+          showAlert("✅", "บันทึก Manpower สำเร็จ", `${bInfo.branch || payload.branch_code} · ${_MP_MONTHS_TH[m-1]} ${y+543}`);
         });
       }
 
@@ -11270,6 +11410,18 @@ body { background: var(--bg); color: var(--txt); }
               q = q.in("branch_code", params.branch_codes);
             }
             const { data, error } = await q;
+            if (error) { cb({ ok: false, error: error.message }); return; }
+            cb({ ok: true, rows: data || [] });
+            return;
+          }
+          if (mode === "histManpower") {
+            const bc = String(params.branch_code || "").trim();
+            const lim = Math.min(parseInt(params.limit, 10) || 12, 36);
+            if (!bc) { cb({ ok: false, error: "missing branch_code" }); return; }
+            const { data, error } = await sb.from("manpower")
+              .select("*").eq("branch_code", bc)
+              .order("year", { ascending: false }).order("month", { ascending: false })
+              .limit(lim);
             if (error) { cb({ ok: false, error: error.message }); return; }
             cb({ ok: true, rows: data || [] });
             return;
