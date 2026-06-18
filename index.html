@@ -3205,7 +3205,8 @@ body { background: var(--bg); color: var(--txt); }
 .mp-grid-mgr { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
 .mp-cell { display:flex; flex-direction:column; gap:5px; }
 .mp-cell label { font-size:11px; color:var(--txt2); font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
-.mp-cell input { width:100%; padding:10px 8px; border:1px solid #e2e8f0; border-radius:9px; font-family:inherit; font-size:16px; font-weight:800; text-align:center; background:#fff; outline:none; color:#0f172a; transition:border-color .15s, box-shadow .15s; font-variant-numeric:tabular-nums; }
+.mp-cell input { width:100%; padding:10px 8px; border:1px solid #e2e8f0; border-radius:9px; font-family:inherit; font-size:16px; font-weight:800; text-align:center; background:#fff; outline:none; color:#0f172a; transition:border-color .15s, box-shadow .15s; font-variant-numeric:tabular-nums; -moz-appearance:textfield; }
+.mp-cell input::-webkit-inner-spin-button, .mp-cell input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
 .mp-cell input:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(234,88,12,.12); }
 
 .mp-grid-staff { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
@@ -3214,8 +3215,20 @@ body { background: var(--bg); color: var(--txt); }
 .mp-pair { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 .mp-pt, .mp-ft { display:flex; flex-direction:column; align-items:center; gap:3px; }
 .mp-pt span, .mp-ft span { font-size:10px; font-weight:800; color:#94a3b8; letter-spacing:.06em; }
-.mp-pt input, .mp-ft input { width:100%; padding:7px 4px; border:1px solid #e2e8f0; border-radius:7px; font-family:inherit; font-size:14px; font-weight:800; text-align:center; background:#f8fafc; outline:none; color:#0f172a; font-variant-numeric:tabular-nums; }
+.mp-pt input, .mp-ft input { width:100%; padding:7px 4px; border:1px solid #e2e8f0; border-radius:7px; font-family:inherit; font-size:14px; font-weight:800; text-align:center; background:#f8fafc; outline:none; color:#0f172a; font-variant-numeric:tabular-nums; -moz-appearance:textfield; }
+.mp-pt input::-webkit-inner-spin-button, .mp-pt input::-webkit-outer-spin-button,
+.mp-ft input::-webkit-inner-spin-button, .mp-ft input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
 .mp-pt input:focus, .mp-ft input:focus { background:#fff; border-color:var(--brand); box-shadow:0 0 0 2px rgba(234,88,12,.12); }
+
+/* sub-totals (PT / FT per section) */
+.mp-subtot { display:flex; justify-content:flex-end; gap:18px; padding:8px 0 0; margin-top:10px; border-top:1px dashed rgba(0,0,0,.08); font-size:12px; color:var(--txt2); font-weight:700; }
+.mp-subtot b { font-variant-numeric:tabular-nums; font-weight:800; font-size:14px; margin-left:6px; }
+.mp-sec-kit .mp-subtot b { color:#ea580c; }
+.mp-sec-srv .mp-subtot b { color:#16a34a; }
+
+/* select dropdown — force readable text colour for options */
+#mpBzmSel, #manpowerMonth, #manpowerYear { color:#0f172a !important; }
+#mpBzmSel option, #manpowerMonth option, #manpowerYear option { color:#0f172a; background:#fff; }
 
 /* main list page month/year picker */
 .mp-period-pill { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%); border:1px solid #fed7aa; border-radius:999px; padding:8px 16px; font-weight:700; color:#9a3412; }
@@ -5584,6 +5597,10 @@ body { background: var(--bg); color: var(--txt); }
                 </div>
               </div>
             </div>
+            <div class="mp-subtot">
+              <span>PT รวม: <b id="mpKitPT">0</b></span>
+              <span>FT รวม: <b id="mpKitFT">0</b></span>
+            </div>
           </div>
 
           <!-- ── พนักงานบริการ ── -->
@@ -5614,6 +5631,10 @@ body { background: var(--bg); color: var(--txt); }
                   <div class="mp-ft"><span>FT</span><input id="mp_s_gold_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
                 </div>
               </div>
+            </div>
+            <div class="mp-subtot">
+              <span>PT รวม: <b id="mpSrvPT">0</b></span>
+              <span>FT รวม: <b id="mpSrvFT">0</b></span>
             </div>
           </div>
 
@@ -7464,8 +7485,16 @@ body { background: var(--bg); color: var(--txt); }
       }
       function _mpRecalc() {
         document.getElementById("mpTotMgr").textContent = _mpSum(["mp_rgm","mp_sam","mp_am","mp_ss"]);
-        document.getElementById("mpTotKit").textContent = _mpSum(["mp_k_basic_pt","mp_k_basic_ft","mp_k_silver_pt","mp_k_silver_ft","mp_k_gold_pt","mp_k_gold_ft"]);
-        document.getElementById("mpTotSrv").textContent = _mpSum(["mp_s_basic_pt","mp_s_basic_ft","mp_s_silver_pt","mp_s_silver_ft","mp_s_gold_pt","mp_s_gold_ft"]);
+        const kPT = _mpSum(["mp_k_basic_pt","mp_k_silver_pt","mp_k_gold_pt"]);
+        const kFT = _mpSum(["mp_k_basic_ft","mp_k_silver_ft","mp_k_gold_ft"]);
+        document.getElementById("mpKitPT").textContent = kPT;
+        document.getElementById("mpKitFT").textContent = kFT;
+        document.getElementById("mpTotKit").textContent = kPT + kFT;
+        const sPT = _mpSum(["mp_s_basic_pt","mp_s_silver_pt","mp_s_gold_pt"]);
+        const sFT = _mpSum(["mp_s_basic_ft","mp_s_silver_ft","mp_s_gold_ft"]);
+        document.getElementById("mpSrvPT").textContent = sPT;
+        document.getElementById("mpSrvFT").textContent = sFT;
+        document.getElementById("mpTotSrv").textContent = sPT + sFT;
       }
 
       function renderManpowerList() {
