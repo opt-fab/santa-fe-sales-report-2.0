@@ -4374,6 +4374,27 @@ body { background: var(--bg); color: var(--txt); }
   position: relative;
   height: 240px;
 }
+.dd-chan-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+  text-align: center;
+  line-height: 1.1;
+}
+.dd-chan-donut-val {
+  font-weight: 800; letter-spacing: -.02em;
+  color: #f26c1c;
+  font-size: clamp(20px, 5.5vw, 32px);
+  font-variant-numeric: tabular-nums;
+}
+.dd-chan-donut-lbl {
+  margin-top: 4px;
+  font-size: 12px; font-weight: 700;
+  color: #64748b;
+  letter-spacing: .02em;
+}
 .dd-chan-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -9381,7 +9402,13 @@ body { background: var(--bg); color: var(--txt); }
         box.innerHTML = `
           <div class="dd-chan-donut-wrap">
             <div class="dd-chan-donut-side">
-              <div class="dd-chan-donut-canvas"><canvas id="sec${C}Trend"></canvas></div>
+              <div class="dd-chan-donut-canvas">
+                <canvas id="sec${C}Trend"></canvas>
+                <div class="dd-chan-donut-center">
+                  <div class="dd-chan-donut-val">฿${fmt(Math.round(total))}</div>
+                  <div class="dd-chan-donut-lbl">ยอดขายจริง</div>
+                </div>
+              </div>
             </div>
             <div class="dd-chan-stats">
               ${summaryRow}
@@ -9424,29 +9451,6 @@ body { background: var(--bg); color: var(--txt); }
               }
             }
           },
-          plugins: [{
-            id: "donutCenter",
-            afterDraw(chart) {
-              const { ctx, chartArea: { left, right, top, bottom } } = chart;
-              const cx = (left + right) / 2;
-              const cy = (top + bottom) / 2;
-              const w = right - left;
-              // scale font ตามขนาดวงกลม (มือถือเล็ก → ใหญ่สัมพันธ์กับวง)
-              const valSize = Math.max(20, Math.min(34, Math.round(w * 0.14)));
-              const lblSize = Math.max(10, Math.round(valSize * 0.5));
-              ctx.save();
-              ctx.textAlign = "center"; ctx.textBaseline = "middle";
-              // ยอดรวมเด่นกลาง — ใช้สีแบรนด์ส้ม
-              ctx.fillStyle = "#f26c1c";
-              ctx.font = `800 ${valSize}px Sarabun, sans-serif`;
-              ctx.fillText("฿" + fmt(Math.round(total)), cx, cy - lblSize * 0.6);
-              // ป้าย "ยอดขายจริง" ใต้ยอด
-              ctx.fillStyle = "#64748b";
-              ctx.font = `700 ${lblSize}px Sarabun, sans-serif`;
-              ctx.fillText("ยอดขายจริง", cx, cy + valSize * 0.55);
-              ctx.restore();
-            }
-          }]
         });
       }
 
