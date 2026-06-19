@@ -3337,8 +3337,8 @@ body { background: var(--bg); color: var(--txt); }
   .hdr { box-shadow: none !important; border-bottom: 1px solid var(--bd) !important; }
 
   /* Test mode banner — เพิ่ม padding-top body */
-  body.test-mode-on { padding-top: 36px; }
-  body.test-mode-on .hdr { top: 36px; }
+  body.test-mode-on, body.bypass-order-on { padding-top: 36px; }
+  body.test-mode-on .hdr, body.bypass-order-on .hdr { top: 36px; }
   .hdr-logout-btn {
     background: transparent !important; color: var(--brand) !important;
     font-size: 14px !important; font-weight: 600 !important;
@@ -3612,9 +3612,9 @@ body { background: var(--bg); color: var(--txt); }
   #sAdmin .admin-tabs { display: none !important; }
 
   /* เมื่อ test mode ON → ดัน sidebar + content ลงให้พ้น banner (~36px) */
-  body.test-mode-on .desk-sidebar { top: 36px !important; }
-  body.test-mode-on .hdr           { top: 36px !important; }
-  body.test-mode-on .screen.active { padding-top: 36px; }
+  body.test-mode-on .desk-sidebar, body.bypass-order-on .desk-sidebar { top: 36px !important; }
+  body.test-mode-on .hdr,           body.bypass-order-on .hdr           { top: 36px !important; }
+  body.test-mode-on .screen.active, body.bypass-order-on .screen.active { padding-top: 36px; }
 
   /* ─ Admin tabs — เป็นหัวข้อหลักของหน้า ─ */
   .admin-tab {
@@ -4685,6 +4685,9 @@ body { background: var(--bg); color: var(--txt); }
      SHARED HEADER (hidden until logged in)
 ════════════════════════════════════════ -->
     <!-- Test mode global banner (เห็นเมื่อเปิด test mode ใน DB) -->
+    <div id="bypassOrderBanner" style="display:none;background:linear-gradient(90deg,#fee2e2,#fecaca);color:#991b1b;text-align:center;padding:8px 16px;font-size:13px;font-weight:700;border-bottom:1px solid #fca5a5;position:fixed;top:0;left:0;right:0;z-index:9998">
+      🚫 ข้ามกฎลำดับการส่งเปิดอยู่ — ระบบจะไม่ตรวจลำดับการส่งยอด
+    </div>
     <div id="testModeBanner" style="display:none;background:linear-gradient(90deg,#fef3c7,#fde68a);color:#92400e;text-align:center;padding:8px 16px;font-size:13px;font-weight:700;border-bottom:1px solid #fcd34d;position:fixed;top:0;left:0;right:0;z-index:9999">
       🧪 โหมดทดสอบเปิดอยู่ — ระบบจะไม่ตรวจสอบลำดับการส่งยอด
     </div>
@@ -4787,6 +4790,11 @@ body { background: var(--bg); color: var(--txt); }
         <span class="desk-nav-ico">🧪</span>
         <span>โหมดทดสอบ: <span id="testModeStatus" style="font-weight:800;color:var(--brand)">ปิด</span></span>
       </button>
+      <!-- Bypass order toggle (admin only) -->
+      <button class="desk-nav-btn admin-only-nav" id="bypassOrderBtn" onclick="toggleBypassOrderAdmin()" style="display:none;margin:0 10px 8px">
+        <span class="desk-nav-ico">🚫</span>
+        <span>ข้ามกฎลำดับ: <span id="bypassOrderStatus" style="font-weight:800;color:var(--brand)">ปิด</span></span>
+      </button>
 
 
       <!-- Back to Hub menu + Logout -->
@@ -4871,6 +4879,10 @@ body { background: var(--bg); color: var(--txt); }
         <button class="md-test-btn admin-only-nav" id="mdTestModeBtn" onclick="toggleTestModeAdmin()" style="display:none">
           <span class="md-nav-ico">🧪</span>
           <span>โหมดทดสอบ: <span id="mdTestModeStatus" style="font-weight:800;color:var(--brand)">ปิด</span></span>
+        </button>
+        <button class="md-test-btn admin-only-nav" id="mdBypassOrderBtn" onclick="toggleBypassOrderAdmin()" style="display:none;background:#fee2e2;border-color:#fecaca">
+          <span class="md-nav-ico">🚫</span>
+          <span>ข้ามกฎลำดับ: <span id="mdBypassOrderStatus" style="font-weight:800;color:var(--brand)">ปิด</span></span>
         </button>
         <button class="md-hub-btn" onclick="goBackToHub()" title="กลับเมนูหลัก Hub (ไม่ logout)">
           <span class="hub-ico">←</span>
@@ -5039,11 +5051,6 @@ body { background: var(--bg); color: var(--txt); }
 
       <!-- Sticky submit button -->
       <div class="form-sticky-btn">
-        <!-- Admin override: ข้ามกฎลำดับการส่ง -->
-        <label id="adminBypassWrap" class="admin-only-nav" style="display:none;align-items:center;gap:8px;padding:8px 12px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:13px;font-weight:700;color:#92400e">
-          <input id="adminBypassChk" type="checkbox" style="width:16px;height:16px;cursor:pointer;accent-color:#d97706">
-          <span>⚠️ ข้ามกฎลำดับการส่ง (admin)</span>
-        </label>
         <button class="btn btn-brand btn-lg" onclick="reviewAndSubmit()">
           ✓ ตรวจสอบ & ส่งข้อมูล
         </button>
@@ -6570,11 +6577,10 @@ body { background: var(--bg); color: var(--txt); }
         const testLbl = document.getElementById("testModeLabel");
         if (testLbl) testLbl.style.display = isAdmin ? "inline-flex" : "none";
 
-        // ซ่อน "ส่งยอดขาย" สำหรับ vp/bzm — admin ยังเห็น (ใช้ bypass checkbox)
-        const hideForm = isVP || isBZM;
+        // ซ่อน "ส่งยอดขาย" สำหรับทุก management role (admin/vp/bzm)
         ["dnForm", "mnForm", "mdForm"].forEach(id => {
           const el = document.getElementById(id);
-          if (el) el.style.display = hideForm ? "none" : "flex";
+          if (el) el.style.display = isMgmt ? "none" : "flex";
         });
 
         // Plan Sale: branch + admin เท่านั้น (vp/bzm = read-only ดูยอดอย่างเดียว)
@@ -8164,7 +8170,9 @@ body { background: var(--bg); color: var(--txt); }
          ไม่ต้องสร้าง table ใหม่ — ใช้ branch_code = "_SYS_TEST_MODE_"
          branch_name = "true" / "false" */
       const SETTINGS_ROW_CODE = "_SYS_TEST_MODE_";
+      const BYPASS_ORDER_ROW = "_SYS_BYPASS_ORDER_";
       var _testMode = false;
+      var _bypassOrder = false;
       async function loadTestModeFromDB() {
         try {
           const { data } = await sb.from("branches").select("branch_name")
@@ -8219,6 +8227,68 @@ body { background: var(--bg); color: var(--txt); }
         applyTestModeUI();
         return true;
       }
+      async function loadBypassOrderFromDB() {
+        try {
+          const { data } = await sb.from("branches").select("branch_name")
+            .eq("branch_code", BYPASS_ORDER_ROW).maybeSingle();
+          _bypassOrder = !!(data && data.branch_name === "true");
+        } catch (_) { _bypassOrder = false; }
+        applyBypassOrderUI();
+      }
+      function applyBypassOrderUI() {
+        const banner = document.getElementById("bypassOrderBanner");
+        const show = !!(_bypassOrder && S.code);
+        if (banner) banner.style.display = show ? "block" : "none";
+        document.body.classList.toggle("bypass-order-on", show);
+        const sb1 = document.getElementById("bypassOrderBtn");
+        if (sb1) {
+          sb1.style.background = _bypassOrder ? "#fee2e2" : "";
+          sb1.style.borderLeft = _bypassOrder ? "3px solid #dc2626" : "";
+        }
+        const md1 = document.getElementById("mdBypassOrderBtn");
+        if (md1) {
+          md1.style.background = _bypassOrder ? "#fecaca" : "#fee2e2";
+          md1.style.borderColor = _bypassOrder ? "#dc2626" : "#fecaca";
+        }
+        [document.getElementById("bypassOrderStatus"),
+         document.getElementById("mdBypassOrderStatus")].forEach(s => {
+          if (!s) return;
+          s.textContent = _bypassOrder ? "เปิด" : "ปิด";
+          s.style.color = _bypassOrder ? "var(--green)" : "var(--red)";
+        });
+      }
+      async function saveBypassOrderToDB(val) {
+        const v = val ? "true" : "false";
+        const { error } = await sb.from("branches").upsert({
+          branch_code: BYPASS_ORDER_ROW,
+          branch_name: v,
+          district_manager: "system"
+        }, { onConflict: "branch_code" });
+        if (error) { showAlert("❌", "บันทึกไม่สำเร็จ", error.message); return false; }
+        _bypassOrder = val;
+        applyBypassOrderUI();
+        return true;
+      }
+      function toggleBypassOrderAdmin() {
+        if (S.code !== "ADMIN") return;
+        const mDrw = document.getElementById("mobDrawer");
+        if (mDrw && mDrw.classList.contains("open")) closeMobDrawer();
+        const next = !_bypassOrder;
+        const action = next ? "เปิด" : "ปิด";
+        showConfirm(
+          next ? "🚫" : "🔒",
+          `${action}โหมดข้ามกฎลำดับการส่ง?`,
+          next
+            ? "เมื่อเปิด: ทุกสาขาส่งยอดได้โดยไม่ตรวจลำดับ\n(16.00 ต้องมาก่อนสิ้นวัน / สิ้นวันเมื่อวานต้องมาก่อน 16.00 วันนี้)\n\nสาขาจะเห็น banner สีแดงแจ้งเตือน"
+            : "เมื่อปิด: ระบบกลับมาตรวจลำดับการส่งตามปกติ",
+          async function() {
+            const ok = await saveBypassOrderToDB(next);
+            if (ok) setTimeout(() => location.reload(), 200);
+          },
+          { btnText: next ? "เปิด" : "ปิด", danger: !next }
+        );
+      }
+
       function toggleTestModeAdmin() {
         if (S.code !== "ADMIN") return;
         // ปิด drawer ก่อน (กันบดบัง popup)
@@ -8271,6 +8341,7 @@ body { background: var(--bg); color: var(--txt); }
       // เรียกหลังจาก sb พร้อม
       loadBranchesFromSupabase();
       loadTestModeFromDB();
+      loadBypassOrderFromDB();
 
       let _dashRows  = [];          // cache rows for date picker re-render
       let _dashMonth = undefined;   // 0-11 — เดือนที่เลือก (รายเดือน mode)
@@ -10868,11 +10939,9 @@ body { background: var(--bg); color: var(--txt); }
           }
 
           // ── BLOCK ตรวจลำดับการส่งยอด ──
-          // ใช้ _testMode (global state) แทน DOM checkbox — แม่นยำกว่า
-          // admin ติ๊ก "ข้ามกฎลำดับ" → bypass เฉพาะครั้งนี้
-          const adminBypass = (S.role === "admin") && !!document.getElementById("adminBypassChk")?.checked;
-          console.log("[submit] testMode:", _testMode, "adminBypass:", adminBypass, "slot:", slot, "date:", date);
-          if (!_testMode && !adminBypass) {
+          // ใช้ _testMode หรือ _bypassOrder (global states) — ปิดทั้งคู่ = ตรวจตามปกติ
+          console.log("[submit] testMode:", _testMode, "bypassOrder:", _bypassOrder, "slot:", slot, "date:", date);
+          if (!_testMode && !_bypassOrder) {
             checkSubmissionOrder(date, slot, function(check) {
               console.log("[submit] order check result:", check);
               if (!check.ok) {
