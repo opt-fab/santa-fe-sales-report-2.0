@@ -3271,6 +3271,24 @@ body { background: var(--bg); color: var(--txt); }
 .mp-hist-tbl td.l { text-align:left; font-weight:700; }
 .mp-hist-tbl tr:hover td { background:#fafbfc; }
 
+/* edit-history diff modal */
+.eh-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 1px 2px rgba(0,0,0,.03); }
+.eh-card-hdr { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #f1f5f9; font-size:13px; font-weight:700; color:#0f172a; }
+.eh-evt { background:#eef2ff; color:#4338ca; font-size:11px; font-weight:800; padding:3px 10px; border-radius:999px; letter-spacing:.04em; }
+.eh-tbl { width:100%; border-collapse:collapse; font-size:13px; }
+.eh-tbl th { text-align:center; padding:6px 8px; color:#64748b; font-weight:700; font-size:11px; background:#f8fafc; }
+.eh-tbl th.l { text-align:left; }
+.eh-tbl td { padding:7px 8px; border-bottom:1px solid #f8fafc; font-variant-numeric:tabular-nums; }
+.eh-tbl tr:last-child td { border-bottom:none; }
+.eh-tbl td.eh-lbl { font-weight:700; color:#475569; }
+.eh-tbl td.eh-old { text-align:right; color:#94a3b8; text-decoration:line-through; }
+.eh-tbl td.eh-arr { text-align:center; color:#cbd5e1; font-weight:700; padding:0 2px; }
+.eh-tbl td.eh-new { text-align:right; font-weight:800; color:#0f172a; }
+.eh-tbl td.eh-diff { text-align:right; padding-left:10px; }
+.eh-delta { font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px; font-variant-numeric:tabular-nums; }
+.eh-delta.pos { background:#dcfce7; color:#15803d; }
+.eh-delta.neg { background:#fee2e2; color:#b91c1c; }
+
 /* history — card layout per month (no horizontal scroll) */
 .mp-h-card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:14px 16px; margin-bottom:14px; box-shadow:0 1px 2px rgba(0,0,0,.03); }
 .mp-h-card-hdr { display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; margin-bottom:12px; border-bottom:1px solid #f1f5f9; }
@@ -5469,9 +5487,10 @@ body { background: var(--bg); color: var(--txt); }
                 <th style="text-align:left;padding:12px 12px;font-weight:800;color:#475569">ผู้ส่ง</th>
                 <th style="text-align:center;padding:12px 10px;font-weight:800;color:#dc2626;width:90px">แก้ (ครั้ง)</th>
                 <th style="text-align:left;padding:12px 12px;font-weight:800;color:#475569">แก้ล่าสุด</th>
+                <th style="padding:12px 12px;width:90px"></th>
               </tr>
             </thead>
-            <tbody id="ehBody"><tr><td colspan="7" style="padding:40px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr></tbody>
+            <tbody id="ehBody"><tr><td colspan="8" style="padding:40px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -5782,6 +5801,24 @@ body { background: var(--bg); color: var(--txt); }
         <div class="modal-footer">
           <button class="btn btn-outline" onclick="closeM('mManpower')">ยกเลิก</button>
           <button class="btn btn-brand" id="mpSaveBtn" onclick="manpowerSave()">บันทึก ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+     MODAL: EDIT DIFF (before/after per edit event)
+════════════════════════════════════════ -->
+    <div id="mEditDiff" class="modal-bg">
+      <div class="modal" style="max-width:900px">
+        <div class="modal-hdr">
+          <h3 id="edTitle">📜 รายละเอียดการแก้ไข</h3>
+          <button class="modal-close" onclick="closeM('mEditDiff')">×</button>
+        </div>
+        <div class="modal-body" style="padding:14px 18px;max-height:75vh;overflow:auto">
+          <div id="edBody"><div style="padding:30px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</div></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeM('mEditDiff')">ปิด</button>
         </div>
       </div>
     </div>
@@ -7938,7 +7975,7 @@ body { background: var(--bg); color: var(--txt); }
         });
         document.getElementById("ehHint").textContent = `${list.length} รายการ`;
         if (!list.length) {
-          body.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--txt2)">ไม่พบรายการที่ถูกแก้ไขในช่วงนี้</td></tr>`;
+          body.innerHTML = `<tr><td colspan="8" style="padding:40px;text-align:center;color:var(--txt2)">ไม่พบรายการที่ถูกแก้ไขในช่วงนี้</td></tr>`;
           return;
         }
         const fmtDate = (s) => {
@@ -7963,8 +8000,108 @@ body { background: var(--bg); color: var(--txt); }
             <td style="padding:10px 12px">${escHtml(r.submitter_name || "—")}</td>
             <td style="padding:10px 10px;text-align:center"><span style="font-size:13px;font-weight:800;color:#dc2626;background:#fee2e2;padding:3px 12px;border-radius:999px">${r.edit_count}</span></td>
             <td style="padding:10px 12px;color:var(--txt2);font-size:12px">${fmtDate(r.last_edited_at)}</td>
+            <td style="padding:8px 12px;text-align:right"><button class="btn btn-sm" onclick="ehOpenDetail('${escHtml(r.branch_code)}','${escHtml(r.submit_date)}','${escHtml(r.submit_time_slot)}')" style="background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;font-size:12px;padding:5px 10px;border-radius:7px">👁️ ดู</button></td>
           </tr>`;
         }).join("");
+      }
+
+      // map ของ key → ฉลากไทย (สำหรับแสดง diff)
+      const _EH_FIELD_LBL = {
+        plan_sale: "Plan Sale",
+        actual_sale: "ยอดขายจริง",
+        sale_dine_in: "ทานที่ร้าน (ยอด)",
+        sale_take_away: "กลับบ้าน (ยอด)",
+        sale_grab: "Grab (ยอด)",
+        sale_lineman: "Lineman (ยอด)",
+        sale_shopeefood: "Shopee Food (ยอด)",
+        total_trans: "บิลทั้งหมด",
+        trans_dine_in: "บิล ทานที่ร้าน",
+        trans_take_away: "บิล กลับบ้าน",
+        trans_grab: "บิล Grab",
+        trans_lineman: "บิล Lineman",
+        trans_shopeefood: "บิล Shopee Food",
+        customer: "ลูกค้า (คน)",
+        labour_hour: "ชั่วโมงแรงงาน",
+        labour_baht: "ค่าแรง (บาท)",
+        submitter_name: "ผู้ส่ง"
+      };
+      const _EH_NUM_FIELDS = new Set(["plan_sale","actual_sale","sale_dine_in","sale_take_away","sale_grab","sale_lineman","sale_shopeefood","total_trans","trans_dine_in","trans_take_away","trans_grab","trans_lineman","trans_shopeefood","customer","labour_hour","labour_baht"]);
+
+      function ehOpenDetail(branchCode, submitDate, slot) {
+        const bInfo = BRANCH_DM_MAP[branchCode] || {};
+        const bName = bInfo.branch || branchCode;
+        const MONTH = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+        const [y, m, dd] = submitDate.split("-");
+        const dateLbl = `${parseInt(dd)} ${MONTH[parseInt(m)-1]} ${parseInt(y)+543}`;
+        document.getElementById("edTitle").textContent = `📜 ${bName} · ${dateLbl} · ${slot}`;
+        const body = document.getElementById("edBody");
+        body.innerHTML = `<div style="padding:30px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</div>`;
+        openM("mEditDiff");
+        apiCall({ mode: "listEditDetails", branch_code: branchCode, submit_date: submitDate, submit_time_slot: slot }, function(res) {
+          if (!res || !res.ok) {
+            body.innerHTML = `<div style="padding:30px;text-align:center;color:#dc2626">โหลดไม่สำเร็จ: ${escHtml((res && res.error) || "—")}</div>`;
+            return;
+          }
+          const rows = res.rows || [];
+          if (!rows.length) {
+            body.innerHTML = `<div style="padding:40px;text-align:center;color:var(--txt2)">ไม่พบประวัติการแก้ไข<br><span style="font-size:11px">(audit log เริ่มเก็บหลังจากที่รัน SQL section 8 ของ schema ใหม่)</span></div>`;
+            return;
+          }
+          const fmtNum = (v) => {
+            const n = parseFloat(v);
+            if (isNaN(n) || v === null || v === "" || v === undefined) return v == null ? "—" : String(v);
+            return n.toLocaleString("th-TH", { maximumFractionDigits: 2 });
+          };
+          const fmtTime = (s) => new Date(s).toLocaleString("th-TH", { day:"2-digit", month:"short", year:"2-digit", hour:"2-digit", minute:"2-digit" });
+          body.innerHTML = rows.map((r, idx) => {
+            const oldD = r.old_data || {};
+            const newD = r.new_data || {};
+            // หา fields ที่ต่าง
+            const changedKeys = Object.keys(_EH_FIELD_LBL).filter(k => {
+              const a = oldD[k], b = newD[k];
+              if (a == null && b == null) return false;
+              if (_EH_NUM_FIELDS.has(k)) return (parseFloat(a) || 0) !== (parseFloat(b) || 0);
+              return String(a || "") !== String(b || "");
+            });
+            const evNum = rows.length - idx;
+            if (!changedKeys.length) {
+              return `<div class="eh-card">
+                <div class="eh-card-hdr"><span class="eh-evt">ครั้งที่ ${evNum}</span> ${fmtTime(r.edited_at)}${r.edited_by ? ` · ${escHtml(r.edited_by)}` : ""}</div>
+                <div style="padding:10px;color:var(--txt2);font-style:italic">ไม่มีการเปลี่ยนแปลงค่าตัวเลข</div>
+              </div>`;
+            }
+            const rowsHtml = changedKeys.map(k => {
+              const lbl = _EH_FIELD_LBL[k] || k;
+              const a = oldD[k], b = newD[k];
+              const isNum = _EH_NUM_FIELDS.has(k);
+              const oldDisp = isNum ? fmtNum(a) : (a == null || a === "" ? "—" : String(a));
+              const newDisp = isNum ? fmtNum(b) : (b == null || b === "" ? "—" : String(b));
+              let diff = "";
+              if (isNum) {
+                const d = (parseFloat(b) || 0) - (parseFloat(a) || 0);
+                if (d !== 0) diff = `<span class="eh-delta ${d > 0 ? 'pos' : 'neg'}">${d > 0 ? "+" : ""}${fmtNum(d)}</span>`;
+              }
+              return `<tr>
+                <td class="eh-lbl">${escHtml(lbl)}</td>
+                <td class="eh-old">${escHtml(oldDisp)}</td>
+                <td class="eh-arr">→</td>
+                <td class="eh-new">${escHtml(newDisp)}</td>
+                <td class="eh-diff">${diff}</td>
+              </tr>`;
+            }).join("");
+            return `<div class="eh-card">
+              <div class="eh-card-hdr">
+                <span class="eh-evt">ครั้งที่ ${evNum}</span>
+                <span>${fmtTime(r.edited_at)}</span>
+                ${r.edited_by ? `<span style="color:var(--txt2);margin-left:auto">· ${escHtml(r.edited_by)}</span>` : ""}
+              </div>
+              <table class="eh-tbl">
+                <thead><tr><th class="l">ฟิลด์</th><th>เดิม</th><th></th><th>ใหม่</th><th>เปลี่ยน</th></tr></thead>
+                <tbody>${rowsHtml}</tbody>
+              </table>
+            </div>`;
+          }).join("");
+        });
       }
 
       function manpowerSave() {
@@ -11815,6 +11952,19 @@ body { background: var(--bg); color: var(--txt); }
               q = q.in("branch_code", params.branch_codes);
             }
             const { data, error } = await q;
+            if (error) { cb({ ok: false, error: error.message }); return; }
+            cb({ ok: true, rows: data || [] });
+            return;
+          }
+          if (mode === "listEditDetails") {
+            const bc   = String(params.branch_code || "").trim();
+            const date = String(params.submit_date || "").trim();
+            const slot = String(params.submit_time_slot || "").trim();
+            if (!bc || !date || !slot) { cb({ ok: false, error: "missing key" }); return; }
+            const { data, error } = await sb.from("sales_edits")
+              .select("id,edited_at,edited_by,old_data,new_data")
+              .eq("branch_code", bc).eq("submit_date", date).eq("submit_time_slot", slot)
+              .order("edited_at", { ascending: false }).limit(50);
             if (error) { cb({ ok: false, error: error.message }); return; }
             cb({ ok: true, rows: data || [] });
             return;

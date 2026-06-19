@@ -219,4 +219,40 @@ create trigger trg_sales_edit
   when (old.* is distinct from new.*)
   execute function set_last_edited_at();
 
+-- ──────────────────────────────────────────────
+-- 8. SALES_EDITS — audit log (เก็บ before/after ทุกครั้งที่ sales_data ถูก UPDATE)
+-- ──────────────────────────────────────────────
+create table if not exists public.sales_edits (
+  id               bigserial primary key,
+  sales_id         bigint not null,
+  branch_code      text,
+  submit_date      date,
+  submit_time_slot text,
+  edited_at        timestamptz not null default now(),
+  edited_by        text,           -- จาก new.submitter_name (best guess)
+  old_data         jsonb not null,
+  new_data         jsonb not null
+);
+
+create index if not exists idx_sales_edits_key  on public.sales_edits(branch_code, submit_date, submit_time_slot);
+create index if not exists idx_sales_edits_time on public.sales_edits(edited_at desc);
+
+alter table public.sales_edits disable row level security;
+
+create or replace function trg_capture_sales_edit()
+returns trigger as $$
+begin
+  insert into public.sales_edits (sales_id, branch_code, submit_date, submit_time_slot, edited_by, old_data, new_data)
+  values (new.id, new.branch_code, new.submit_date, new.submit_time_slot, new.submitter_name, to_jsonb(old), to_jsonb(new));
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_sales_audit on public.sales_data;
+create trigger trg_sales_audit
+  after update on public.sales_data
+  for each row
+  when (old.* is distinct from new.*)
+  execute function trg_capture_sales_edit();
+
 -- ✅ DONE — ตรวจดูได้ที่ Database → Tables
