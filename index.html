@@ -6258,7 +6258,7 @@ body { background: var(--bg); color: var(--txt); }
       }
 
       // ─── DB users cache (โหลดจาก Supabase) ──────────────────
-      let _USERS_DB = [];
+      var _USERS_DB = [];
       function _refreshUsersCache(cb) {
         apiCall({ mode: "listUsers" }, function(res) {
           if (res && res.ok && Array.isArray(res.rows)) _USERS_DB = res.rows;
