@@ -4813,13 +4813,19 @@ body { background: var(--bg); color: var(--txt); }
 /* desktop: ซ่อนปุ่มรวม (ใช้ปุ่มแยกบน sidebar) */
 .mn-more-btn, .mn-manage-btn, .mn-hist-btn { display:none !important; }
 @media (max-width: 640px) {
-  /* mobile: ซ่อนปุ่มแยกในแถบ ย้ายไป popup; ปุ่มรวมโผล่เฉพาะ role ที่เกี่ยว */
   .mn-more-item, .mn-manage-item { display:none !important; }
   body.is-admin .mn-more-btn, body.is-admin .mn-manage-btn { display:flex !important; }
-  /* ประวัติ: รวม 2 อันใน popup เมื่อเป็น admin/vp/bzm; branch ยังเห็น mnHistory ตรงๆ */
   body.is-tm .mn-hist-item { display:none !important; }
   body.is-tm .mn-hist-btn  { display:flex !important; }
 }
+/* iPad/tablet (touch) — apply same collapse rules ไม่ขึ้นกับความกว้าง */
+body.is-touch .mn-more-item, body.is-touch .mn-manage-item { display:none !important; }
+body.is-touch.is-admin .mn-more-btn, body.is-touch.is-admin .mn-manage-btn { display:flex !important; }
+body.is-touch.is-tm .mn-hist-item { display:none !important; }
+body.is-touch.is-tm .mn-hist-btn  { display:flex !important; }
+/* mob-nav-inner เป็นแถวเดียวเลื่อนได้ */
+body.is-touch .mob-nav-inner { display:flex; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+body.is-touch .mob-nav-inner > .mob-nav-btn { flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 12px 10px; min-width:64px; }
 .dd-table-channels { font-size:12px; }
   .dd-table-channels thead th { padding:8px 6px; font-size:11px; }
   .dd-table-channels tbody td { padding:9px 6px; }
