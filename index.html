@@ -3337,10 +3337,8 @@ body { background: var(--bg); color: var(--txt); }
   .hdr { box-shadow: none !important; border-bottom: 1px solid var(--bd) !important; }
 
   /* Test mode banner — เพิ่ม padding-top body */
-  body.test-mode-on, body.bypass-order-on { padding-top: 36px; }
-  body.banners-both { padding-top: 72px; }
-  body.test-mode-on .hdr, body.bypass-order-on .hdr { top: 36px; }
-  body.banners-both .hdr { top: 72px; }
+  body.test-mode-on, body.bypass-order-on, body.banners-both { padding-top: 36px; }
+  body.test-mode-on .hdr, body.bypass-order-on .hdr, body.banners-both .hdr { top: 36px; }
   .hdr-logout-btn {
     background: transparent !important; color: var(--brand) !important;
     font-size: 14px !important; font-weight: 600 !important;
@@ -3614,12 +3612,9 @@ body { background: var(--bg); color: var(--txt); }
   #sAdmin .admin-tabs { display: none !important; }
 
   /* เมื่อ test mode ON → ดัน sidebar + content ลงให้พ้น banner (~36px) */
-  body.test-mode-on .desk-sidebar, body.bypass-order-on .desk-sidebar { top: 36px !important; }
-  body.banners-both .desk-sidebar                                     { top: 72px !important; }
-  body.test-mode-on .hdr,           body.bypass-order-on .hdr           { top: 36px !important; }
-  body.banners-both .hdr                                               { top: 72px !important; }
-  body.test-mode-on .screen.active, body.bypass-order-on .screen.active { padding-top: 36px; }
-  body.banners-both .screen.active                                     { padding-top: 72px; }
+  body.test-mode-on .desk-sidebar, body.bypass-order-on .desk-sidebar, body.banners-both .desk-sidebar { top: 36px !important; }
+  body.test-mode-on .hdr,           body.bypass-order-on .hdr,           body.banners-both .hdr           { top: 36px !important; }
+  body.test-mode-on .screen.active, body.bypass-order-on .screen.active, body.banners-both .screen.active { padding-top: 36px; }
 
   /* ─ Admin tabs — เป็นหัวข้อหลักของหน้า ─ */
   .admin-tab {
@@ -8183,11 +8178,21 @@ body { background: var(--bg); color: var(--txt); }
         const b = !!(_bypassOrder && S.code);
         const bnT = document.getElementById("testModeBanner");
         const bnB = document.getElementById("bypassOrderBanner");
-        // bypass-order ขึ้นก่อน (top:0); test mode ลงล่าง (top:36) ถ้า bypass on
-        if (bnB) { bnB.style.display = b ? "block" : "none"; bnB.style.top = "0"; }
-        if (bnT) { bnT.style.display = t ? "block" : "none"; bnT.style.top = (b ? "36px" : "0"); }
-        // body offset: 0 / 36 / 72
         const both = t && b;
+        // ทั้งคู่เปิด → แบ่งซ้าย-ขวา (ครึ่ง-ครึ่ง, top:0); อันเดียว → เต็มแถว top:0
+        if (bnB) {
+          bnB.style.display = b ? "block" : "none";
+          bnB.style.top = "0";
+          bnB.style.left = "0";
+          bnB.style.right = both ? "50%" : "0";
+        }
+        if (bnT) {
+          bnT.style.display = t ? "block" : "none";
+          bnT.style.top = "0";
+          bnT.style.left = both ? "50%" : "0";
+          bnT.style.right = "0";
+        }
+        // body offset: 0 / 36 (ทั้งกรณีเดี่ยวและกรณีคู่ — แบ่งซ้ายขวาก็สูง 36)
         document.body.classList.toggle("test-mode-on", t && !both);
         document.body.classList.toggle("bypass-order-on", b && !both);
         document.body.classList.toggle("banners-both", both);
