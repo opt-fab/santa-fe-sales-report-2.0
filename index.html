@@ -6113,14 +6113,12 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           </div>
         </div>
 
-        <!-- Date range — จาก / ถึง (จำกัด 30 วัน) -->
-        <div class="hist-filter" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;padding:12px 14px;background:#fff;border:1px solid var(--bd);border-radius:10px">
+        <!-- Date range — จาก / ถึง (จำกัด 30 วัน) — รูปแบบเดียวกับหน้าประวัติ -->
+        <div class="hist-filter" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:12px 14px;background:#fff;border:1px solid var(--bd);border-radius:10px">
           <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">📅 จาก</label>
           <input type="date" id="ehDateFrom" onchange="loadEditHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
           <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">ถึง</label>
           <input type="date" id="ehDateTo"   onchange="loadEditHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
           <input type="text" id="ehSearch" oninput="renderEditHistory()" placeholder="🔍 ค้นหา รหัส/ชื่อสาขา/ผู้ส่ง"
                  style="flex:1;min-width:180px;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;outline:none">
           <span id="ehHint" style="font-size:12px;color:var(--txt2);margin-left:auto;font-weight:600">— รายการ</span>
@@ -8240,9 +8238,11 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           "ยืนยันการลบสาขา?",
           `รหัส: ${code}\nชื่อ: ${name}\n\n⚠️ การลบนี้ไม่กระทบข้อมูล sales_data / plan_sale เดิม (จะคงอยู่)\nแต่สาขานี้จะ login เข้าระบบไม่ได้อีก`,
           function() {
-            sb.from("branches").delete().eq("branch_code", code).then(({ error }) => {
+            sb.from("branches").delete().eq("branch_code", code).then(async ({ error }) => {
               if (error) { showAlert("❌", "ลบไม่สำเร็จ", error.message); return; }
               delete BRANCH_DM_MAP[code];
+              // sync จาก DB ใหม่ → กัน source อื่นๆ (manpower/edit-history) อ้างถึงข้อมูลเก่า
+              await loadBranchesFromSupabase();
               loadAdminBranches();
               showAlert("✅", "ลบเรียบร้อย", `ลบสาขา ${code} แล้ว`);
             });
@@ -9311,6 +9311,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         if (!body) return;
         const q = (document.getElementById("ehSearch")?.value || "").trim().toLowerCase();
         const list = _ehRows.filter(r => {
+          // ข้ามรายการของสาขาที่ถูกลบไปแล้ว (ไม่อยู่ใน BRANCH_DM_MAP)
+          if (r.branch_code && !BRANCH_DM_MAP[r.branch_code]) return false;
           if (!q) return true;
           return (r.branch_code || "").toLowerCase().includes(q)
               || (r.branch_name || "").toLowerCase().includes(q)
@@ -9761,6 +9763,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         try {
           const { data } = await sb.from("branches").select("*");
           if (data && data.length) {
+            // DB เป็น source of truth — เคลียร์ของเก่าก่อน (กันสาขาที่ลบไปยังค้างใน map)
+            Object.keys(BRANCH_DM_MAP).forEach(k => delete BRANCH_DM_MAP[k]);
             data.forEach(b => {
               // ข้าม sentinel/settings rows
               if (b.branch_code && b.branch_code.startsWith("_")) return;
