@@ -4738,6 +4738,12 @@ body { background: var(--bg); color: var(--txt); }
   border-top: 1px solid var(--bd);
 }
 .dd-donut-table-wrap .dd-table { margin-top: 0; }
+.dd-table th.dd-ch-pct, .dd-table td.dd-ch-pct { text-align:right; font-weight:800; }
+@media (max-width: 640px) {
+  /* รวมตาราง 2 อันบนมือถือ — ซ่อน legend, ใช้ตารางอย่างเดียว (มี % แล้ว) */
+  .dd-donut-legend { display:none !important; }
+  .dd-donut-table-wrap { margin-top: 8px; padding-top: 10px; }
+}
 
 /* Day mode — donut + table รวมเป็นการ์ดเดียว (เหลือกราฟเดียว = donut) */
 .dd-channel-mega {
@@ -9110,13 +9116,16 @@ body { background: var(--bg); color: var(--txt); }
 
       function _ddChannelTable(rows) {
         const a = _ddAgg(rows);
-        const body = CHANNEL_DEFS.slice().map(c => ({ c, s: a.sale[c.key], t: a.trans[c.key] }))
-          .sort((x, y) => y.s - x.s)
+        const items = CHANNEL_DEFS.slice().map(c => ({ c, s: a.sale[c.key], t: a.trans[c.key] }));
+        const totalSale = items.reduce((sum, it) => sum + (it.s || 0), 0);
+        const body = items.sort((x, y) => y.s - x.s)
           .map(({ c, s, t }) => {
+            const pct = totalSale > 0 ? (s / totalSale * 100).toFixed(1) + "%" : "-";
             return `<tr><td class="dd-ch"><span class="lg-dot" style="background:${c.color}"></span>${escHtml(c.label)}</td>
+              <td class="dd-ch-pct">${pct}</td>
               <td>${fmt(Math.round(s))}</td><td>${fmt(t || 0)}</td><td>${t ? fmt(Math.round(s / t)) : 0}</td></tr>`;
           }).join("");
-        return `<table class="dd-table"><thead><tr><th>ช่องทาง</th><th>ยอดขาย (฿)</th><th>จำนวนบิล</th><th>บิลเฉลี่ย</th></tr></thead><tbody>${body}</tbody></table>`;
+        return `<table class="dd-table"><thead><tr><th>ช่องทาง</th><th class="dd-ch-pct">%</th><th>ยอดขาย (฿)</th><th>จำนวนบิล</th><th>บิลเฉลี่ย</th></tr></thead><tbody>${body}</tbody></table>`;
       }
 
       function _ddRenderDonut(rows, sec) {
