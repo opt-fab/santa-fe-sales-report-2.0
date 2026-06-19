@@ -9136,14 +9136,34 @@ body { background: var(--bg); color: var(--txt); }
         const a = _ddAgg(rows);
         const items = CHANNEL_DEFS.slice().map(c => ({ c, s: a.sale[c.key], t: a.trans[c.key] }));
         const totalSale = items.reduce((sum, it) => sum + (it.s || 0), 0);
+        // inline styles — bulletproof กับ global CSS conflict
+        const tdSty = (col) => `style="color:${col} !important;font-weight:700;padding:10px 8px;border-bottom:1px solid #e2e8f0;text-align:right"`;
+        const tdFirstSty = (col) => `style="color:${col} !important;font-weight:800;padding:10px 8px 10px 12px;border-bottom:1px solid #e2e8f0;border-left:6px solid ${col};text-align:left;background:${col}10"`;
         const body = items.sort((x, y) => y.s - x.s)
           .map(({ c, s, t }) => {
             const pct = totalSale > 0 ? (s / totalSale * 100).toFixed(1) + "%" : "-";
-            return `<tr style="--c:${c.color}"><td class="dd-ch"><span class="lg-dot" style="background:${c.color}"></span><b style="color:${c.color}">${escHtml(c.label)}</b></td>
-              <td class="dd-ch-pct">${pct}</td>
-              <td>${fmt(Math.round(s))}</td><td>${fmt(t || 0)}</td><td>${t ? fmt(Math.round(s / t)) : 0}</td></tr>`;
+            return `<tr>
+              <td ${tdFirstSty(c.color)}><span class="lg-dot" style="background:${c.color};display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle"></span>${escHtml(c.label)}</td>
+              <td ${tdSty(c.color)}>${pct}</td>
+              <td ${tdSty(c.color)}>${fmt(Math.round(s))}</td>
+              <td ${tdSty(c.color)}>${fmt(t || 0)}</td>
+              <td ${tdSty(c.color)}>${t ? fmt(Math.round(s / t)) : 0}</td>
+            </tr>`;
           }).join("");
-        return `<table class="dd-table dd-table-channels"><thead><tr><th>ช่องทาง</th><th class="dd-ch-pct">%</th><th>ยอดขาย (฿)</th><th>จำนวนบิล</th><th>บิลเฉลี่ย</th></tr></thead><tbody>${body}</tbody></table>`;
+        const thSty = `style="background:#000 !important;color:#fff !important;font-weight:800;font-size:12px;padding:10px 8px;border-bottom:2px solid #000;text-align:right;letter-spacing:.02em"`;
+        const thFirstSty = `style="background:#000 !important;color:#fff !important;font-weight:800;font-size:12px;padding:10px 8px 10px 12px;border-bottom:2px solid #000;text-align:left;letter-spacing:.02em"`;
+        return `<table class="dd-table dd-table-channels" style="border:2px solid #000;border-radius:10px;border-collapse:separate;border-spacing:0;overflow:hidden;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums;box-shadow:0 2px 6px rgba(0,0,0,.08)">
+          <thead>
+            <tr style="background:#000 !important">
+              <th ${thFirstSty}>ช่องทาง</th>
+              <th ${thSty}>%</th>
+              <th ${thSty}>ยอดขาย (฿)</th>
+              <th ${thSty}>จำนวนบิล</th>
+              <th ${thSty}>บิลเฉลี่ย</th>
+            </tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>`;
       }
 
       function _ddRenderDonut(rows, sec) {
