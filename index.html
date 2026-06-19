@@ -884,11 +884,14 @@
       body.is-touch .dash3-icon-btn { display: none !important; }
       body.is-touch .dash3-branch { min-width: 0; width: 100%; }
       body.is-touch .dd-crumb { display: none !important; }
-      /* iPad/tablet: บังคับ mobile-style chrome (sidebar ออก, bottom nav เข้า, header แสดง) */
+      /* iPad/tablet: บังคับ mobile-style chrome (sidebar ออก, bottom nav เข้า, header แสดง)
+         แต่หน้า login (body.on-login) ต้องไม่โชว์ header/nav */
       body.is-touch .desk-sidebar { display: none !important; }
-      body.is-touch #appHdr { display: flex !important; }
+      body.is-touch:not(.on-login) #appHdr { display: flex !important; }
+      body.is-touch.on-login #appHdr,
+      body.is-touch.on-login .mob-nav { display: none !important; }
       body.is-touch .screen.active:not(#sLogin) { margin-left: 0 !important; padding-bottom: 80px; }
-      body.is-touch .mob-nav.visible {
+      body.is-touch:not(.on-login) .mob-nav.visible {
         display: block !important;
         position: fixed; bottom: 0; left: 0; right: 0; z-index: 110;
         background: var(--surface);
@@ -898,7 +901,7 @@
       }
       body.is-touch .mob-nav-inner {
         display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
+        scrollbar-width: none; width: 100%;
       }
       body.is-touch .mob-nav-inner::-webkit-scrollbar { display: none; }
       @media (max-width: 560px) {
@@ -4825,7 +4828,7 @@ body.is-touch.is-tm .mn-hist-item { display:none !important; }
 body.is-touch.is-tm .mn-hist-btn  { display:flex !important; }
 /* mob-nav-inner เป็นแถวเดียวเลื่อนได้ */
 body.is-touch .mob-nav-inner { display:flex; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-body.is-touch .mob-nav-inner > .mob-nav-btn { flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 12px 10px; min-width:64px; }
+body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:8px 6px 10px; min-width:64px; }
 .dd-table-channels { font-size:12px; }
   .dd-table-channels thead th { padding:8px 6px; font-size:11px; }
   .dd-table-channels tbody td { padding:9px 6px; }
@@ -6744,6 +6747,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:0 0 auto; display:flex; flex-
       function showScreen(id) {
         document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
         document.getElementById(id).classList.add("active");
+        // mark login state on body — CSS uses it to gate header/nav on touch
+        document.body.classList.toggle("on-login", id === "sLogin");
       }
 
       function setMobTab(btnId) {
