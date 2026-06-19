@@ -5580,13 +5580,12 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           <select id="histBranchFilter" onchange="loadHistory()" style="display:none;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;min-width:180px"></select>
           <button class="btn btn-sm btn-outline" onclick="showForm()">← ส่งยอด</button>
         </div>
-        <!-- Date range — จาก / ถึง (จำกัด 30 วันย้อนหลัง) -->
+        <!-- Date range — จาก / ถึง (จำกัด 30 วัน) -->
         <div class="hist-filter" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:12px 14px;background:#fff;border:1px solid var(--bd);border-radius:10px">
           <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">📅 จาก</label>
           <input type="date" id="histDateFrom" onchange="loadHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
           <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">ถึง</label>
           <input type="date" id="histDateTo" onchange="loadHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
-          <span style="font-size:11px;color:var(--txt2);margin-left:auto">เลือกได้สูงสุด 30 วันย้อนหลัง</span>
         </div>
 
         <!-- Desktop: table -->
@@ -5949,11 +5948,14 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           </div>
         </div>
 
+        <!-- Date range — จาก / ถึง (จำกัด 30 วัน) -->
+        <div class="hist-filter" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;padding:12px 14px;background:#fff;border:1px solid var(--bd);border-radius:10px">
+          <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">📅 จาก</label>
+          <input type="date" id="ehDateFrom" onchange="loadEditHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
+          <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">ถึง</label>
+          <input type="date" id="ehDateTo"   onchange="loadEditHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
+        </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-          <label style="font-size:13px;font-weight:700;color:var(--txt2)">ตั้งแต่:</label>
-          <input type="date" id="ehDateFrom" onchange="loadEditHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px">
-          <label style="font-size:13px;font-weight:700;color:var(--txt2)">ถึง:</label>
-          <input type="date" id="ehDateTo"   onchange="loadEditHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px">
           <input type="text" id="ehSearch" oninput="renderEditHistory()" placeholder="🔍 ค้นหา รหัส/ชื่อสาขา/ผู้ส่ง"
                  style="flex:1;min-width:180px;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;outline:none">
           <span id="ehHint" style="font-size:12px;color:var(--txt2);margin-left:auto;font-weight:600">— รายการ</span>
@@ -8607,6 +8609,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         if (!body) return;
         const fromEl = document.getElementById("ehDateFrom");
         const toEl   = document.getElementById("ehDateTo");
+        // validate ช่วงไม่เกิน 30 วัน (popup ถ้าเกิน + clamp + reload)
+        if (!_validateDateSpan30(fromEl, toEl, loadEditHistory)) return;
         body.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr>`;
         const params = { mode: "listEditedSales", date_from: fromEl.value, date_to: toEl.value };
         if (S.role === "bzm") {
@@ -12217,6 +12221,30 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         getPlan(dateStr, function(val) { _currentPlan = val; });
       }
 
+      /* ─────────────────────────────────────────
+         Validator ใช้ร่วมกัน: ช่วงวันต้องไม่เกิน 30 วัน
+         ถ้าเกิน → popup + clamp from = to - 30 วัน
+      ───────────────────────────────────────── */
+      function _validateDateSpan30(fromEl, toEl, reloadFn) {
+        if (!fromEl || !toEl || !fromEl.value || !toEl.value) return true;
+        const _fmt = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        // sanity: from > to → สลับ
+        if (fromEl.value > toEl.value) { const t = fromEl.value; fromEl.value = toEl.value; toEl.value = t; }
+        const dFrom = new Date(fromEl.value + "T00:00:00");
+        const dTo   = new Date(toEl.value   + "T00:00:00");
+        const diff  = Math.round((dTo - dFrom) / 86400000);
+        if (diff > 30) {
+          // clamp from = to - 30
+          const clamped = new Date(dTo); clamped.setDate(clamped.getDate() - 30);
+          fromEl.value = _fmt(clamped);
+          showAlert("⚠️", "เลือกได้สูงสุด 30 วัน",
+            `เลือกช่วงเกิน 30 วัน (${diff} วัน) — ระบบจะปรับให้เลือกได้สูงสุด 30 วัน\nจาก ${fromEl.value} ถึง ${toEl.value}`,
+            function() { if (typeof reloadFn === "function") reloadFn(); });
+          return false;
+        }
+        return true;
+      }
+
       function loadHistory() {
         const loading = `<div style="padding:48px;text-align:center"><div class="spinner"></div><p style="margin-top:14px;color:#94a3b8;font-size:14px">กำลังโหลด...</p></div>`;
         document.getElementById("histTableContent").innerHTML = loading;
@@ -12226,16 +12254,16 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         populateBranchFilter("histBranchFilter");
         const queryCodes = getQueryBranchCodes("histBranchFilter"); // array | null
 
-        // Init date inputs ถ้ายังว่าง + บังคับช่วง min/max = 30 วันย้อนหลัง → วันนี้
+        // Init date inputs ถ้ายังว่าง — default ช่วง 30 วันย้อนหลัง → วันนี้
         const fromEl = document.getElementById("histDateFrom");
         const toEl   = document.getElementById("histDateTo");
         const _fmt = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
         const today = todayStr();
-        const minDate = (function(){ const d = new Date(); d.setDate(d.getDate() - 29); return _fmt(d); })();
-        if (fromEl) { fromEl.min = minDate; fromEl.max = today; if (!fromEl.value || fromEl.value < minDate) fromEl.value = minDate; }
-        if (toEl)   { toEl.min   = minDate; toEl.max   = today; if (!toEl.value   || toEl.value   > today)   toEl.value   = today; }
-        // กัน from > to
-        if (fromEl.value > toEl.value) { const t = fromEl.value; fromEl.value = toEl.value; toEl.value = t; }
+        const defFrom = (function(){ const d = new Date(); d.setDate(d.getDate() - 30); return _fmt(d); })();
+        if (fromEl && !fromEl.value) fromEl.value = defFrom;
+        if (toEl   && !toEl.value)   toEl.value   = today;
+        // validate ช่วงไม่เกิน 30 วัน (popup ถ้าเกิน + clamp + reload)
+        if (!_validateDateSpan30(fromEl, toEl, loadHistory)) return;
         const since = fromEl.value;
         const until = toEl.value;
         const titleEl = document.getElementById("histTitle");
