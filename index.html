@@ -1191,6 +1191,9 @@
       .mpa-chk.bad { background: #fee2e2; color: #991b1b; }
       .mpa-warn { display: none; background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 8px 10px; border-radius: 7px; font-size: 12.5px; margin-top: 4px; }
 
+      /* ซ่อนแถบแท็บด้านบนใน sAdmin ทุกหน้าจอ — นำทางผ่าน sidebar (desktop) หรือ popup จัดการ (mobile) */
+      #sAdmin .admin-tabs { display: none !important; }
+
       /* Mobile drops Manpower entirely — hide nav entries + screen content */
       body.is-touch #mnManpower, body.is-touch #mdManpower, body.is-touch #dnManpower,
       body.is-touch #manpowerCards, body.is-touch #mpListView .mp-mob-wrap {
@@ -9257,17 +9260,21 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
       function showEditHistory() {
         showScreen("sEditHist");
         const isBzm = (S.role === "bzm");
-        const isAdmin = (S.role === "admin" || S.code === "ADMIN");
         const hint = document.getElementById("ehScopeHint");
-        if (hint) hint.textContent = isBzm ? `โซน: ${S.dm || "—"}` : (isAdmin ? "ดูได้ทั้งระบบ" : "VP · ดูได้ทั้งระบบ");
-        // default: 30 วันย้อนหลัง → วันนี้
+        // BZM โชว์ "โซน: ..." · admin/vp ไม่โชว์ (เอาคำว่า ดูได้ทั้งระบบ ออก)
+        if (hint) {
+          if (isBzm) { hint.textContent = `โซน: ${S.dm || "—"}`; hint.style.display = ""; }
+          else { hint.textContent = ""; hint.style.display = "none"; }
+        }
+        // default: 30 วันย้อนหลัง → วันนี้ + ล็อก min/max ให้เลือกได้แค่ในช่วง
         const fromEl = document.getElementById("ehDateFrom");
         const toEl   = document.getElementById("ehDateTo");
-        if (fromEl && !fromEl.value) {
-          const d = new Date(); d.setDate(d.getDate() - 30);
-          fromEl.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-        }
-        if (toEl && !toEl.value) toEl.value = todayStr();
+        const _fmt = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        const today = todayStr();
+        const minDate = (function(){ const d = new Date(); d.setDate(d.getDate() - 30); return _fmt(d); })();
+        if (fromEl) { fromEl.min = minDate; fromEl.max = today; if (!fromEl.value || fromEl.value < minDate) fromEl.value = minDate; }
+        if (toEl)   { toEl.min   = minDate; toEl.max   = today; if (!toEl.value   || toEl.value   > today)   toEl.value   = today; }
+        if (fromEl.value > toEl.value) { const t = fromEl.value; fromEl.value = toEl.value; toEl.value = t; }
         loadEditHistory();
       }
 
@@ -12921,15 +12928,17 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         populateBranchFilter("histBranchFilter");
         const queryCodes = getQueryBranchCodes("histBranchFilter"); // array | null
 
-        // Init date inputs ถ้ายังว่าง — default ช่วง 30 วันย้อนหลัง → วันนี้
+        // Init date inputs + ล็อก min/max ให้เลือกได้แค่ในช่วง 30 วันย้อนหลัง → วันนี้
         const fromEl = document.getElementById("histDateFrom");
         const toEl   = document.getElementById("histDateTo");
         const _fmt = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
         const today = todayStr();
-        const defFrom = (function(){ const d = new Date(); d.setDate(d.getDate() - 30); return _fmt(d); })();
-        if (fromEl && !fromEl.value) fromEl.value = defFrom;
-        if (toEl   && !toEl.value)   toEl.value   = today;
-        // validate ช่วงไม่เกิน 30 วัน (popup ถ้าเกิน + clamp + reload)
+        const minDate = (function(){ const d = new Date(); d.setDate(d.getDate() - 30); return _fmt(d); })();
+        if (fromEl) { fromEl.min = minDate; fromEl.max = today; if (!fromEl.value || fromEl.value < minDate) fromEl.value = minDate; }
+        if (toEl)   { toEl.min   = minDate; toEl.max   = today; if (!toEl.value   || toEl.value   > today)   toEl.value   = today; }
+        // กัน from > to
+        if (fromEl.value > toEl.value) { const t = fromEl.value; fromEl.value = toEl.value; toEl.value = t; }
+        // ปลอดภัยอีกชั้น: validate ช่วงไม่เกิน 30 (popup ถ้ามีการพิมพ์ตรงๆทะลุ min/max)
         if (!_validateDateSpan30(fromEl, toEl, loadHistory)) return;
         const since = fromEl.value;
         const until = toEl.value;
