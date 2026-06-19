@@ -4894,11 +4894,6 @@ body { background: var(--bg); color: var(--txt); }
         <span>นำเข้าข้อมูล</span>
       </button>
 
-      <!-- Test mode toggle (admin only, above logout) -->
-      <button class="desk-nav-btn admin-only-nav" id="testModeBtn" onclick="toggleTestModeAdmin()" style="display:none;margin:0 10px 8px">
-        <span class="desk-nav-ico">🧪</span>
-        <span>โหมดทดสอบ: <span id="testModeStatus" style="font-weight:800;color:var(--brand)">ปิด</span></span>
-      </button>
       <!-- Bypass order toggle (admin only) -->
       <button class="desk-nav-btn admin-only-nav" id="bypassOrderBtn" onclick="toggleBypassOrderAdmin()" style="display:none;margin:0 10px 8px">
         <span class="desk-nav-ico">🚫</span>
@@ -4979,12 +4974,8 @@ body { background: var(--bg); color: var(--txt); }
         </button>
       </nav>
 
-      <!-- Footer: test mode + back to hub + logout -->
+      <!-- Footer: bypass + logout -->
       <div class="md-footer">
-        <button class="md-test-btn admin-only-nav" id="mdTestModeBtn" onclick="toggleTestModeAdmin()" style="display:none">
-          <span class="md-nav-ico">🧪</span>
-          <span>โหมดทดสอบ: <span id="mdTestModeStatus" style="font-weight:800;color:var(--brand)">ปิด</span></span>
-        </button>
         <button class="md-test-btn admin-only-nav" id="mdBypassOrderBtn" onclick="toggleBypassOrderAdmin()" style="display:none;background:#fee2e2;border-color:#fecaca">
           <span class="md-nav-ico">🚫</span>
           <span>ข้ามกฎลำดับ: <span id="mdBypassOrderStatus" style="font-weight:800;color:var(--brand)">ปิด</span></span>
