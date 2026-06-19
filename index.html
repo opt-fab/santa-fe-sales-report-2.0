@@ -1191,26 +1191,67 @@
       .mpa-chk.bad { background: #fee2e2; color: #991b1b; }
       .mpa-warn { display: none; background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 8px 10px; border-radius: 7px; font-size: 12.5px; margin-top: 4px; }
 
-      /* Sticky bottom bulk-save bar */
-      body.is-touch .mp-bulk-bar {
-        position: sticky;
-        bottom: calc(env(safe-area-inset-bottom) + 70px);
-        background: rgba(255,255,255,.96);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border-top: 1px solid var(--bd);
-        margin: 14px -14px 0;
-        padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
-        z-index: 50;
-        display: none;
+      /* Mobile drops Manpower entirely — hide nav entries + screen content */
+      body.is-touch #mnManpower, body.is-touch #mdManpower, body.is-touch #dnManpower,
+      body.is-touch #manpowerCards, body.is-touch #mpListView .mp-mob-wrap {
+        display: none !important;
       }
-      body.is-touch .mp-bulk-bar.active { display: flex; gap: 10px; align-items: center; }
-      .mp-bulk-bar .mp-bulk-info { flex: 1; font-size: 13px; font-weight: 700; color: var(--txt); }
-      .mp-bulk-bar .mp-bulk-info b { color: var(--brand); }
-      .mp-bulk-bar button {
-        min-height: 42px; padding: 10px 18px;
-        font-size: 14px; font-weight: 800;
+
+      /* Bulk fill table */
+      .mp-bulk-tbl thead th {
+        position: sticky; top: 0;
+        background: linear-gradient(135deg,#fafafa,#f1f5f9);
+        font-weight: 800; color: #475569;
+        padding: 8px 6px; text-align: center;
+        border-bottom: 2px solid #e2e8f0;
+        z-index: 2;
+        white-space: nowrap; font-size: 12px;
       }
+      .mp-bulk-tbl thead .mp-bulk-grp { font-size: 12.5px; padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
+      .mp-bulk-tbl thead .mp-bulk-grp.mgr { background: linear-gradient(135deg,#f5f3ff,#ede9fe); color: #6d28d9; }
+      .mp-bulk-tbl thead .mp-bulk-grp.kit { background: linear-gradient(135deg,#fff7ed,#ffedd5); color: #c2410c; }
+      .mp-bulk-tbl thead .mp-bulk-grp.srv { background: linear-gradient(135deg,#f0fdf4,#dcfce7); color: #15803d; }
+      .mp-bulk-tbl thead .mp-bulk-grp.pt  { background: linear-gradient(135deg,#eff6ff,#dbeafe); color: #1d4ed8; }
+      .mp-bulk-tbl thead .mp-bulk-grp.dual{ background: linear-gradient(135deg,#fdf4ff,#fae8ff); color: #a21caf; }
+      .mp-bulk-tbl tbody td {
+        padding: 4px 4px;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+      .mp-bulk-tbl tbody td.branch-cell {
+        position: sticky; left: 0; background: #fff;
+        text-align: left; padding: 6px 12px;
+        font-weight: 700; min-width: 180px;
+        border-right: 2px solid #e2e8f0;
+        z-index: 1;
+      }
+      .mp-bulk-tbl tbody td.branch-cell .code {
+        display:inline-block;font-size:11px;font-weight:800;padding:1px 6px;border-radius:5px;
+        background:var(--brand);color:#fff;margin-right:6px;font-variant-numeric:tabular-nums;
+      }
+      .mp-bulk-tbl tbody td input {
+        width: 100%; min-width: 38px; max-width: 56px;
+        padding: 5px 4px;
+        text-align: center;
+        border: 1px solid var(--bd); border-radius: 6px;
+        font-family: inherit; font-size: 13px; font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        background: #fff; outline: none;
+      }
+      .mp-bulk-tbl tbody td input:focus { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(242,108,28,.18); }
+      .mp-bulk-tbl tbody td input.bad { border-color: #fca5a5; background: #fef2f2; }
+      .mp-bulk-tbl tbody td.status-cell {
+        position: sticky; right: 0; background: #fff;
+        border-left: 2px solid #e2e8f0;
+        font-size: 16px;
+        min-width: 36px;
+        z-index: 1;
+      }
+      .mp-bulk-tbl tbody tr.bad td.branch-cell { background: #fef2f2; }
+      .mp-bulk-tbl tbody tr.ok  td.status-cell { color: #16a34a; }
+      .mp-bulk-tbl tbody tr.bad td.status-cell { color: #dc2626; }
+      .mp-bulk-tbl tbody tr:hover td:not(.branch-cell):not(.status-cell) { background: #fafbfc; }
 
       /* Edit History — Desktop vs Mobile swap */
       .eh-mob-wrap { display: none; }
@@ -6087,33 +6128,47 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             <select id="mpBzmSel" onchange="renderManpowerList()"
                     style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:700;min-width:240px"></select>
           </div>
+          <button id="mpBulkBtn" class="btn btn-brand" onclick="_mpBulkOpen()" disabled
+                  style="font-size:13px;opacity:.5;cursor:not-allowed">📝 กรอกหลายสาขา (<span id="mpBulkBtnCnt">0</span>)</button>
           <span id="manpowerHint" style="font-size:13px;color:var(--txt2);margin-left:auto;font-weight:700">— สาขา</span>
         </div>
 
-        <!-- Desktop table -->
-        <div class="dash-card-wrap mp-desk-wrap" style="padding:0;overflow:hidden">
-          <table class="adm-tbl" style="width:100%;border-collapse:collapse;font-size:13.5px">
-            <thead>
-              <tr style="background:linear-gradient(135deg,#fafafa,#f1f5f9);border-bottom:2px solid #e2e8f0">
-                <th style="text-align:left;padding:12px 14px;font-weight:800;color:#475569;width:80px">รหัส</th>
-                <th style="text-align:left;padding:12px 14px;font-weight:800;color:#475569">สาขา</th>
-                <th style="text-align:center;padding:12px 10px;font-weight:800;color:#7c3aed;width:110px">👔 ผู้จัดการ</th>
-                <th style="text-align:center;padding:12px 10px;font-weight:800;color:#ea580c;width:110px">🍳 ครัว</th>
-                <th style="text-align:center;padding:12px 10px;font-weight:800;color:#16a34a;width:110px">🍽️ บริการ</th>
-                <th style="text-align:right;padding:12px 14px;font-weight:800;color:#475569;width:230px"></th>
-              </tr>
-            </thead>
-            <tbody id="manpowerBody"><tr><td colspan="6" style="padding:40px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr></tbody>
-          </table>
+        <!-- ── List view (default) ── -->
+        <div id="mpListView">
+          <div class="dash-card-wrap mp-desk-wrap" style="padding:0;overflow:hidden">
+            <table class="adm-tbl" style="width:100%;border-collapse:collapse;font-size:13.5px">
+              <thead>
+                <tr style="background:linear-gradient(135deg,#fafafa,#f1f5f9);border-bottom:2px solid #e2e8f0">
+                  <th style="text-align:center;padding:12px 6px;font-weight:800;color:#475569;width:38px"><input type="checkbox" id="mpSelAll" onchange="_mpToggleAll(this.checked)" style="width:16px;height:16px;cursor:pointer"></th>
+                  <th style="text-align:left;padding:12px 14px;font-weight:800;color:#475569;width:80px">รหัส</th>
+                  <th style="text-align:left;padding:12px 14px;font-weight:800;color:#475569">สาขา</th>
+                  <th style="text-align:center;padding:12px 10px;font-weight:800;color:#7c3aed;width:110px">👔 ผู้จัดการ</th>
+                  <th style="text-align:center;padding:12px 10px;font-weight:800;color:#ea580c;width:110px">🍳 ครัว</th>
+                  <th style="text-align:center;padding:12px 10px;font-weight:800;color:#16a34a;width:110px">🍽️ บริการ</th>
+                  <th style="text-align:right;padding:12px 14px;font-weight:800;color:#475569;width:230px"></th>
+                </tr>
+              </thead>
+              <tbody id="manpowerBody"><tr><td colspan="7" style="padding:40px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+          <!-- Mobile cards (hidden on touch — mobile drops this screen entirely) -->
+          <div id="manpowerCards" class="mp-mob-wrap"></div>
         </div>
-        <!-- Mobile/touch cards -->
-        <div id="manpowerCards" class="mp-mob-wrap"></div>
 
-        <!-- Bulk save (touch only) -->
-        <div id="mpBulkBar" class="mp-bulk-bar">
-          <span class="mp-bulk-info"><b id="mpBulkCount">0</b> สาขามีการแก้ไข</span>
-          <button class="btn btn-outline" onclick="_mpCollapseAll()" style="padding:8px 14px">ปิดทั้งหมด</button>
-          <button class="btn btn-brand" onclick="_mpSaveAllDirty()">💾 บันทึกทุกสาขา</button>
+        <!-- ── Bulk fill view ── -->
+        <div id="mpBulkView" style="display:none">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:12px 14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px">
+            <button class="btn btn-outline" onclick="_mpBulkClose()" style="font-size:13px">← กลับ</button>
+            <div style="font-size:14px;font-weight:800;color:#9a3412">📝 กรอกพร้อมกันหลายสาขา · <span id="mpBulkPeriod">—</span> · <b id="mpBulkRowCnt">0</b> สาขา</div>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <button class="btn btn-outline" onclick="_mpBulkValidate()" style="font-size:13px">🔍 ตรวจสอบ</button>
+              <button class="btn btn-brand" id="mpBulkSaveBtn" onclick="_mpBulkSave()" style="font-size:13px">💾 บันทึกทุกสาขา</button>
+            </div>
+          </div>
+          <div class="dash-card-wrap" style="padding:0;overflow:auto;max-height:75vh">
+            <table id="mpBulkTbl" class="mp-bulk-tbl" style="border-collapse:separate;border-spacing:0;font-size:12.5px;min-width:1400px"></table>
+          </div>
+          <div id="mpBulkSummary" style="margin-top:12px;font-size:13px;color:var(--txt2)"></div>
         </div>
       </div>
     </div>
@@ -8444,11 +8499,11 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           .sort((a, b) => a.branch_code.localeCompare(b.branch_code));
         document.getElementById("manpowerHint").textContent = `${inZone.length} สาขา · ${_MP_MONTHS_TH[m-1]} ${y+543}`;
         if (!inZone.length) {
-          body.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:#94a3b8">ยังไม่มีสาขาในโซนนี้</td></tr>`;
+          body.innerHTML = `<tr><td colspan="7" style="padding:24px;text-align:center;color:#94a3b8">ยังไม่มีสาขาในโซนนี้</td></tr>`;
           if (cards) cards.innerHTML = `<div class="mp-empty">ยังไม่มีสาขาในโซนนี้</div>`;
           return;
         }
-        body.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:#94a3b8">⏳ กำลังโหลด...</td></tr>`;
+        body.innerHTML = `<tr><td colspan="7" style="padding:24px;text-align:center;color:#94a3b8">⏳ กำลังโหลด...</td></tr>`;
         if (cards) cards.innerHTML = `<div class="mp-empty">⏳ กำลังโหลด...</div>`;
         const codes = inZone.map(b => b.branch_code);
         apiCall({ mode: "listManpower", year: y, month: m, branch_codes: codes }, function(res) {
@@ -8469,7 +8524,11 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             const editBtn = canEdit
               ? `<button class="btn-edit-row btn btn-sm" onclick="manpowerOpen('${escHtml(b.branch_code)}')">${has ? "✏️ แก้ไข" : "➕ กรอก"}</button>`
               : "";
+            const chk = canEdit
+              ? `<input type="checkbox" class="mp-sel-chk" data-code="${escHtml(b.branch_code)}" onchange="_mpUpdateSelCount()" style="width:16px;height:16px;cursor:pointer">`
+              : "";
             return `<tr style="border-bottom:1px solid #f1f5f9">
+              <td style="padding:12px 6px;text-align:center">${chk}</td>
               <td style="padding:12px 14px;font-variant-numeric:tabular-nums;font-weight:700;color:#64748b">${escHtml(b.branch_code)}</td>
               <td style="padding:12px 14px;font-weight:700">${escHtml(b.branch_name || "-")}</td>
               <td style="padding:12px 10px;text-align:center;${numStyle(totMgr, '#7c3aed')}">${totMgr}</td>
@@ -8481,6 +8540,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               </td>
             </tr>`;
           }).join("");
+          _mpUpdateSelCount();
 
           // ── Mobile/touch cards (accordion mode) ──
           if (cards) {
@@ -8763,6 +8823,223 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               });
             }
             if (btn) btn.textContent = `⏳ กำลังบันทึก ${done}/${codes.length}`;
+            next(i + 1);
+          });
+        };
+        next(0);
+      }
+
+      /* ─────────────────────────────────────────
+         MANPOWER — Bulk fill (desktop only)
+         เลือกหลายสาขา → กรอกเป็นตารางใหญ่ในหน้าจอเดียว → บันทึกทีเดียว
+      ───────────────────────────────────────── */
+      var _mpBulkCodes = []; // สาขาที่กำลังกรอกในโหมด bulk
+
+      function _mpToggleAll(checked) {
+        document.querySelectorAll(".mp-sel-chk").forEach(c => c.checked = checked);
+        _mpUpdateSelCount();
+      }
+      function _mpUpdateSelCount() {
+        const sel = document.querySelectorAll(".mp-sel-chk:checked").length;
+        const all = document.querySelectorAll(".mp-sel-chk").length;
+        const btn = document.getElementById("mpBulkBtn");
+        const cnt = document.getElementById("mpBulkBtnCnt");
+        const selAll = document.getElementById("mpSelAll");
+        if (cnt) cnt.textContent = sel;
+        if (btn) {
+          btn.disabled = sel === 0;
+          btn.style.opacity = sel === 0 ? ".5" : "1";
+          btn.style.cursor = sel === 0 ? "not-allowed" : "pointer";
+        }
+        if (selAll) {
+          selAll.indeterminate = sel > 0 && sel < all;
+          selAll.checked = sel > 0 && sel === all;
+        }
+      }
+      function _mpBulkOpen() {
+        const codes = Array.from(document.querySelectorAll(".mp-sel-chk:checked")).map(c => c.dataset.code);
+        if (!codes.length) return;
+        _mpBulkCodes = codes;
+        document.getElementById("mpListView").style.display = "none";
+        document.getElementById("mpBulkView").style.display = "";
+        const y = parseInt(document.getElementById("manpowerYear").value, 10);
+        const m = parseInt(document.getElementById("manpowerMonth").value, 10);
+        document.getElementById("mpBulkPeriod").textContent = `${_MP_MONTHS_TH[m-1]} ${y+543}`;
+        document.getElementById("mpBulkRowCnt").textContent = codes.length;
+        _mpBulkRender();
+      }
+      function _mpBulkClose() {
+        document.getElementById("mpBulkView").style.display = "none";
+        document.getElementById("mpListView").style.display = "";
+        _mpBulkCodes = [];
+        // refresh list (in case saves happened)
+        renderManpowerList();
+      }
+      var _MP_BULK_FIELDS = [
+        // {key, group, label, color}
+        { k: "rgm",         g: "mgr",  l: "RGM" },
+        { k: "sam",         g: "mgr",  l: "SAM" },
+        { k: "am",          g: "mgr",  l: "AM" },
+        { k: "ss",          g: "mgr",  l: "SS" },
+        { k: "k_basic_pt",  g: "kit",  l: "B-PT" },
+        { k: "k_basic_ft",  g: "kit",  l: "B-FT" },
+        { k: "k_silver_pt", g: "kit",  l: "S-PT" },
+        { k: "k_silver_ft", g: "kit",  l: "S-FT" },
+        { k: "k_gold_pt",   g: "kit",  l: "G-PT" },
+        { k: "k_gold_ft",   g: "kit",  l: "G-FT" },
+        { k: "s_basic_pt",  g: "srv",  l: "B-PT" },
+        { k: "s_basic_ft",  g: "srv",  l: "B-FT" },
+        { k: "s_silver_pt", g: "srv",  l: "S-PT" },
+        { k: "s_silver_ft", g: "srv",  l: "S-FT" },
+        { k: "s_gold_pt",   g: "srv",  l: "G-PT" },
+        { k: "s_gold_ft",   g: "srv",  l: "G-FT" },
+        { k: "pt_8h",       g: "pt",   l: "8h" },
+        { k: "pt_dual40",   g: "pt",   l: "ทวิภาคี 40h" },
+        { k: "pt_45h",      g: "pt",   l: "4-5h" },
+        { k: "dual_ft",     g: "dual", l: "FT" },
+        { k: "dual_pt",     g: "dual", l: "PT" }
+      ];
+      function _mpBulkRender() {
+        const tbl = document.getElementById("mpBulkTbl");
+        if (!tbl) return;
+        // group counts
+        const grpCount = { mgr:0, kit:0, srv:0, pt:0, dual:0 };
+        _MP_BULK_FIELDS.forEach(f => { grpCount[f.g]++; });
+        // header rows
+        let h1 = `<tr><th rowspan="2" class="branch-cell" style="position:sticky;left:0;background:linear-gradient(135deg,#fafafa,#f1f5f9);text-align:left;padding:10px 12px;border-right:2px solid #e2e8f0;z-index:3">สาขา</th>`;
+        h1 += `<th colspan="${grpCount.mgr}" class="mp-bulk-grp mgr">👔 ทีมผู้จัดการสาขา</th>`;
+        h1 += `<th colspan="${grpCount.kit}" class="mp-bulk-grp kit">🍳 พนักงานครัว (Basic / Silver / Gold)</th>`;
+        h1 += `<th colspan="${grpCount.srv}" class="mp-bulk-grp srv">🍽️ พนักงานบริการ (Basic / Silver / Gold)</th>`;
+        h1 += `<th colspan="${grpCount.pt}"  class="mp-bulk-grp pt">⏱️ รายละเอียด Part-time</th>`;
+        h1 += `<th colspan="${grpCount.dual}" class="mp-bulk-grp dual">🎓 ทวิภาคี</th>`;
+        h1 += `<th rowspan="2" class="status-cell" style="position:sticky;right:0;background:linear-gradient(135deg,#fafafa,#f1f5f9);border-left:2px solid #e2e8f0;z-index:3;min-width:36px">✓</th></tr>`;
+        let h2 = `<tr>`;
+        _MP_BULK_FIELDS.forEach(f => { h2 += `<th>${f.l}</th>`; });
+        h2 += `</tr>`;
+        // body rows
+        const rows = _mpBulkCodes.map(code => {
+          const r = _mpData[code] || {};
+          const bInfo = BRANCH_DM_MAP[code] || {};
+          let row = `<tr id="mpbrow_${code}"><td class="branch-cell"><span class="code">${escHtml(code)}</span>${escHtml(bInfo.branch || "-")}</td>`;
+          _MP_BULK_FIELDS.forEach(f => {
+            const val = (r[f.k] != null ? r[f.k] : 0);
+            row += `<td><input id="mpb_${code}_${f.k}" type="number" min="0" value="${val}" oninput="_mpBulkRowRecalc('${code}')"></td>`;
+          });
+          row += `<td class="status-cell" id="mpbstat_${code}">·</td></tr>`;
+          return row;
+        }).join("");
+        tbl.innerHTML = `<thead>${h1}${h2}</thead><tbody>${rows}</tbody>`;
+        // initial recalc
+        _mpBulkCodes.forEach(c => _mpBulkRowRecalc(c));
+      }
+      function _mpBulkGet(code, field) {
+        const el = document.getElementById(`mpb_${code}_${field}`);
+        return el ? (parseInt(el.value, 10) || 0) : 0;
+      }
+      function _mpBulkRowPayload(code) {
+        const y = parseInt(document.getElementById("manpowerYear").value, 10);
+        const m = parseInt(document.getElementById("manpowerMonth").value, 10);
+        const p = { mode: "saveManpower", branch_code: code, year: y, month: m };
+        _MP_BULK_FIELDS.forEach(f => { p[f.k] = _mpBulkGet(code, f.k); });
+        return p;
+      }
+      function _mpBulkRowValidate(p) {
+        const totMgr = p.rgm + p.sam + p.am + p.ss;
+        const kPT = p.k_basic_pt + p.k_silver_pt + p.k_gold_pt;
+        const sPT = p.s_basic_pt + p.s_silver_pt + p.s_gold_pt;
+        const totKitSrv = p.k_basic_pt+p.k_basic_ft+p.k_silver_pt+p.k_silver_ft+p.k_gold_pt+p.k_gold_ft
+                        + p.s_basic_pt+p.s_basic_ft+p.s_silver_pt+p.s_silver_ft+p.s_gold_pt+p.s_gold_ft;
+        if (totMgr === 0) return { ok:false, err:"ทีมผู้จัดการ = 0", bad:["rgm","sam","am","ss"] };
+        if (totKitSrv === 0) return { ok:false, err:"ครัว+บริการ = 0", bad:[] };
+        if (p.dual_pt !== p.pt_dual40) return { ok:false, err:`ทวิภาคี PT ต้องเป็น ${p.pt_dual40}`, bad:["dual_pt","pt_dual40"] };
+        const ptSum = p.pt_8h + p.pt_dual40 + p.pt_45h;
+        const ptRef = kPT + sPT;
+        if (ptSum !== ptRef) return { ok:false, err:`PT รวม ${ptSum} ≠ ${ptRef}`, bad:["pt_8h","pt_dual40","pt_45h"] };
+        return { ok:true };
+      }
+      function _mpBulkRowRecalc(code) {
+        const p = _mpBulkRowPayload(code);
+        const v = _mpBulkRowValidate(p);
+        const row = document.getElementById("mpbrow_" + code);
+        const stat = document.getElementById("mpbstat_" + code);
+        // clear bad
+        _MP_BULK_FIELDS.forEach(f => {
+          const el = document.getElementById(`mpb_${code}_${f.k}`);
+          if (el) el.classList.remove("bad");
+        });
+        if (v.ok) {
+          row && row.classList.remove("bad");
+          row && row.classList.add("ok");
+          if (stat) { stat.textContent = "✓"; stat.title = ""; }
+        } else {
+          row && row.classList.add("bad");
+          row && row.classList.remove("ok");
+          if (stat) { stat.textContent = "⚠"; stat.title = v.err; }
+          (v.bad || []).forEach(k => {
+            const el = document.getElementById(`mpb_${code}_${k}`);
+            if (el) el.classList.add("bad");
+          });
+        }
+      }
+      function _mpBulkValidate() {
+        let ok = 0, bad = 0;
+        _mpBulkCodes.forEach(c => {
+          const p = _mpBulkRowPayload(c);
+          if (_mpBulkRowValidate(p).ok) ok++; else bad++;
+        });
+        const sum = document.getElementById("mpBulkSummary");
+        if (sum) sum.innerHTML = `✓ พร้อมบันทึก: <b style="color:#16a34a">${ok}</b> สาขา · ⚠ ต้องแก้: <b style="color:#dc2626">${bad}</b> สาขา`;
+      }
+      function _mpBulkSave() {
+        const payloads = _mpBulkCodes.map(c => _mpBulkRowPayload(c));
+        const errs = [];
+        payloads.forEach(p => {
+          const v = _mpBulkRowValidate(p);
+          if (!v.ok) errs.push({ code: p.branch_code, err: v.err });
+        });
+        if (errs.length) {
+          const lines = errs.slice(0, 6).map(e => {
+            const bInfo = BRANCH_DM_MAP[e.code] || {};
+            return `• ${bInfo.branch || e.code}: ${e.err}`;
+          }).join("\n") + (errs.length > 6 ? `\n…และอีก ${errs.length - 6} สาขา` : "");
+          showAlert("⚠️", `กรอกไม่ครบ ${errs.length} สาขา`, lines);
+          return;
+        }
+        const btn = document.getElementById("mpBulkSaveBtn");
+        if (btn) { btn.disabled = true; btn.textContent = `⏳ 0/${payloads.length}`; }
+        let done = 0, fail = 0;
+        const next = (i) => {
+          if (i >= payloads.length) {
+            if (btn) { btn.disabled = false; btn.textContent = "💾 บันทึกทุกสาขา"; }
+            const sum = document.getElementById("mpBulkSummary");
+            if (sum) sum.innerHTML = fail === 0
+              ? `✅ บันทึกสำเร็จทุกสาขา: <b>${done}</b> สาขา`
+              : `บันทึกเสร็จ — สำเร็จ <b style="color:#16a34a">${done}</b> · ล้มเหลว <b style="color:#dc2626">${fail}</b>`;
+            if (fail === 0) {
+              showAlert("✅", "บันทึกสำเร็จทุกสาขา", `บันทึก ${done} สาขา`, function(){ _mpBulkClose(); });
+            } else {
+              showAlert("⚠️", "บันทึกบางส่วน", `สำเร็จ ${done} สาขา · ล้มเหลว ${fail}`);
+            }
+            return;
+          }
+          const p = payloads[i];
+          apiCall(p, function(res) {
+            done++;
+            if (!res || !res.ok) {
+              fail++;
+              const stat = document.getElementById("mpbstat_" + p.branch_code);
+              if (stat) { stat.textContent = "✗"; stat.title = res && res.error || "บันทึกไม่สำเร็จ"; stat.style.color = "#dc2626"; }
+            } else {
+              _mpData[p.branch_code] = { ...(_mpData[p.branch_code] || {}), ...p };
+              const stat = document.getElementById("mpbstat_" + p.branch_code);
+              if (stat) { stat.textContent = "💾"; stat.style.color = "#16a34a"; }
+              const bInfo = BRANCH_DM_MAP[p.branch_code] || {};
+              pushToSheet("save_manpower", {
+                ...p, branch_name: bInfo.branch || "", district_manager: bInfo.dm || "",
+                saved_by: (S.code || "") + " · " + (S.branch || S.dm || "")
+              });
+            }
+            if (btn) btn.textContent = `⏳ ${done}/${payloads.length}`;
             next(i + 1);
           });
         };
