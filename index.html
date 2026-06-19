@@ -6570,10 +6570,11 @@ body { background: var(--bg); color: var(--txt); }
         const testLbl = document.getElementById("testModeLabel");
         if (testLbl) testLbl.style.display = isAdmin ? "inline-flex" : "none";
 
-        // ซ่อน "ส่งยอดขาย" สำหรับทุก management role (admin/vp/bzm)
+        // ซ่อน "ส่งยอดขาย" สำหรับ vp/bzm — admin ยังเห็น (ใช้ bypass checkbox)
+        const hideForm = isVP || isBZM;
         ["dnForm", "mnForm", "mdForm"].forEach(id => {
           const el = document.getElementById(id);
-          if (el) el.style.display = isMgmt ? "none" : "flex";
+          if (el) el.style.display = hideForm ? "none" : "flex";
         });
 
         // Plan Sale: branch + admin เท่านั้น (vp/bzm = read-only ดูยอดอย่างเดียว)
