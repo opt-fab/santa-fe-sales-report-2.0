@@ -4802,10 +4802,10 @@ body { background: var(--bg); color: var(--txt); }
   .dd-donut-legend { display:none !important; }
   .dd-donut-table-wrap { margin-top: 8px; padding-top: 10px; }
   /* mobile "อื่นๆ" overflow menu */
-.mn-more-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); backdrop-filter:blur(2px); z-index:9990; }
-.mn-more-bg.open { display:block; }
-.mn-more-pop { display:none; position:fixed; right:12px; bottom:80px; background:#fff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 12px 28px -8px rgba(0,0,0,.25); padding:6px; min-width:220px; z-index:9991; }
-.mn-more-pop.open { display:flex; flex-direction:column; gap:2px; }
+.mn-more-bg { display:none !important; position:fixed; inset:0; background:rgba(0,0,0,.35); backdrop-filter:blur(2px); z-index:9990; }
+.mn-more-bg.open { display:block !important; }
+.mn-more-pop { display:none !important; position:fixed; right:12px; bottom:80px; background:#fff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 12px 28px -8px rgba(0,0,0,.25); padding:6px; min-width:220px; z-index:9991; }
+.mn-more-pop.open { display:flex !important; flex-direction:column; gap:2px; }
 .mn-more-row { display:flex; align-items:center; gap:10px; padding:11px 14px; background:transparent; border:none; border-radius:9px; font-family:inherit; font-size:14px; font-weight:700; color:#0f172a; cursor:pointer; width:100%; text-align:left; }
 .mn-more-row:hover, .mn-more-row:active { background:#f1f5f9; }
 .mn-more-ico { font-size:18px; }
