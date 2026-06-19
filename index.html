@@ -5194,10 +5194,29 @@ body { background: var(--bg); color: var(--txt); }
     <div id="sHistory" class="screen">
       <div class="hist-wrap">
         <div class="hist-hdr">
-          <h2>📊 ประวัติ 30 วันล่าสุด</h2>
+          <h2 id="histTitle">📊 ประวัติ 30 วันล่าสุด</h2>
           <select id="histBranchFilter" onchange="loadHistory()" style="display:none;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;min-width:180px"></select>
           <button class="btn btn-sm btn-outline" onclick="showForm()">← ส่งยอด</button>
           <button class="btn btn-sm btn-brand" onclick="loadHistory()">🔄 รีเฟรช</button>
+        </div>
+        <!-- Date range picker — ใช้ได้ทั้ง desktop + mobile -->
+        <div class="hist-filter" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:12px 14px;background:#fff;border:1px solid var(--bd);border-radius:10px">
+          <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">📅 ช่วงวันที่:</label>
+          <select id="histPreset" onchange="histPresetChange()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
+            <option value="7">7 วันล่าสุด</option>
+            <option value="30" selected>30 วันล่าสุด</option>
+            <option value="60">60 วันล่าสุด</option>
+            <option value="90">90 วันล่าสุด</option>
+            <option value="thisMonth">เดือนนี้</option>
+            <option value="lastMonth">เดือนที่แล้ว</option>
+            <option value="custom">กำหนดเอง</option>
+          </select>
+          <div id="histCustomRange" style="display:none;gap:8px;flex-wrap:wrap;align-items:center">
+            <label style="font-size:12px;color:var(--txt2)">จาก</label>
+            <input type="date" id="histDateFrom" onchange="loadHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
+            <label style="font-size:12px;color:var(--txt2)">ถึง</label>
+            <input type="date" id="histDateTo" onchange="loadHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
+          </div>
         </div>
 
         <!-- Desktop: table -->
@@ -11577,6 +11596,48 @@ body { background: var(--bg); color: var(--txt); }
         getPlan(dateStr, function(val) { _currentPlan = val; });
       }
 
+      // ── History date range helpers ──────────────────
+      function _histRange() {
+        const preset = (document.getElementById("histPreset") || {}).value || "30";
+        const today = new Date(); today.setHours(0,0,0,0);
+        const _fmt = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        if (preset === "custom") {
+          return {
+            from: (document.getElementById("histDateFrom") || {}).value || _fmt(today),
+            to:   (document.getElementById("histDateTo")   || {}).value || _fmt(today),
+            label: "ช่วงที่เลือก"
+          };
+        }
+        if (preset === "thisMonth") {
+          const s = new Date(today.getFullYear(), today.getMonth(), 1);
+          return { from: _fmt(s), to: _fmt(today), label: "เดือนนี้" };
+        }
+        if (preset === "lastMonth") {
+          const s = new Date(today.getFullYear(), today.getMonth()-1, 1);
+          const e = new Date(today.getFullYear(), today.getMonth(), 0);
+          return { from: _fmt(s), to: _fmt(e), label: "เดือนที่แล้ว" };
+        }
+        const n = parseInt(preset, 10) || 30;
+        const s = new Date(today); s.setDate(s.getDate() - (n - 1));
+        return { from: _fmt(s), to: _fmt(today), label: `${n} วันล่าสุด` };
+      }
+      function histPresetChange() {
+        const preset = document.getElementById("histPreset").value;
+        const custom = document.getElementById("histCustomRange");
+        if (custom) custom.style.display = (preset === "custom") ? "flex" : "none";
+        if (preset === "custom") {
+          // set default custom = 30 วันล่าสุด ถ้ายังไม่กรอก
+          const fr = document.getElementById("histDateFrom");
+          const to = document.getElementById("histDateTo");
+          if (fr && !fr.value) {
+            const d = new Date(); d.setDate(d.getDate() - 29);
+            fr.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+          }
+          if (to && !to.value) to.value = todayStr();
+        }
+        loadHistory();
+      }
+
       function loadHistory() {
         const loading = `<div style="padding:48px;text-align:center"><div class="spinner"></div><p style="margin-top:14px;color:#94a3b8;font-size:14px">กำลังโหลด...</p></div>`;
         document.getElementById("histTableContent").innerHTML = loading;
@@ -11586,8 +11647,11 @@ body { background: var(--bg); color: var(--txt); }
         populateBranchFilter("histBranchFilter");
         const queryCodes = getQueryBranchCodes("histBranchFilter"); // array | null
 
-        const since = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-        const until = todayStr();
+        const rg = _histRange();
+        const since = rg.from;
+        const until = rg.to;
+        const titleEl = document.getElementById("histTitle");
+        if (titleEl) titleEl.textContent = `📊 ประวัติ · ${rg.label}`;
 
         let _hist = null, _plan = null, _done = 0;
         function _onDone() {
