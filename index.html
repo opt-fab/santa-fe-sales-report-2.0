@@ -1072,6 +1072,61 @@
       body.is-touch #mpBzmSel { min-width: 0 !important; flex: 1; }
       body.is-touch #mpBzmWrap { width: 100%; }
 
+      /* Manpower — Desktop vs Mobile container swap */
+      .mp-mob-wrap { display: none; }
+      body.is-touch .mp-desk-wrap { display: none !important; }
+      body.is-touch .mp-mob-wrap  { display: flex !important; flex-direction: column; gap: 10px; }
+
+      /* Manpower mobile card */
+      .mp-card {
+        background: #fff;
+        border: 1px solid var(--bd);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,.05);
+      }
+      .mp-card-hd {
+        display: flex; align-items: center; gap: 10px;
+        padding: 12px 14px;
+        background: linear-gradient(135deg,#fafbfc,#f1f5f9);
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .mp-card-code {
+        font-variant-numeric: tabular-nums;
+        font-weight: 800; font-size: 13px;
+        color: #fff; background: var(--brand);
+        padding: 4px 10px; border-radius: 8px;
+        flex-shrink: 0;
+      }
+      .mp-card-name { font-size: 15px; font-weight: 800; color: var(--txt); flex: 1; }
+      .mp-card-stats {
+        display: grid; grid-template-columns: repeat(3,1fr);
+        gap: 0; padding: 4px 0;
+      }
+      .mp-card-stat {
+        display: flex; flex-direction: column; align-items: center; gap: 2px;
+        padding: 12px 6px;
+        border-right: 1px solid #f1f5f9;
+      }
+      .mp-card-stat:last-child { border-right: none; }
+      .mp-card-stat .ico { font-size: 16px; line-height: 1; }
+      .mp-card-stat .num {
+        font-size: 22px; font-weight: 800;
+        font-variant-numeric: tabular-nums; line-height: 1.1;
+      }
+      .mp-card-stat .num.zero { color: #cbd5e1; }
+      .mp-card-stat .lbl { font-size: 11px; font-weight: 700; color: var(--txt2); }
+      .mp-card-actions {
+        display: flex; gap: 8px;
+        padding: 10px 12px 12px;
+        border-top: 1px solid #f1f5f9;
+      }
+      .mp-card-actions button { flex: 1; min-height: 38px; font-size: 13px; font-weight: 700; }
+      .mp-empty {
+        padding: 28px 16px; text-align: center; color: var(--txt2);
+        background: #fff; border: 1px dashed var(--bd); border-radius: 14px;
+      }
+
       /* Manpower period pill — ขยับมาบรรทัดใหม่ + เต็มจอ */
       body.is-touch .mp-period-pill {
         width: 100%;
@@ -5866,7 +5921,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           <span id="manpowerHint" style="font-size:13px;color:var(--txt2);margin-left:auto;font-weight:700">— สาขา</span>
         </div>
 
-        <div class="dash-card-wrap" style="padding:0;overflow:hidden">
+        <!-- Desktop table -->
+        <div class="dash-card-wrap mp-desk-wrap" style="padding:0;overflow:hidden">
           <table class="adm-tbl" style="width:100%;border-collapse:collapse;font-size:13.5px">
             <thead>
               <tr style="background:linear-gradient(135deg,#fafafa,#f1f5f9);border-bottom:2px solid #e2e8f0">
@@ -5881,6 +5937,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             <tbody id="manpowerBody"><tr><td colspan="6" style="padding:40px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr></tbody>
           </table>
         </div>
+        <!-- Mobile/touch cards -->
+        <div id="manpowerCards" class="mp-mob-wrap"></div>
       </div>
     </div>
 
@@ -8193,6 +8251,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
 
       function renderManpowerList() {
         const body = document.getElementById("manpowerBody");
+        const cards = document.getElementById("manpowerCards");
         if (!body) return;
         const ySel = document.getElementById("manpowerYear");
         const mSel = document.getElementById("manpowerMonth");
@@ -8200,7 +8259,6 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         _ensureManpowerYearMonth();
         const y = parseInt(ySel.value, 10);
         const m = parseInt(mSel.value, 10);
-        // สาขาที่จะแสดง: BZM → ดูเฉพาะของตน · admin/vp → ตาม dropdown
         let targetBzm = "";
         if (S.role === "bzm") targetBzm = S.dm || "";
         else targetBzm = (document.getElementById("mpBzmSel") || {}).value || "";
@@ -8211,16 +8269,20 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         document.getElementById("manpowerHint").textContent = `${inZone.length} สาขา · ${_MP_MONTHS_TH[m-1]} ${y+543}`;
         if (!inZone.length) {
           body.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:#94a3b8">ยังไม่มีสาขาในโซนนี้</td></tr>`;
+          if (cards) cards.innerHTML = `<div class="mp-empty">ยังไม่มีสาขาในโซนนี้</div>`;
           return;
         }
         body.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:#94a3b8">⏳ กำลังโหลด...</td></tr>`;
+        if (cards) cards.innerHTML = `<div class="mp-empty">⏳ กำลังโหลด...</div>`;
         const codes = inZone.map(b => b.branch_code);
         apiCall({ mode: "listManpower", year: y, month: m, branch_codes: codes }, function(res) {
           _mpData = {};
           if (res && res.ok && Array.isArray(res.rows)) {
             res.rows.forEach(r => { _mpData[r.branch_code] = r; });
           }
-          const canEdit = (S.role === "bzm" || S.role === "admin" || S.code === "ADMIN");  // BZM + admin แก้ได้ — VP ดูอย่างเดียว
+          const canEdit = (S.role === "bzm" || S.role === "admin" || S.code === "ADMIN");
+
+          // ── Desktop table rows ──
           body.innerHTML = inZone.map(b => {
             const r = _mpData[b.branch_code];
             const totMgr = r ? (r.rgm + r.sam + r.am + r.ss) : 0;
@@ -8232,17 +8294,59 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               ? `<button class="btn-edit-row btn btn-sm" onclick="manpowerOpen('${escHtml(b.branch_code)}')">${has ? "✏️ แก้ไข" : "➕ กรอก"}</button>`
               : "";
             return `<tr style="border-bottom:1px solid #f1f5f9">
-              <td data-label="รหัส" style="padding:12px 14px;font-variant-numeric:tabular-nums;font-weight:700;color:var(--brand)">${escHtml(b.branch_code)}</td>
-              <td data-label="สาขา" style="padding:12px 14px;font-weight:700">${escHtml(b.branch_name || "-")}</td>
-              <td data-label="👔 ผู้จัดการ" style="padding:12px 10px;text-align:center;${numStyle(totMgr, '#7c3aed')}">${totMgr}</td>
-              <td data-label="🍳 ครัว" style="padding:12px 10px;text-align:center;${numStyle(totKit, '#ea580c')}">${totKit}</td>
-              <td data-label="🍽️ บริการ" style="padding:12px 10px;text-align:center;${numStyle(totSrv, '#16a34a')}">${totSrv}</td>
+              <td style="padding:12px 14px;font-variant-numeric:tabular-nums;font-weight:700;color:#64748b">${escHtml(b.branch_code)}</td>
+              <td style="padding:12px 14px;font-weight:700">${escHtml(b.branch_name || "-")}</td>
+              <td style="padding:12px 10px;text-align:center;${numStyle(totMgr, '#7c3aed')}">${totMgr}</td>
+              <td style="padding:12px 10px;text-align:center;${numStyle(totKit, '#ea580c')}">${totKit}</td>
+              <td style="padding:12px 10px;text-align:center;${numStyle(totSrv, '#16a34a')}">${totSrv}</td>
               <td style="padding:8px 14px;text-align:right;white-space:nowrap">
                 <button class="btn btn-sm" onclick="manpowerHistOpen('${escHtml(b.branch_code)}')" style="background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;font-size:12px;padding:6px 10px;border-radius:8px;margin-right:4px">📜 ประวัติ</button>
                 ${editBtn}
               </td>
             </tr>`;
           }).join("");
+
+          // ── Mobile/touch cards ──
+          if (cards) {
+            cards.innerHTML = inZone.map(b => {
+              const r = _mpData[b.branch_code];
+              const totMgr = r ? (r.rgm + r.sam + r.am + r.ss) : 0;
+              const totKit = r ? (r.k_basic_pt + r.k_basic_ft + r.k_silver_pt + r.k_silver_ft + r.k_gold_pt + r.k_gold_ft) : 0;
+              const totSrv = r ? (r.s_basic_pt + r.s_basic_ft + r.s_silver_pt + r.s_silver_ft + r.s_gold_pt + r.s_gold_ft) : 0;
+              const has = !!r;
+              const nCls = n => "num" + (n > 0 ? "" : " zero");
+              const editBtn = canEdit
+                ? `<button class="btn btn-brand" onclick="manpowerOpen('${escHtml(b.branch_code)}')">${has ? "✏️ แก้ไข" : "➕ กรอก"}</button>`
+                : "";
+              return `<div class="mp-card">
+                <div class="mp-card-hd">
+                  <span class="mp-card-code">${escHtml(b.branch_code)}</span>
+                  <span class="mp-card-name">${escHtml(b.branch_name || "-")}</span>
+                </div>
+                <div class="mp-card-stats">
+                  <div class="mp-card-stat">
+                    <span class="ico">👔</span>
+                    <span class="${nCls(totMgr)}" style="color:${totMgr>0?'#7c3aed':'#cbd5e1'}">${totMgr}</span>
+                    <span class="lbl">ผู้จัดการ</span>
+                  </div>
+                  <div class="mp-card-stat">
+                    <span class="ico">🍳</span>
+                    <span class="${nCls(totKit)}" style="color:${totKit>0?'#ea580c':'#cbd5e1'}">${totKit}</span>
+                    <span class="lbl">ครัว</span>
+                  </div>
+                  <div class="mp-card-stat">
+                    <span class="ico">🍽️</span>
+                    <span class="${nCls(totSrv)}" style="color:${totSrv>0?'#16a34a':'#cbd5e1'}">${totSrv}</span>
+                    <span class="lbl">บริการ</span>
+                  </div>
+                </div>
+                <div class="mp-card-actions">
+                  <button class="btn btn-outline" onclick="manpowerHistOpen('${escHtml(b.branch_code)}')" style="background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe">📜 ประวัติ</button>
+                  ${editBtn}
+                </div>
+              </div>`;
+            }).join("");
+          }
         });
       }
 
