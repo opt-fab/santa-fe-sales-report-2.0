@@ -4377,8 +4377,9 @@ body { background: var(--bg); color: var(--txt); }
 .dd-chan-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  padding: 14px 8px;
+  gap: 10px;
+  padding: 16px 10px;
+  margin-bottom: 4px;
   background: linear-gradient(135deg, #fff8f1, #fff);
   border-radius: 14px;
   border: 1px solid var(--bd);
@@ -4386,29 +4387,31 @@ body { background: var(--bg); color: var(--txt); }
   font-variant-numeric: tabular-nums;
 }
 .dd-chan-summary > div {
-  display: flex; flex-direction: column; gap: 4px;
-  padding: 0 6px;
-  border-right: 1px solid rgba(15,23,42,.06);
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 0 8px;
+  border-right: 1px solid rgba(15,23,42,.08);
 }
 .dd-chan-summary > div:last-child { border-right: none; }
 .dd-chan-summary .dd-chan-stat-lbl {
-  font-size: 11px; color: var(--txt2); font-weight: 600; text-transform: none;
+  font-size: 11.5px; color: var(--txt2); font-weight: 700; text-transform: none; letter-spacing: .02em;
 }
 .dd-chan-summary b {
-  font-size: 16px; color: var(--txt); font-weight: 800; letter-spacing: -.015em;
+  font-size: 19px; color: var(--brand); font-weight: 800; letter-spacing: -.015em;
 }
+.dd-chan-summary > div:nth-child(2) b { color: #0f172a; }
+.dd-chan-summary > div:nth-child(3) b { color: #0f172a; }
 
 /* ── compact single-row card per channel ── */
-.dd-chan-stats { display: flex; flex-direction: column; gap: 6px; }
+.dd-chan-stats { display: flex; flex-direction: column; gap: 8px; }
 .dd-chan-stat {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(140px, 1fr) auto auto auto auto;
-  gap: 14px;
+  grid-template-columns: minmax(140px, 1.1fr) auto auto auto auto;
+  gap: 16px;
   align-items: center;
-  padding: 9px 14px 9px 18px;
+  padding: 11px 16px 11px 20px;
   border: 1px solid var(--bd);
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fff;
   transition: border-color .18s, transform .18s, box-shadow .18s;
   overflow: hidden;
@@ -4417,19 +4420,21 @@ body { background: var(--bg); color: var(--txt); }
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 4px;
+  width: 5px;
   background: var(--c, var(--txt3));
 }
 .dd-chan-stat:hover {
   border-color: var(--c, var(--txt3));
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px -4px rgba(15,23,42,.08);
+  box-shadow: 0 6px 14px -6px rgba(15,23,42,.10);
 }
 .dd-chan-stat.is-empty { opacity: .45; }
+.dd-chan-stat.is-unspec { background: repeating-linear-gradient(135deg, #fafafa, #fafafa 8px, #f1f5f9 8px, #f1f5f9 16px); border-style: dashed; }
+.dd-chan-stat.is-unspec .dd-chan-stat-name b { color: #64748b; font-style: italic; }
 
 .dd-chan-stat-name {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 13.5px; color: var(--txt); white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 14px; color: var(--txt); white-space: nowrap;
   min-width: 0;
 }
 .dd-chan-stat-name b {
@@ -4437,22 +4442,25 @@ body { background: var(--bg); color: var(--txt); }
   overflow: hidden; text-overflow: ellipsis;
 }
 .dd-chan-stat-dot {
-  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
   box-shadow: 0 0 0 2px rgba(255,255,255,.8), 0 1px 2px rgba(0,0,0,.12);
 }
 .dd-chan-stat-pct {
-  font-size: 15px; font-weight: 800;
-  color: var(--c, var(--txt));
+  font-size: 13px; font-weight: 800;
+  color: #fff;
+  background: var(--c, #64748b);
   font-variant-numeric: tabular-nums;
   letter-spacing: -.01em;
-  text-align: right;
-  min-width: 52px;
-  padding: 0 6px 0 4px;
-  border-right: 1px solid rgba(15,23,42,.08);
+  text-align: center;
+  min-width: 56px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
 }
 .dd-chan-stat-amount .dd-chan-stat-val {
-  font-size: 15px;
+  font-size: 17px;
   letter-spacing: -.015em;
+  color: var(--c, var(--txt));
 }
 .dd-chan-stat-cells {
   display: contents;
@@ -9301,27 +9309,40 @@ body { background: var(--bg); color: var(--txt); }
           label: c.label, color: c.color,
           value: a.sale[c.key], trans: a.trans[c.key]
         })).sort((x, y) => y.value - x.value);
-        const total = items.reduce((s, t) => s + t.value, 0);
-        const totalTrans = items.reduce((s, t) => s + (t.trans || 0), 0);
+        const breakdownSum = items.reduce((s, t) => s + t.value, 0);
+        const totalTrans   = items.reduce((s, t) => s + (t.trans || 0), 0);
+        // ใช้ actual_sale เป็นยอดรวมหลัก (ตรงกับ KPI ด้านบน) — ถ้าช่องทางรวมขาด → เพิ่ม "ไม่ระบุช่องทาง"
+        const total = a.actual > 0 ? a.actual : breakdownSum;
         if (total <= 0) {
           box.innerHTML = `<div class="dd-empty">📭 วันนี้ยังไม่มียอดขาย</div>`;
           return;
         }
+        const unspec = Math.max(0, Math.round(a.actual - breakdownSum));
+        const segmentItems = items.slice();
+        if (unspec > 0) {
+          segmentItems.push({ label: "ไม่ระบุช่องทาง", color: "#cbd5e1", value: unspec, trans: 0, _unspec: true });
+        }
         // กราฟวงกลม (donut) ฝั่งซ้าย · ตารางสถิติฝั่งขวา (บิล · ยอด · ค่าเฉลี่ย/บิล)
-        const legendRows = items.map(t => {
+        const legendRows = segmentItems.map(t => {
           const pct = total > 0 ? (t.value / total) * 100 : 0;
           const avg = t.trans > 0 ? Math.round(t.value / t.trans) : 0;
           const isEmpty = t.value <= 0 && (!t.trans || t.trans <= 0);
-          return `<div class="dd-chan-stat${isEmpty ? ' is-empty' : ''}" style="--c:${t.color}">
+          const billCell = t._unspec
+            ? `<span class="dd-chan-stat-cell"><span class="dd-chan-stat-val" style="color:#94a3b8">—</span></span>`
+            : `<span class="dd-chan-stat-cell"><span class="dd-chan-stat-val">${fmt(t.trans || 0)}</span><span class="dd-chan-stat-lbl">บิล</span></span>`;
+          const avgCell  = t._unspec
+            ? `<span class="dd-chan-stat-cell"><span class="dd-chan-stat-val" style="color:#94a3b8">—</span></span>`
+            : `<span class="dd-chan-stat-cell"><span class="dd-chan-stat-val">${avg ? '฿' + fmt(avg) : '-'}</span><span class="dd-chan-stat-lbl">/บิล</span></span>`;
+          return `<div class="dd-chan-stat${isEmpty ? ' is-empty' : ''}${t._unspec ? ' is-unspec' : ''}" style="--c:${t.color}">
             <span class="dd-chan-stat-name"><span class="dd-chan-stat-dot" style="background:${t.color}"></span><b>${escHtml(t.label)}</b></span>
             <span class="dd-chan-stat-cell dd-chan-stat-amount"><span class="dd-chan-stat-val">฿${fmt(Math.round(t.value))}</span></span>
             <span class="dd-chan-stat-pct">${pct.toFixed(1)}%</span>
-            <span class="dd-chan-stat-cell"><span class="dd-chan-stat-val">${fmt(t.trans || 0)}</span><span class="dd-chan-stat-lbl">บิล</span></span>
-            <span class="dd-chan-stat-cell"><span class="dd-chan-stat-val">${avg ? '฿' + fmt(avg) : '-'}</span><span class="dd-chan-stat-lbl">/บิล</span></span>
+            ${billCell}
+            ${avgCell}
           </div>`;
         }).join("");
         const summaryRow = `<div class="dd-chan-summary">
-          <div><span class="dd-chan-stat-lbl">รวมทั้งหมด</span><b>฿${fmt(Math.round(total))}</b></div>
+          <div><span class="dd-chan-stat-lbl">ยอดขายจริง</span><b>฿${fmt(Math.round(total))}</b></div>
           <div><span class="dd-chan-stat-lbl">บิลทั้งหมด</span><b>${fmt(totalTrans)}</b></div>
           <div><span class="dd-chan-stat-lbl">เฉลี่ย/บิล</span><b>${totalTrans > 0 ? '฿' + fmt(Math.round(total / totalTrans)) : '-'}</b></div>
         </div>`;
@@ -9338,10 +9359,10 @@ body { background: var(--bg); color: var(--txt); }
         _st.trend = new Chart(document.getElementById("sec" + C + "Trend"), {
           type: "doughnut",
           data: {
-            labels: items.map(t => t.label),
+            labels: segmentItems.map(t => t.label),
             datasets: [{
-              data: items.map(t => t.value),
-              backgroundColor: items.map(t => t.color),
+              data: segmentItems.map(t => t.value),
+              backgroundColor: segmentItems.map(t => t.color),
               borderWidth: 3,
               borderColor: "#fff",
               hoverOffset: 8,
@@ -9359,8 +9380,9 @@ body { background: var(--bg); color: var(--txt); }
                   label: (ctx) => {
                     const v = ctx.parsed || 0;
                     const pc = total > 0 ? (v / total * 100).toFixed(1) + "%" : "-";
-                    const it = items[ctx.dataIndex];
+                    const it = segmentItems[ctx.dataIndex];
                     const avg = it.trans > 0 ? Math.round(v / it.trans) : 0;
+                    if (it._unspec) return [`${ctx.label}: ฿${v.toLocaleString()} (${pc})`, "ส่วนต่างจากยอดรวมที่ยังไม่ได้แยกช่องทาง"];
                     return [
                       `${ctx.label}: ฿${v.toLocaleString()} (${pc})`,
                       it.trans > 0 ? `บิล: ${fmt(it.trans)} · เฉลี่ย ฿${fmt(avg)}/บิล` : 'บิล: 0'
