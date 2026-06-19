@@ -885,25 +885,28 @@
       body.is-touch .dash3-branch { min-width: 0; width: 100%; }
       body.is-touch .dd-crumb { display: none !important; }
       /* iPad/tablet: บังคับ mobile-style chrome (sidebar ออก, bottom nav เข้า, header แสดง)
-         แต่หน้า login (body.on-login) ต้องไม่โชว์ header/nav */
+         แต่หน้า login (body.on-login) ต้องไม่โชว์ header  · bottom nav อาศัย .visible (ถูก add หลัง login)
+         จึงไม่ต้อง gate ด้วย on-login */
       body.is-touch .desk-sidebar { display: none !important; }
       body.is-touch:not(.on-login) #appHdr { display: flex !important; }
-      body.is-touch.on-login #appHdr,
-      body.is-touch.on-login .mob-nav { display: none !important; }
+      body.is-touch.on-login #appHdr { display: none !important; }
       body.is-touch .screen.active:not(#sLogin) { margin-left: 0 !important; padding-bottom: 80px; }
-      body.is-touch:not(.on-login) .mob-nav.visible {
+      body.is-touch .mob-nav.visible {
         display: block !important;
-        position: fixed; bottom: 0; left: 0; right: 0; z-index: 110;
-        background: var(--surface);
-        border-top: 1.5px solid var(--bd);
-        box-shadow: 0 -2px 12px rgba(0,0,0,.09);
+        position: fixed !important;
+        bottom: 0 !important; left: 0 !important; right: 0 !important;
+        z-index: 110 !important;
+        background: var(--surface) !important;
+        border-top: 1.5px solid var(--bd) !important;
+        box-shadow: 0 -2px 12px rgba(0,0,0,.09) !important;
         padding-bottom: env(safe-area-inset-bottom);
       }
-      body.is-touch .mob-nav-inner {
-        display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      body.is-touch .mob-nav.visible .mob-nav-inner {
+        display: flex !important;
+        overflow-x: auto; -webkit-overflow-scrolling: touch;
         scrollbar-width: none; width: 100%;
       }
-      body.is-touch .mob-nav-inner::-webkit-scrollbar { display: none; }
+      body.is-touch .mob-nav.visible .mob-nav-inner::-webkit-scrollbar { display: none; }
       @media (max-width: 560px) {
         .dash3-hero { padding: 14px; }
         .dash3-kpis { gap: 10px; }
@@ -6778,6 +6781,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         // ซ่อนหน้า login ก่อน (กันแสดงค้างระหว่าง await branches load ด้านล่าง)
         const sLogin = document.getElementById("sLogin");
         if (sLogin) sLogin.classList.remove("active");
+        // ออกจากสถานะ login → ปลด body.on-login เพื่อให้ chrome (header/bottom nav) บน iPad ขึ้น
+        document.body.classList.remove("on-login");
         const hdr = document.getElementById("appHdr");
         hdr.style.display = "flex";
         document.getElementById("hdrDivider").style.display = "";
