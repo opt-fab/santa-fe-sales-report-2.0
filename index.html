@@ -1198,37 +1198,69 @@
       }
 
       /* Bulk fill table */
+      .mp-bulk-tbl { background:#fff; }
       .mp-bulk-tbl thead th {
         position: sticky; top: 0;
         background: linear-gradient(135deg,#fafafa,#f1f5f9);
         font-weight: 800; color: #475569;
         padding: 8px 6px; text-align: center;
-        border-bottom: 2px solid #e2e8f0;
+        border-bottom: 2px solid #cbd5e1;
         z-index: 2;
         white-space: nowrap; font-size: 12px;
       }
-      .mp-bulk-tbl thead .mp-bulk-grp { font-size: 12.5px; padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
-      .mp-bulk-tbl thead .mp-bulk-grp.mgr { background: linear-gradient(135deg,#f5f3ff,#ede9fe); color: #6d28d9; }
-      .mp-bulk-tbl thead .mp-bulk-grp.kit { background: linear-gradient(135deg,#fff7ed,#ffedd5); color: #c2410c; }
-      .mp-bulk-tbl thead .mp-bulk-grp.srv { background: linear-gradient(135deg,#f0fdf4,#dcfce7); color: #15803d; }
-      .mp-bulk-tbl thead .mp-bulk-grp.pt  { background: linear-gradient(135deg,#eff6ff,#dbeafe); color: #1d4ed8; }
-      .mp-bulk-tbl thead .mp-bulk-grp.dual{ background: linear-gradient(135deg,#fdf4ff,#fae8ff); color: #a21caf; }
+      .mp-bulk-tbl thead .mp-bulk-grp { font-size: 12.5px; padding: 8px 10px; border-bottom: 2px solid #cbd5e1; letter-spacing: .02em; }
+      .mp-bulk-tbl thead .mp-bulk-grp.mgr { background: #ede9fe; color: #5b21b6; }
+      .mp-bulk-tbl thead .mp-bulk-grp.kit { background: #ffedd5; color: #9a3412; }
+      .mp-bulk-tbl thead .mp-bulk-grp.srv { background: #dcfce7; color: #14532d; }
+      .mp-bulk-tbl thead .mp-bulk-grp.pt  { background: #dbeafe; color: #1e3a8a; }
+      .mp-bulk-tbl thead .mp-bulk-grp.dual{ background: #fae8ff; color: #701a75; }
+      /* subheader (row 2) — สีอ่อนของกลุ่ม + ตัวอักษรเข้ม */
+      .mp-bulk-tbl thead .sub.mgr { background: #f5f3ff; color: #6d28d9; }
+      .mp-bulk-tbl thead .sub.kit { background: #fff7ed; color: #c2410c; }
+      .mp-bulk-tbl thead .sub.srv { background: #f0fdf4; color: #15803d; }
+      .mp-bulk-tbl thead .sub.pt  { background: #eff6ff; color: #1d4ed8; }
+      .mp-bulk-tbl thead .sub.dual{ background: #fdf4ff; color: #a21caf; }
+      /* แบ่งเส้นแนวตั้งหนาๆระหว่างกลุ่ม */
+      .mp-bulk-tbl thead th.gstart, .mp-bulk-tbl tbody td.gstart { border-left: 3px solid #94a3b8; }
+      .mp-bulk-tbl thead th.gstart.mgr,  .mp-bulk-tbl tbody td.gstart.mgr  { border-left-color: #8b5cf6; }
+      .mp-bulk-tbl thead th.gstart.kit,  .mp-bulk-tbl tbody td.gstart.kit  { border-left-color: #ea580c; }
+      .mp-bulk-tbl thead th.gstart.srv,  .mp-bulk-tbl tbody td.gstart.srv  { border-left-color: #16a34a; }
+      .mp-bulk-tbl thead th.gstart.pt,   .mp-bulk-tbl tbody td.gstart.pt   { border-left-color: #2563eb; }
+      .mp-bulk-tbl thead th.gstart.dual, .mp-bulk-tbl tbody td.gstart.dual { border-left-color: #c026d3; }
+      /* แบ่ง sub-group ภายในครัว/บริการ (ทุก 2 คอลัมน์ = B/S/G) */
+      .mp-bulk-tbl thead th.sub.sub-end, .mp-bulk-tbl tbody td.sub-end { border-right: 1px dashed #cbd5e1; }
+      /* body */
       .mp-bulk-tbl tbody td {
-        padding: 4px 4px;
+        padding: 5px 5px;
         border-bottom: 1px solid #f1f5f9;
         text-align: center;
         font-variant-numeric: tabular-nums;
       }
+      /* สีพื้นอ่อนๆในเซลล์ body ตามกลุ่ม → แยกชัดเจน */
+      .mp-bulk-tbl tbody td.g-mgr  { background: #faf5ff; }
+      .mp-bulk-tbl tbody td.g-kit  { background: #fff8ef; }
+      .mp-bulk-tbl tbody td.g-srv  { background: #f3fdf6; }
+      .mp-bulk-tbl tbody td.g-pt   { background: #f5f9ff; }
+      .mp-bulk-tbl tbody td.g-dual { background: #fcf5fe; }
+      /* row alternation บน background กลุ่ม */
+      .mp-bulk-tbl tbody tr:nth-child(even) td.g-mgr  { background: #f5f0ff; }
+      .mp-bulk-tbl tbody tr:nth-child(even) td.g-kit  { background: #fff3e3; }
+      .mp-bulk-tbl tbody tr:nth-child(even) td.g-srv  { background: #ebfaf1; }
+      .mp-bulk-tbl tbody tr:nth-child(even) td.g-pt   { background: #ecf3ff; }
+      .mp-bulk-tbl tbody tr:nth-child(even) td.g-dual { background: #f8ebfb; }
+
       .mp-bulk-tbl tbody td.branch-cell {
         position: sticky; left: 0; background: #fff;
-        text-align: left; padding: 6px 12px;
-        font-weight: 700; min-width: 180px;
-        border-right: 2px solid #e2e8f0;
+        text-align: left; padding: 8px 12px;
+        font-weight: 700; min-width: 200px; max-width: 240px;
+        border-right: 3px solid #cbd5e1;
         z-index: 1;
       }
+      .mp-bulk-tbl tbody tr:nth-child(even) td.branch-cell { background: #fafbfc; }
       .mp-bulk-tbl tbody td.branch-cell .code {
-        display:inline-block;font-size:11px;font-weight:800;padding:1px 6px;border-radius:5px;
-        background:var(--brand);color:#fff;margin-right:6px;font-variant-numeric:tabular-nums;
+        display:inline-block;font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;
+        background:var(--brand);color:#fff;margin-right:7px;font-variant-numeric:tabular-nums;
+        vertical-align:middle;
       }
       .mp-bulk-tbl tbody td input {
         width: 100%; min-width: 38px; max-width: 56px;
@@ -1239,19 +1271,22 @@
         font-variant-numeric: tabular-nums;
         background: #fff; outline: none;
       }
-      .mp-bulk-tbl tbody td input:focus { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(242,108,28,.18); }
-      .mp-bulk-tbl tbody td input.bad { border-color: #fca5a5; background: #fef2f2; }
+      .mp-bulk-tbl tbody td input:focus {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 2px rgba(242,108,28,.18);
+        background: #fff;
+      }
       .mp-bulk-tbl tbody td.status-cell {
         position: sticky; right: 0; background: #fff;
-        border-left: 2px solid #e2e8f0;
-        font-size: 16px;
-        min-width: 36px;
+        border-left: 3px solid #cbd5e1;
+        font-size: 18px; font-weight: 800;
+        min-width: 44px;
         z-index: 1;
       }
-      .mp-bulk-tbl tbody tr.bad td.branch-cell { background: #fef2f2; }
-      .mp-bulk-tbl tbody tr.ok  td.status-cell { color: #16a34a; }
-      .mp-bulk-tbl tbody tr.bad td.status-cell { color: #dc2626; }
-      .mp-bulk-tbl tbody tr:hover td:not(.branch-cell):not(.status-cell) { background: #fafbfc; }
+      .mp-bulk-tbl tbody tr:nth-child(even) td.status-cell { background: #fafbfc; }
+      .mp-bulk-tbl tbody tr.ok  td.status-cell { color: #16a34a; background: #f0fdf4 !important; }
+      .mp-bulk-tbl tbody tr.bad td.status-cell { color: #dc2626; background: #fef2f2 !important; }
+      .mp-bulk-tbl tbody tr:hover td:not(.branch-cell):not(.status-cell) { filter: brightness(.97); }
 
       /* Edit History — Desktop vs Mobile swap */
       .eh-mob-wrap { display: none; }
@@ -8905,31 +8940,47 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         // group counts
         const grpCount = { mgr:0, kit:0, srv:0, pt:0, dual:0 };
         _MP_BULK_FIELDS.forEach(f => { grpCount[f.g]++; });
+        // คอลัมน์แรกของแต่ละกลุ่ม (เพื่อทาเส้นซ้ายหนาๆ)
+        const isGroupStart = (idx) => {
+          if (idx === 0) return true;
+          return _MP_BULK_FIELDS[idx].g !== _MP_BULK_FIELDS[idx-1].g;
+        };
+        // sub-end: end ของแต่ละทีร์ (B/S/G) ภายในครัว/บริการ — index 5,7,9 (kit), 11,13,15 (srv) เป็น "end"
+        // คอลัมน์ที่เป็น *_ft = end ของคู่ PT-FT
+        const isSubEnd = (idx) => {
+          const f = _MP_BULK_FIELDS[idx];
+          if (f.g !== "kit" && f.g !== "srv") return false;
+          return /_ft$/.test(f.k);
+        };
         // header rows
-        let h1 = `<tr><th rowspan="2" class="branch-cell" style="position:sticky;left:0;background:linear-gradient(135deg,#fafafa,#f1f5f9);text-align:left;padding:10px 12px;border-right:2px solid #e2e8f0;z-index:3">สาขา</th>`;
-        h1 += `<th colspan="${grpCount.mgr}" class="mp-bulk-grp mgr">👔 ทีมผู้จัดการสาขา</th>`;
-        h1 += `<th colspan="${grpCount.kit}" class="mp-bulk-grp kit">🍳 พนักงานครัว (Basic / Silver / Gold)</th>`;
-        h1 += `<th colspan="${grpCount.srv}" class="mp-bulk-grp srv">🍽️ พนักงานบริการ (Basic / Silver / Gold)</th>`;
-        h1 += `<th colspan="${grpCount.pt}"  class="mp-bulk-grp pt">⏱️ รายละเอียด Part-time</th>`;
-        h1 += `<th colspan="${grpCount.dual}" class="mp-bulk-grp dual">🎓 ทวิภาคี</th>`;
-        h1 += `<th rowspan="2" class="status-cell" style="position:sticky;right:0;background:linear-gradient(135deg,#fafafa,#f1f5f9);border-left:2px solid #e2e8f0;z-index:3;min-width:36px">✓</th></tr>`;
+        let h1 = `<tr><th rowspan="2" class="branch-cell" style="position:sticky;left:0;background:linear-gradient(135deg,#fafafa,#f1f5f9);text-align:left;padding:10px 12px;border-right:3px solid #cbd5e1;z-index:3">สาขา</th>`;
+        h1 += `<th colspan="${grpCount.mgr}" class="mp-bulk-grp mgr gstart mgr">👔 ทีมผู้จัดการสาขา</th>`;
+        h1 += `<th colspan="${grpCount.kit}" class="mp-bulk-grp kit gstart kit">🍳 พนักงานครัว · Basic | Silver | Gold</th>`;
+        h1 += `<th colspan="${grpCount.srv}" class="mp-bulk-grp srv gstart srv">🍽️ พนักงานบริการ · Basic | Silver | Gold</th>`;
+        h1 += `<th colspan="${grpCount.pt}"  class="mp-bulk-grp pt  gstart pt">⏱️ รายละเอียด Part-time</th>`;
+        h1 += `<th colspan="${grpCount.dual}" class="mp-bulk-grp dual gstart dual">🎓 ทวิภาคี</th>`;
+        h1 += `<th rowspan="2" class="status-cell" style="position:sticky;right:0;background:linear-gradient(135deg,#fafafa,#f1f5f9);border-left:3px solid #cbd5e1;z-index:3;min-width:44px">สถานะ</th></tr>`;
         let h2 = `<tr>`;
-        _MP_BULK_FIELDS.forEach(f => { h2 += `<th>${f.l}</th>`; });
+        _MP_BULK_FIELDS.forEach((f, idx) => {
+          const cls = `sub ${f.g}` + (isGroupStart(idx) ? ` gstart ${f.g}` : "") + (isSubEnd(idx) ? " sub-end" : "");
+          h2 += `<th class="${cls}">${f.l}</th>`;
+        });
         h2 += `</tr>`;
         // body rows
         const rows = _mpBulkCodes.map(code => {
           const r = _mpData[code] || {};
           const bInfo = BRANCH_DM_MAP[code] || {};
           let row = `<tr id="mpbrow_${code}"><td class="branch-cell"><span class="code">${escHtml(code)}</span>${escHtml(bInfo.branch || "-")}</td>`;
-          _MP_BULK_FIELDS.forEach(f => {
+          _MP_BULK_FIELDS.forEach((f, idx) => {
             const val = (r[f.k] != null ? r[f.k] : 0);
-            row += `<td><input id="mpb_${code}_${f.k}" type="number" min="0" value="${val}" oninput="_mpBulkRowRecalc('${code}')"></td>`;
+            const cls = `g-${f.g}` + (isGroupStart(idx) ? ` gstart ${f.g}` : "") + (isSubEnd(idx) ? " sub-end" : "");
+            row += `<td class="${cls}"><input id="mpb_${code}_${f.k}" type="number" min="0" value="${val}" oninput="_mpBulkRowRecalc('${code}')"></td>`;
           });
-          row += `<td class="status-cell" id="mpbstat_${code}">·</td></tr>`;
+          row += `<td class="status-cell" id="mpbstat_${code}">—</td></tr>`;
           return row;
         }).join("");
         tbl.innerHTML = `<thead>${h1}${h2}</thead><tbody>${rows}</tbody>`;
-        // initial recalc
+        // initial recalc → แสดงสถานะ แต่ไม่ทำเส้นแดงในช่อง
         _mpBulkCodes.forEach(c => _mpBulkRowRecalc(c));
       }
       function _mpBulkGet(code, field) {
@@ -8962,36 +9013,44 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         const v = _mpBulkRowValidate(p);
         const row = document.getElementById("mpbrow_" + code);
         const stat = document.getElementById("mpbstat_" + code);
-        // clear bad
-        _MP_BULK_FIELDS.forEach(f => {
-          const el = document.getElementById(`mpb_${code}_${f.k}`);
-          if (el) el.classList.remove("bad");
-        });
+        // เช็คว่า row นี้ถูกแตะ (ค่ารวมทั้งหมด > 0) — ไม่งั้นแสดง — (รอกรอก)
+        const anyFilled = _MP_BULK_FIELDS.some(f => p[f.k] > 0);
+        if (!anyFilled) {
+          row && row.classList.remove("ok", "bad");
+          if (stat) { stat.textContent = "—"; stat.title = "รอกรอก"; stat.style.color = "#94a3b8"; }
+          return;
+        }
         if (v.ok) {
           row && row.classList.remove("bad");
           row && row.classList.add("ok");
-          if (stat) { stat.textContent = "✓"; stat.title = ""; }
+          if (stat) { stat.textContent = "✓"; stat.title = ""; stat.style.color = ""; }
         } else {
           row && row.classList.add("bad");
           row && row.classList.remove("ok");
-          if (stat) { stat.textContent = "⚠"; stat.title = v.err; }
-          (v.bad || []).forEach(k => {
-            const el = document.getElementById(`mpb_${code}_${k}`);
-            if (el) el.classList.add("bad");
-          });
+          if (stat) { stat.textContent = "⚠"; stat.title = v.err; stat.style.color = ""; }
         }
       }
+      function _mpBulkIsFilled(p) {
+        return _MP_BULK_FIELDS.some(f => p[f.k] > 0);
+      }
       function _mpBulkValidate() {
-        let ok = 0, bad = 0;
+        let ok = 0, bad = 0, blank = 0;
         _mpBulkCodes.forEach(c => {
           const p = _mpBulkRowPayload(c);
-          if (_mpBulkRowValidate(p).ok) ok++; else bad++;
+          if (!_mpBulkIsFilled(p)) blank++;
+          else if (_mpBulkRowValidate(p).ok) ok++;
+          else bad++;
         });
         const sum = document.getElementById("mpBulkSummary");
-        if (sum) sum.innerHTML = `✓ พร้อมบันทึก: <b style="color:#16a34a">${ok}</b> สาขา · ⚠ ต้องแก้: <b style="color:#dc2626">${bad}</b> สาขา`;
+        if (sum) sum.innerHTML = `✓ พร้อมบันทึก: <b style="color:#16a34a">${ok}</b> · ⚠ ต้องแก้: <b style="color:#dc2626">${bad}</b> · — รอกรอก: <b style="color:#64748b">${blank}</b>`;
       }
       function _mpBulkSave() {
-        const payloads = _mpBulkCodes.map(c => _mpBulkRowPayload(c));
+        const allPayloads = _mpBulkCodes.map(c => _mpBulkRowPayload(c));
+        const payloads = allPayloads.filter(p => _mpBulkIsFilled(p));  // ข้ามสาขาที่ว่าง
+        if (!payloads.length) {
+          showAlert("ℹ️", "ยังไม่มีข้อมูล", "ยังไม่ได้กรอกสาขาใดเลย — กรอกอย่างน้อย 1 สาขาก่อนบันทึก");
+          return;
+        }
         const errs = [];
         payloads.forEach(p => {
           const v = _mpBulkRowValidate(p);
@@ -9005,6 +9064,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           showAlert("⚠️", `กรอกไม่ครบ ${errs.length} สาขา`, lines);
           return;
         }
+        const blank = allPayloads.length - payloads.length;
         const btn = document.getElementById("mpBulkSaveBtn");
         if (btn) { btn.disabled = true; btn.textContent = `⏳ 0/${payloads.length}`; }
         let done = 0, fail = 0;
