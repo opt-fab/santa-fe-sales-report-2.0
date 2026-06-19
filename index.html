@@ -7634,7 +7634,7 @@ body { background: var(--bg); color: var(--txt); }
           if (res && res.ok && Array.isArray(res.rows)) {
             res.rows.forEach(r => { _mpData[r.branch_code] = r; });
           }
-          const canEdit = (S.role === "bzm");  // เฉพาะ BZM กรอก/แก้ได้ — admin/vp ดูประวัติอย่างเดียว
+          const canEdit = (S.role === "bzm" || S.role === "admin" || S.code === "ADMIN");  // BZM + admin แก้ได้ — VP ดูอย่างเดียว
           body.innerHTML = inZone.map(b => {
             const r = _mpData[b.branch_code];
             const totMgr = r ? (r.rgm + r.sam + r.am + r.ss) : 0;
