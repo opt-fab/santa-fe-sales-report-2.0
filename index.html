@@ -4807,7 +4807,15 @@ body { background: var(--bg); color: var(--txt); }
   /* รวมตาราง 2 อันบนมือถือ — ซ่อน legend, ใช้ตารางอย่างเดียว (มี % แล้ว) */
   .dd-donut-legend { display:none !important; }
   .dd-donut-table-wrap { margin-top: 8px; padding-top: 10px; }
-  /* mobile "อื่นๆ" overflow menu */
+  .dd-table-channels { font-size:12px; }
+  .dd-table-channels thead th { padding:8px 6px; font-size:11px; }
+  .dd-table-channels tbody td { padding:9px 6px; }
+}
+
+/* ════════════════════════════════════════════════════════
+   Mobile/Tablet overflow popups + touch chrome
+   ต้องอยู่ "นอก" @media — เพราะ iPad (>640px) ต้องใช้ผ่าน body.is-touch ด้วย
+════════════════════════════════════════════════════════ */
 .mn-more-bg { display:none !important; position:fixed; inset:0; background:rgba(0,0,0,.35); backdrop-filter:blur(2px); z-index:9990; }
 .mn-more-bg.open { display:block !important; }
 .mn-more-pop { display:none !important; position:fixed; right:12px; bottom:80px; background:#fff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 12px 28px -8px rgba(0,0,0,.25); padding:6px; min-width:220px; z-index:9991; }
@@ -4832,10 +4840,6 @@ body.is-touch.is-tm .mn-hist-btn  { display:flex !important; }
 /* mob-nav-inner เป็นแถวเดียวเลื่อนได้ */
 body.is-touch .mob-nav-inner { display:flex; overflow-x:auto; -webkit-overflow-scrolling:touch; }
 body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:8px 6px 10px; min-width:64px; }
-.dd-table-channels { font-size:12px; }
-  .dd-table-channels thead th { padding:8px 6px; font-size:11px; }
-  .dd-table-channels tbody td { padding:9px 6px; }
-}
 
 /* Day mode — donut + table รวมเป็นการ์ดเดียว (เหลือกราฟเดียว = donut) */
 .dd-channel-mega {
