@@ -865,16 +865,17 @@
         .dash3-kpis { grid-template-columns: 1fr 1fr; }
         .dash3-kpi-hero { grid-column: 1 / -1; }
         .dash3-title { font-size: 1.5rem; }
-        /* มือถือ: ซ่อน role tag + subtitle + ปุ่ม refresh
-           dropdown ลงบรรทัดสอง ชิดซ้าย, breadcrumb "ทั้งบริษัท" ซ่อน */
+        .dash3-seg { flex: 1; justify-content: space-between; }
+        .dash3-seg-btn { flex: 1; padding: 7px 8px; font-size: 11.5px; }
+      }
+      /* มือถือจริงๆ เท่านั้น (touch + แคบ) — ไม่ trigger ตอนย่อหน้าต่าง desktop */
+      @media (max-width: 640px) and (pointer: coarse) {
         .dash3-role-tag, .dash3-sub { display: none !important; }
         .dash3-hdr { flex-direction: column; align-items: stretch; gap: 10px; }
         .dash3-controls { width: 100%; margin-left: 0; justify-content: flex-start; }
         .dash3-icon-btn { display: none !important; }
         .dash3-branch { min-width: 0; width: 100%; }
         .dd-crumb { display: none !important; }
-        .dash3-seg { flex: 1; justify-content: space-between; }
-        .dash3-seg-btn { flex: 1; padding: 7px 8px; font-size: 11.5px; }
       }
       @media (max-width: 560px) {
         .dash3-hero { padding: 14px; }
