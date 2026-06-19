@@ -2138,11 +2138,11 @@
         text-align: center;
         padding: 24px 0 8px;
       }
-      .alert-ico.wave {
+      .alert-ico .wave {
         display: inline-block;
-        width: 100%;
         animation: alertWave 1.6s ease-in-out infinite;
         transform-origin: 70% 80%;
+        will-change: transform;
       }
       @keyframes alertWave {
         0%, 60%, 100% { transform: rotate(0deg); }
@@ -11731,8 +11731,8 @@ body { background: var(--bg); color: var(--txt); }
       function showAlert(ico, title, msg, okCb, opts) {
         opts = opts || {};
         const icoEl = document.getElementById("alertIco");
-        icoEl.textContent = ico;
-        icoEl.classList.toggle("wave", ico === "👋");
+        if (ico === "👋") icoEl.innerHTML = '<span class="wave">👋</span>';
+        else              icoEl.textContent = ico;
         document.getElementById("alertTitle").textContent = title;
         const msgEl = document.getElementById("alertMsg");
         if (opts.html) msgEl.innerHTML = msg; else msgEl.textContent = msg;
