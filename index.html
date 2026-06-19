@@ -6287,47 +6287,25 @@ body { background: var(--bg); color: var(--txt); }
         });
       }
 
-      function _welcomeHtml(name, roleLabel, sub) {
-        const safe = (s) => String(s == null ? "" : s).replace(/[<>&"]/g, c => ({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
-        const ROLE_COL = { Admin:"#dc2626", VP:"#7c3aed", BZM:"#f59e0b", "สาขา":"#16a34a" };
-        const col = ROLE_COL[roleLabel] || "#64748b";
-        return `
-          <div style="text-align:center;padding:6px 0 2px">
-            <div style="font-size:20px;font-weight:800;color:#0f172a;letter-spacing:-.01em;margin-bottom:8px">${safe(name)}</div>
-            <span style="display:inline-block;background:${col}1a;color:${col};font-size:12px;font-weight:800;padding:4px 14px;border-radius:999px;letter-spacing:.05em">${safe(roleLabel)}</span>
-            ${sub ? `<div style="font-size:12px;color:#64748b;margin-top:10px;font-weight:600">${safe(sub)}</div>` : ""}
-          </div>`;
-      }
-      const _ROLE_TH = { admin:"Admin", vp:"VP", bzm:"BZM", branch:"สาขา", franchise:"สาขา" };
-
       function _doLoginCommit(u) {
         const newS = _stateFromDbUser(u);
         if (!newS) { showAlert('❌', 'รหัสไม่ถูกต้อง', 'role ในระบบไม่ถูกต้อง'); return; }
         S = newS;
         localStorage.setItem(LS_CODE, u.code);
-        const name = u.name || u.nick || u.code;
-        const lbl = _ROLE_TH[u.role] || u.role;
-        const sub = u.role === "bzm" ? `โซน BZM` : (u.role === "branch" ? `สาขา ${u.branch_name || ""}` : "");
-        showAlert('👋', 'ยินดีต้อนรับ!', _welcomeHtml(name, lbl, sub), enterApp, { html: true });
+        showAlert('👋', 'ยินดีต้อนรับ!', u.nick || u.name || u.code, enterApp);
       }
 
       function _doLoginFallback(code) {
         if (_loginMode === 'admin') {
           const su = SPECIAL_USERS[code];
-          if (su) {
-            S = _stateFromSpecialUser(code, su);
-            localStorage.setItem(LS_CODE, code);
-            const lbl = _ROLE_TH[su.role] || su.role || "TM";
-            showAlert('👋', 'ยินดีต้อนรับ!', _welcomeHtml(su.name, lbl, ""), enterApp, { html: true });
-            return;
-          }
+          if (su) { S = _stateFromSpecialUser(code, su); localStorage.setItem(LS_CODE, code); showAlert('👋', 'ยินดีต้อนรับ!', su.name, enterApp); return; }
           showAlert('❌', 'รหัสผ่านไม่ถูกต้อง', 'ไม่พบบัญชีนี้ในระบบ'); return;
         }
         const info = BRANCH_DM_MAP[code];
         if (!info) { showAlert('❌', 'รหัสไม่ถูกต้อง', 'ไม่พบรหัสสาขา ' + code); return; }
         S = { code: code, branch: info.branch, dm: info.dm, role: "branch" };
         localStorage.setItem(LS_CODE, code);
-        showAlert('👋', 'ยินดีต้อนรับ!', _welcomeHtml(info.branch, "สาขา", `BZM: ${info.dm || "—"}`), enterApp, { html: true });
+        showAlert('👋', 'ยินดีต้อนรับ!', info.branch, enterApp);
       }
 
       // กลับเมนูหลัก Hub โดย "ไม่" logout (session ค้างไว้ → กลับมาไม่ต้อง login ใหม่)
