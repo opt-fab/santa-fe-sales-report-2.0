@@ -4739,6 +4739,9 @@ body { background: var(--bg); color: var(--txt); }
         <button class="desk-nav-btn tm-nav" id="dnManpower" onclick="showManpower()" style="display:none">
           <span class="desk-nav-ico">👥</span>Manpower
         </button>
+        <button class="desk-nav-btn tm-nav" id="dnEditHist" onclick="showEditHistory()" style="display:none">
+          <span class="desk-nav-ico">📝</span>ประวัติแก้ไข
+        </button>
         <!-- Admin sub-menu (visible only when logged in as Admin) -->
         <button class="desk-nav-btn admin-only-nav" id="dnAdminBranches" onclick="showAdmin('branches')" style="display:none">
           <span class="desk-nav-ico">🏢</span>จัดการสาขา
@@ -4819,6 +4822,9 @@ body { background: var(--bg); color: var(--txt); }
         </button>
         <button class="md-nav-btn tm-nav" id="mdManpower" onclick="showManpower(); closeMobDrawer()" style="display:none">
           <span class="md-nav-ico">👥</span><span class="md-nav-lbl">Manpower</span>
+        </button>
+        <button class="md-nav-btn tm-nav" id="mdEditHist" onclick="showEditHistory(); closeMobDrawer()" style="display:none">
+          <span class="md-nav-ico">📝</span><span class="md-nav-lbl">ประวัติแก้ไข</span>
         </button>
       </nav>
 
@@ -5427,6 +5433,47 @@ body { background: var(--bg); color: var(--txt); }
           </div>
         </div>
 
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+     SCREEN: EDIT HISTORY (admin / vp / bzm)
+════════════════════════════════════════ -->
+    <div id="sEditHist" class="screen">
+      <div class="dash-wrap">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div>
+            <h2 style="margin:0;font-size:24px;letter-spacing:-.01em">📝 ประวัติแก้ไขยอดขาย</h2>
+            <div style="font-size:13px;color:var(--txt2);margin-top:4px" id="ehScopeHint">— ขอบเขต</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+          <label style="font-size:13px;font-weight:700;color:var(--txt2)">ตั้งแต่:</label>
+          <input type="date" id="ehDateFrom" onchange="loadEditHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px">
+          <label style="font-size:13px;font-weight:700;color:var(--txt2)">ถึง:</label>
+          <input type="date" id="ehDateTo"   onchange="loadEditHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px">
+          <input type="text" id="ehSearch" oninput="renderEditHistory()" placeholder="🔍 ค้นหา รหัส/ชื่อสาขา/ผู้ส่ง"
+                 style="flex:1;min-width:180px;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;outline:none">
+          <span id="ehHint" style="font-size:12px;color:var(--txt2);margin-left:auto;font-weight:600">— รายการ</span>
+        </div>
+
+        <div class="dash-card-wrap" style="padding:0;overflow:hidden">
+          <table class="adm-tbl" style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="background:linear-gradient(135deg,#fafafa,#f1f5f9);border-bottom:2px solid #e2e8f0">
+                <th style="text-align:left;padding:12px 12px;font-weight:800;color:#475569">วันที่ส่งยอด</th>
+                <th style="text-align:center;padding:12px 10px;font-weight:800;color:#475569;width:90px">Slot</th>
+                <th style="text-align:left;padding:12px 12px;font-weight:800;color:#475569">สาขา</th>
+                <th style="text-align:left;padding:12px 12px;font-weight:800;color:#475569" id="ehColBzm">BZM</th>
+                <th style="text-align:left;padding:12px 12px;font-weight:800;color:#475569">ผู้ส่ง</th>
+                <th style="text-align:center;padding:12px 10px;font-weight:800;color:#dc2626;width:90px">แก้ (ครั้ง)</th>
+                <th style="text-align:left;padding:12px 12px;font-weight:800;color:#475569">แก้ล่าสุด</th>
+              </tr>
+            </thead>
+            <tbody id="ehBody"><tr><td colspan="7" style="padding:40px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -7838,6 +7885,86 @@ body { background: var(--bg); color: var(--txt); }
               renderManpowerList();
             });
           }, { danger: true, btnText: "ลบ" });
+      }
+
+      /* ════════════════════════════════════════════
+         EDIT HISTORY — รายการที่ถูกแก้ไข (edit_count > 0)
+      ════════════════════════════════════════════ */
+      var _ehRows = [];
+      function showEditHistory() {
+        showScreen("sEditHist");
+        const isBzm = (S.role === "bzm");
+        const isAdmin = (S.role === "admin" || S.code === "ADMIN");
+        const hint = document.getElementById("ehScopeHint");
+        if (hint) hint.textContent = isBzm ? `โซน: ${S.dm || "—"}` : (isAdmin ? "ดูได้ทั้งระบบ" : "VP · ดูได้ทั้งระบบ");
+        // default: 30 วันย้อนหลัง → วันนี้
+        const fromEl = document.getElementById("ehDateFrom");
+        const toEl   = document.getElementById("ehDateTo");
+        if (fromEl && !fromEl.value) {
+          const d = new Date(); d.setDate(d.getDate() - 30);
+          fromEl.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        }
+        if (toEl && !toEl.value) toEl.value = todayStr();
+        loadEditHistory();
+      }
+
+      function loadEditHistory() {
+        const body = document.getElementById("ehBody");
+        if (!body) return;
+        const fromEl = document.getElementById("ehDateFrom");
+        const toEl   = document.getElementById("ehDateTo");
+        body.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--txt2)">⏳ กำลังโหลด...</td></tr>`;
+        const params = { mode: "listEditedSales", date_from: fromEl.value, date_to: toEl.value };
+        if (S.role === "bzm") {
+          params.branch_codes = Object.keys(BRANCH_DM_MAP).filter(c => BRANCH_DM_MAP[c].dm === S.dm);
+        }
+        apiCall(params, function(res) {
+          if (!res || !res.ok) { body.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:#dc2626">โหลดไม่สำเร็จ: ${escHtml((res && res.error) || "—")}</td></tr>`; return; }
+          _ehRows = res.rows || [];
+          renderEditHistory();
+        });
+      }
+
+      function renderEditHistory() {
+        const body = document.getElementById("ehBody");
+        if (!body) return;
+        const q = (document.getElementById("ehSearch")?.value || "").trim().toLowerCase();
+        const list = _ehRows.filter(r => {
+          if (!q) return true;
+          return (r.branch_code || "").toLowerCase().includes(q)
+              || (r.branch_name || "").toLowerCase().includes(q)
+              || (r.submitter_name || "").toLowerCase().includes(q)
+              || (r.district_manager || "").toLowerCase().includes(q);
+        });
+        document.getElementById("ehHint").textContent = `${list.length} รายการ`;
+        if (!list.length) {
+          body.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--txt2)">ไม่พบรายการที่ถูกแก้ไขในช่วงนี้</td></tr>`;
+          return;
+        }
+        const fmtDate = (s) => {
+          if (!s) return "—";
+          const d = new Date(s);
+          return d.toLocaleString("th-TH", { day:"2-digit", month:"short", year:"2-digit", hour:"2-digit", minute:"2-digit" });
+        };
+        const fmtSubDate = (s) => {
+          if (!s) return "—";
+          const [y, m, dd] = s.split("-");
+          const MONTH = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+          return `${parseInt(dd)} ${MONTH[parseInt(m)-1]} ${(parseInt(y)+543).toString().slice(-2)}`;
+        };
+        body.innerHTML = list.map(r => {
+          const slotCol = r.submit_time_slot === "สิ้นวัน" ? "#7c3aed" : "#0ea5e9";
+          const slotBg  = r.submit_time_slot === "สิ้นวัน" ? "#faf5ff" : "#f0f9ff";
+          return `<tr style="border-bottom:1px solid #f1f5f9">
+            <td style="padding:10px 12px;font-weight:700">${fmtSubDate(r.submit_date)}</td>
+            <td style="padding:10px 10px;text-align:center"><span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;background:${slotBg};color:${slotCol}">${escHtml(r.submit_time_slot || "—")}</span></td>
+            <td style="padding:10px 12px"><span style="color:#64748b;font-variant-numeric:tabular-nums;font-weight:700">${escHtml(r.branch_code || "")}</span> ${escHtml(r.branch_name || "—")}</td>
+            <td style="padding:10px 12px;color:var(--txt2)">${escHtml(r.district_manager || "—")}</td>
+            <td style="padding:10px 12px">${escHtml(r.submitter_name || "—")}</td>
+            <td style="padding:10px 10px;text-align:center"><span style="font-size:13px;font-weight:800;color:#dc2626;background:#fee2e2;padding:3px 12px;border-radius:999px">${r.edit_count}</span></td>
+            <td style="padding:10px 12px;color:var(--txt2);font-size:12px">${fmtDate(r.last_edited_at)}</td>
+          </tr>`;
+        }).join("");
       }
 
       function manpowerSave() {
@@ -11687,6 +11814,23 @@ body { background: var(--bg); color: var(--txt); }
             if (Array.isArray(params.branch_codes) && params.branch_codes.length) {
               q = q.in("branch_code", params.branch_codes);
             }
+            const { data, error } = await q;
+            if (error) { cb({ ok: false, error: error.message }); return; }
+            cb({ ok: true, rows: data || [] });
+            return;
+          }
+          if (mode === "listEditedSales") {
+            const from = String(params.date_from || "").trim();
+            const to   = String(params.date_to   || "").trim();
+            let q = sb.from("sales_data")
+              .select("branch_code,branch_name,district_manager,submitter_name,submit_date,submit_time_slot,edit_count,last_edited_at")
+              .gt("edit_count", 0);
+            if (from) q = q.gte("submit_date", from);
+            if (to)   q = q.lte("submit_date", to);
+            if (Array.isArray(params.branch_codes) && params.branch_codes.length) {
+              q = q.in("branch_code", params.branch_codes);
+            }
+            q = q.order("last_edited_at", { ascending: false }).limit(500);
             const { data, error } = await q;
             if (error) { cb({ ok: false, error: error.message }); return; }
             cb({ ok: true, rows: data || [] });
