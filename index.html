@@ -6173,11 +6173,10 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               <div class="mp-sec-title">⏱️ รายละเอียด Part-time</div>
               <div class="mp-sec-tot"><span>รวม:</span><b id="mpTotPt">0</b></div>
             </div>
-            <div class="mp-grid-mgr">
+            <div class="mp-grid-mgr" style="grid-template-columns:repeat(3,1fr)">
               <div class="mp-cell"><label>PT 8 ชม.</label><input id="mp_pt_8h"     type="number" min="0" value="0" oninput="_mpRecalc()"></div>
               <div class="mp-cell"><label>PT ทวิภาคี 40 ชม.</label><input id="mp_pt_dual40" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
               <div class="mp-cell"><label>PT 4-5 ชม.</label><input id="mp_pt_45h"    type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-              <div class="mp-cell mp-cell-ref"><label>PT จาก ครัว+บริการ</label><input id="mp_pt_ref" type="text" value="0" readonly tabindex="-1"></div>
             </div>
             <div id="mpPtMatch" class="mp-chk"></div>
           </div>
@@ -8225,7 +8224,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         const ptTot = pt8 + ptD + pt45;
         document.getElementById("mpTotPt").textContent = ptTot;
         const ptRef = kPT + sPT;
-        document.getElementById("mp_pt_ref").value = ptRef;
+        const ptRefEl = document.getElementById("mp_pt_ref");
+        if (ptRefEl) ptRefEl.value = ptRef;
         const ptMatch = document.getElementById("mpPtMatch");
         if (ptTot === ptRef) {
           ptMatch.className = "mp-chk ok";
