@@ -8431,11 +8431,19 @@ body { background: var(--bg); color: var(--txt); }
         sale_grab: "trans_grab", sale_lineman: "trans_lineman", sale_shopeefood: "trans_shopeefood"
       };
       function _ddAchvColor(p) { return p >= 1 ? "#16a34a" : p >= 0.85 ? "#f59e0b" : "#ef4444"; }
-      function _ddZoneOf(bc) { return (BRANCH_DM_MAP[bc] || {}).dm || "ไม่ระบุโซน"; }
-      function _ddCodes() { return [...new Set((_dashRows || []).map(r => r.branch_code).filter(Boolean))]; }
+      function _ddZoneOf(bc) { return (BRANCH_DM_MAP[bc] || {}).dm || ""; }
+      function _ddCodes() {
+        // ตัดสาขาที่ยังไม่ระบุโซน (dm ว่าง) ออกจาก dashboard
+        return [...new Set((_dashRows || []).map(r => r.branch_code)
+          .filter(bc => bc && (BRANCH_DM_MAP[bc] || {}).dm))];
+      }
       function _ddZones() {
         const m = {};
-        _ddCodes().forEach(bc => { const z = _ddZoneOf(bc); (m[z] = m[z] || []).push(bc); });
+        _ddCodes().forEach(bc => {
+          const z = _ddZoneOf(bc);
+          if (!z) return;
+          (m[z] = m[z] || []).push(bc);
+        });
         return m;
       }
       function _ddPlan(codes, map) {
@@ -9388,10 +9396,13 @@ body { background: var(--bg); color: var(--txt); }
             planByDate[r.plan_date] = (planByDate[r.plan_date] || 0) + amt;
             if (r.branch_code) planByBranch[r.branch_code] = (planByBranch[r.branch_code] || 0) + amt;
           });
-          const rows = (_h && _h.ok && _h.rows) ? _h.rows.map(r => ({
-            ...r,
-            plan_sale: planByDate[r.submit_date] !== undefined ? planByDate[r.submit_date] : (parseFloat(r.plan_sale) || 0)
-          })) : [];
+          const rows = (_h && _h.ok && _h.rows) ? _h.rows
+            // ตัดสาขาที่ยังไม่ระบุโซน (dm ว่าง) ออกจาก dashboard ทั้งหมด
+            .filter(r => r.branch_code && (BRANCH_DM_MAP[r.branch_code] || {}).dm)
+            .map(r => ({
+              ...r,
+              plan_sale: planByDate[r.submit_date] !== undefined ? planByDate[r.submit_date] : (parseFloat(r.plan_sale) || 0)
+            })) : [];
           _secData[sec] = { rows, planByDate, planByBranch, range: { startDate: pr.startDate, endDate: pr.endDate, periodDays: pr.periodDays } };
           // ช่วงที่กำลังดู = แหล่งโครงโซน/สาขา (drill source)
           if (sec === _secActive) { _dashRows = rows; _dashPlanByBranch = planByBranch; _dashPlans = planByDate; }
