@@ -1274,12 +1274,12 @@
 
       .mp-bulk-tbl tbody td.branch-cell {
         position: sticky; left: 0; background: #fff;
-        text-align: left; padding: 8px 10px;
+        text-align: left; padding: 8px 12px;
         font-weight: 700;
-        width: 180px; min-width: 160px; max-width: 200px;
+        min-width: 240px;
         border-right: 3px solid #cbd5e1;
         z-index: 1;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .mp-bulk-tbl tbody tr:nth-child(even) td.branch-cell { background: #fafbfc; }
       .mp-bulk-tbl tbody td.branch-cell .code {
@@ -6247,7 +6247,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             </div>
           </div>
           <div class="dash-card-wrap" style="padding:0;overflow:auto;max-height:75vh">
-            <table id="mpBulkTbl" class="mp-bulk-tbl" style="border-collapse:separate;border-spacing:0;font-size:12.5px;width:100%;min-width:1100px;table-layout:fixed"></table>
+            <table id="mpBulkTbl" class="mp-bulk-tbl" style="border-collapse:separate;border-spacing:0;font-size:12.5px;width:100%;min-width:1100px"></table>
           </div>
           <div id="mpBulkSummary" style="margin-top:12px;font-size:13px;color:var(--txt2)"></div>
         </div>
