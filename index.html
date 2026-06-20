@@ -1199,38 +1199,57 @@
         display: none !important;
       }
 
-      /* Bulk fill table */
+      /* Bulk fill table — ใช้ !important ทุกที่ กันโดน global th{} ทับ */
       .mp-bulk-tbl { background:#fff; }
+      .mp-bulk-tbl thead tr { background: transparent !important; }
       .mp-bulk-tbl thead th {
         position: sticky; top: 0;
-        background: linear-gradient(135deg,#fafafa,#f1f5f9);
-        font-weight: 800; color: #475569;
-        padding: 8px 6px; text-align: center;
-        border-bottom: 2px solid #cbd5e1;
+        background: #f1f5f9 !important;
+        font-weight: 800 !important; color: #475569 !important;
+        padding: 8px 6px !important; text-align: center !important;
+        border-bottom: 2px solid #cbd5e1 !important;
         z-index: 2;
-        white-space: nowrap; font-size: 12px;
+        white-space: nowrap; font-size: 12px !important;
+        text-transform: none !important; letter-spacing: 0 !important;
+        text-shadow: none !important;
       }
-      .mp-bulk-tbl thead .mp-bulk-grp { font-size: 12.5px; padding: 8px 10px; border-bottom: 2px solid #cbd5e1; letter-spacing: .02em; }
-      .mp-bulk-tbl thead .mp-bulk-grp.mgr { background: #ede9fe; color: #5b21b6; }
-      .mp-bulk-tbl thead .mp-bulk-grp.kit { background: #ffedd5; color: #9a3412; }
-      .mp-bulk-tbl thead .mp-bulk-grp.srv { background: #dcfce7; color: #14532d; }
-      .mp-bulk-tbl thead .mp-bulk-grp.pt  { background: #dbeafe; color: #1e3a8a; }
-      .mp-bulk-tbl thead .mp-bulk-grp.dual{ background: #fae8ff; color: #701a75; }
+      .mp-bulk-tbl thead .mp-bulk-grp { font-size: 12.5px !important; padding: 8px 10px !important; border-bottom: 2px solid #cbd5e1 !important; letter-spacing: .02em !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.mgr { background: #ede9fe !important; color: #5b21b6 !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.kit { background: #ffedd5 !important; color: #9a3412 !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.srv { background: #dcfce7 !important; color: #14532d !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.pt  { background: #dbeafe !important; color: #1e3a8a !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.dual{ background: #fae8ff !important; color: #701a75 !important; }
       /* subheader (row 2) — สีอ่อนของกลุ่ม + ตัวอักษรเข้ม */
-      .mp-bulk-tbl thead .sub.mgr { background: #f5f3ff; color: #6d28d9; }
-      .mp-bulk-tbl thead .sub.kit { background: #fff7ed; color: #c2410c; }
-      .mp-bulk-tbl thead .sub.srv { background: #f0fdf4; color: #15803d; }
-      .mp-bulk-tbl thead .sub.pt  { background: #eff6ff; color: #1d4ed8; }
-      .mp-bulk-tbl thead .sub.dual{ background: #fdf4ff; color: #a21caf; }
+      .mp-bulk-tbl thead .sub.mgr { background: #f5f3ff !important; color: #6d28d9 !important; }
+      .mp-bulk-tbl thead .sub.kit { background: #fff7ed !important; color: #c2410c !important; }
+      .mp-bulk-tbl thead .sub.srv { background: #f0fdf4 !important; color: #15803d !important; }
+      .mp-bulk-tbl thead .sub.pt  { background: #eff6ff !important; color: #1d4ed8 !important; }
+      .mp-bulk-tbl thead .sub.dual{ background: #fdf4ff !important; color: #a21caf !important; }
+      /* thead branch + status sticky cells (rowspan=2) — แก้ให้ !important กัน global th{} ทับ */
+      .mp-bulk-tbl thead th.branch-cell {
+        background: #f1f5f9 !important;
+        text-align: left !important;
+        padding: 10px 12px !important;
+        border-right: 3px solid #cbd5e1 !important;
+        position: sticky !important; left: 0 !important;
+        z-index: 3 !important;
+      }
+      .mp-bulk-tbl thead th.status-cell {
+        background: #f1f5f9 !important;
+        position: sticky !important; right: 0 !important;
+        border-left: 3px solid #cbd5e1 !important;
+        z-index: 3 !important;
+        min-width: 44px !important;
+      }
       /* แบ่งเส้นแนวตั้งหนาๆระหว่างกลุ่ม */
-      .mp-bulk-tbl thead th.gstart, .mp-bulk-tbl tbody td.gstart { border-left: 3px solid #94a3b8; }
-      .mp-bulk-tbl thead th.gstart.mgr,  .mp-bulk-tbl tbody td.gstart.mgr  { border-left-color: #8b5cf6; }
-      .mp-bulk-tbl thead th.gstart.kit,  .mp-bulk-tbl tbody td.gstart.kit  { border-left-color: #ea580c; }
-      .mp-bulk-tbl thead th.gstart.srv,  .mp-bulk-tbl tbody td.gstart.srv  { border-left-color: #16a34a; }
-      .mp-bulk-tbl thead th.gstart.pt,   .mp-bulk-tbl tbody td.gstart.pt   { border-left-color: #2563eb; }
-      .mp-bulk-tbl thead th.gstart.dual, .mp-bulk-tbl tbody td.gstart.dual { border-left-color: #c026d3; }
+      .mp-bulk-tbl thead th.gstart, .mp-bulk-tbl tbody td.gstart { border-left: 3px solid #94a3b8 !important; }
+      .mp-bulk-tbl thead th.gstart.mgr,  .mp-bulk-tbl tbody td.gstart.mgr  { border-left-color: #8b5cf6 !important; }
+      .mp-bulk-tbl thead th.gstart.kit,  .mp-bulk-tbl tbody td.gstart.kit  { border-left-color: #ea580c !important; }
+      .mp-bulk-tbl thead th.gstart.srv,  .mp-bulk-tbl tbody td.gstart.srv  { border-left-color: #16a34a !important; }
+      .mp-bulk-tbl thead th.gstart.pt,   .mp-bulk-tbl tbody td.gstart.pt   { border-left-color: #2563eb !important; }
+      .mp-bulk-tbl thead th.gstart.dual, .mp-bulk-tbl tbody td.gstart.dual { border-left-color: #c026d3 !important; }
       /* แบ่ง sub-group ภายในครัว/บริการ (ทุก 2 คอลัมน์ = B/S/G) */
-      .mp-bulk-tbl thead th.sub.sub-end, .mp-bulk-tbl tbody td.sub-end { border-right: 1px dashed #cbd5e1; }
+      .mp-bulk-tbl thead th.sub.sub-end, .mp-bulk-tbl tbody td.sub-end { border-right: 1px dashed #cbd5e1 !important; }
       /* body */
       .mp-bulk-tbl tbody td {
         padding: 5px 5px;
@@ -8964,13 +8983,13 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           return /_ft$/.test(f.k);
         };
         // header rows
-        let h1 = `<tr><th rowspan="2" class="branch-cell" style="position:sticky;left:0;background:linear-gradient(135deg,#fafafa,#f1f5f9);text-align:left;padding:10px 12px;border-right:3px solid #cbd5e1;z-index:3">สาขา</th>`;
-        h1 += `<th colspan="${grpCount.mgr}" class="mp-bulk-grp mgr gstart mgr">👔 ทีมผู้จัดการสาขา</th>`;
-        h1 += `<th colspan="${grpCount.kit}" class="mp-bulk-grp kit gstart kit">🍳 พนักงานครัว · Basic | Silver | Gold</th>`;
-        h1 += `<th colspan="${grpCount.srv}" class="mp-bulk-grp srv gstart srv">🍽️ พนักงานบริการ · Basic | Silver | Gold</th>`;
-        h1 += `<th colspan="${grpCount.pt}"  class="mp-bulk-grp pt  gstart pt">⏱️ รายละเอียด Part-time</th>`;
+        let h1 = `<tr><th rowspan="2" class="branch-cell">สาขา</th>`;
+        h1 += `<th colspan="${grpCount.mgr}"  class="mp-bulk-grp mgr  gstart mgr">👔 ทีมผู้จัดการสาขา</th>`;
+        h1 += `<th colspan="${grpCount.kit}"  class="mp-bulk-grp kit  gstart kit">🍳 พนักงานครัว · Basic | Silver | Gold</th>`;
+        h1 += `<th colspan="${grpCount.srv}"  class="mp-bulk-grp srv  gstart srv">🍽️ พนักงานบริการ · Basic | Silver | Gold</th>`;
+        h1 += `<th colspan="${grpCount.pt}"   class="mp-bulk-grp pt   gstart pt">⏱️ รายละเอียด Part-time</th>`;
         h1 += `<th colspan="${grpCount.dual}" class="mp-bulk-grp dual gstart dual">🎓 ทวิภาคี</th>`;
-        h1 += `<th rowspan="2" class="status-cell" style="position:sticky;right:0;background:linear-gradient(135deg,#fafafa,#f1f5f9);border-left:3px solid #cbd5e1;z-index:3;min-width:44px">สถานะ</th></tr>`;
+        h1 += `<th rowspan="2" class="status-cell">สถานะ</th></tr>`;
         let h2 = `<tr>`;
         _MP_BULK_FIELDS.forEach((f, idx) => {
           const cls = `sub ${f.g}` + (isGroupStart(idx) ? ` gstart ${f.g}` : "") + (isSubEnd(idx) ? " sub-end" : "");
