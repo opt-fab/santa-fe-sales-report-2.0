@@ -1320,7 +1320,8 @@
       }
       .mp-bulk-tbl tbody td.status-cell .stat-chip.blank { background: #f1f5f9; color: #94a3b8; }
       .mp-bulk-tbl tbody td.status-cell .stat-chip.ok    { background: #dcfce7; color: #166534; }
-      .mp-bulk-tbl tbody td.status-cell .stat-chip.bad   { background: #fee2e2; color: #991b1b; cursor: help; }
+      .mp-bulk-tbl tbody td.status-cell .stat-chip.bad   { background: #fee2e2; color: #991b1b; cursor: pointer; }
+      .mp-bulk-tbl tbody td.status-cell .stat-chip.bad:hover { background: #fecaca; }
       .mp-bulk-tbl tbody td.status-cell .stat-chip.saved { background: #dbeafe; color: #1e40af; }
       .mp-bulk-tbl tbody tr:nth-child(even) td.status-cell { background: #fafbfc; }
       .mp-bulk-tbl tbody tr.ok  td.status-cell { color: #16a34a; background: #f0fdf4 !important; }
@@ -9052,6 +9053,11 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         if (ptSum !== ptRef) return { ok:false, err:`PT รวม ${ptSum} ≠ ${ptRef}`, bad:["pt_8h","pt_dual40","pt_45h"] };
         return { ok:true };
       }
+      function _mpBulkShowErr(code, err) {
+        const bInfo = BRANCH_DM_MAP[code] || {};
+        const bName = bInfo.branch || code;
+        showAlert("⚠️", "เหตุผลที่ต้องแก้", `${bName}\n\n${err || "—"}`);
+      }
       function _mpBulkRowRecalc(code) {
         const p = _mpBulkRowPayload(code);
         const v = _mpBulkRowValidate(p);
@@ -9066,11 +9072,13 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         if (v.ok) {
           row && row.classList.remove("bad");
           row && row.classList.add("ok");
-          if (stat) stat.innerHTML = `<span class="stat-chip ok" title="ตรวจสอบแล้ว">✓ พร้อม</span>`;
+          if (stat) stat.innerHTML = `<span class="stat-chip ok" title="ตรวจสอบแล้ว">✓ ถูกต้อง</span>`;
         } else {
           row && row.classList.add("bad");
           row && row.classList.remove("ok");
-          if (stat) stat.innerHTML = `<span class="stat-chip bad" title="${escHtml(v.err || '')}">⚠ ต้องแก้</span>`;
+          const bInfo = BRANCH_DM_MAP[code] || {};
+          const bName = bInfo.branch || code;
+          if (stat) stat.innerHTML = `<span class="stat-chip bad" onclick="_mpBulkShowErr('${escHtml(code)}', ${JSON.stringify(v.err || '').replace(/"/g, '&quot;')})">⚠ ต้องแก้</span>`;
         }
       }
       function _mpBulkIsFilled(p) {
