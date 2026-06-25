@@ -11524,8 +11524,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               pointBorderWidth: 2,
               fill: false,
               tension: 0.2,
-              order: 1,
-              yAxisID: 'y1'
+              order: 1
             });
           }
           box.innerHTML = `<div style="position:relative;height:280px"><canvas id="sec${C}Trend"></canvas></div>`;
@@ -11551,18 +11550,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               },
               scales: {
                 x: { grid: { display: false }, ticks: { font: { size: 11, weight: 600 }, color: "#475569" } },
-                y: {
-                  type: 'linear', position: 'left', beginAtZero: true,
-                  ticks: { font: { size: 10 }, color: "#ea580c", callback: (v) => v >= 1000000 ? "฿" + (v / 1000000).toFixed(1) + "M" : v >= 1000 ? "฿" + (v / 1000).toFixed(0) + "k" : "฿" + v },
-                  grid: { color: "rgba(0,0,0,.05)", drawBorder: false },
-                  // y-axis ของ actual: scale ตาม actual max — ไม่ให้ plan ดันสูงเกินจนบาร์ดูเล็ก
-                  suggestedMax: Math.max(...monthVals) * 1.25 || 1
-                },
-                y1: hasPlan ? {
-                  type: 'linear', position: 'right', beginAtZero: true,
-                  ticks: { font: { size: 10 }, color: "#64748b", callback: (v) => v >= 1000000 ? "฿" + (v / 1000000).toFixed(1) + "M" : v >= 1000 ? "฿" + (v / 1000).toFixed(0) + "k" : "฿" + v },
-                  grid: { display: false }
-                } : undefined
+                y: { beginAtZero: true, ticks: { font: { size: 10 }, color: "#94a3b8", callback: (v) => v >= 1000 ? "฿" + (v / 1000).toFixed(0) + "k" : "฿" + v }, grid: { color: "rgba(0,0,0,.05)", drawBorder: false } }
               }
             }
           });
@@ -11625,8 +11613,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             type: "line", label: "เป้า/วัน",
             data: planSeries,
             borderColor: "#94a3b8", borderDash: [6, 4], borderWidth: 1.5,
-            pointRadius: 0, pointHoverRadius: 4, fill: false, order: 1, stepped: false,
-            yAxisID: 'y1'
+            pointRadius: 0, pointHoverRadius: 4, fill: false, order: 1, stepped: false
           });
         }
         const dailyTarget = hasAnyPlan ? 1 : 0;  // ใช้แค่เป็น flag เปิดป้าย/legend
@@ -11647,17 +11634,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             },
             scales: {
               x: { grid: { display: false }, ticks: { font: { size: 10 }, color: "#94a3b8", maxRotation: 0, autoSkipPadding: 12 } },
-              y: {
-                type: 'linear', position: 'left', beginAtZero: true,
-                ticks: { font: { size: 10 }, color: "#ea580c", callback: (v) => v >= 1000000 ? "฿" + (v / 1000000).toFixed(1) + "M" : v >= 1000 ? "฿" + (v / 1000).toFixed(0) + "k" : "฿" + v },
-                grid: { color: "rgba(0,0,0,.05)", drawBorder: false },
-                suggestedMax: Math.max(...s.data) * 1.25 || 1
-              },
-              y1: hasAnyPlan ? {
-                type: 'linear', position: 'right', beginAtZero: true,
-                ticks: { font: { size: 10 }, color: "#64748b", callback: (v) => v >= 1000000 ? "฿" + (v / 1000000).toFixed(1) + "M" : v >= 1000 ? "฿" + (v / 1000).toFixed(0) + "k" : "฿" + v },
-                grid: { display: false }
-              } : undefined
+              y: { beginAtZero: true, ticks: { font: { size: 10 }, color: "#94a3b8", callback: (v) => v >= 1000 ? "฿" + (v / 1000).toFixed(0) + "k" : "฿" + v }, grid: { color: "rgba(0,0,0,.05)", drawBorder: false } }
             }
           }
         });
