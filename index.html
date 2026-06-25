@@ -10971,7 +10971,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           },
           options: {
             responsive: true, maintainAspectRatio: false, cutout: "62%",
-            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => {
+            plugins: { legend: { display: false }, tooltip: { position: "outerArc", callbacks: { label: (ctx) => {
               const v = ctx.parsed || 0; const pc = grand > 0 ? (v / grand * 100).toFixed(1) + "%" : "-";
               return `${ctx.label}: ${v.toLocaleString()} (${pc})`;
             } } } }
@@ -11266,6 +11266,20 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             plugins: {
               legend: { display: false },
               tooltip: {
+                position: (function() {
+                  // ลงทะเบียน positioner "outerArc" ครั้งเดียว — ดัน tooltip ออกนอกขอบ donut
+                  if (typeof Chart !== "undefined" && Chart.Tooltip && Chart.Tooltip.positioners && !Chart.Tooltip.positioners.outerArc) {
+                    Chart.Tooltip.positioners.outerArc = function(elements) {
+                      if (!elements || !elements.length) return false;
+                      const el = elements[0].element;
+                      if (!el || el.outerRadius == null) return { x: el.x, y: el.y };
+                      const mid = (el.startAngle + el.endAngle) / 2;
+                      const r = el.outerRadius + 18;
+                      return { x: el.x + Math.cos(mid) * r, y: el.y + Math.sin(mid) * r };
+                    };
+                  }
+                  return "outerArc";
+                })(),
                 callbacks: {
                   label: (ctx) => {
                     const v = ctx.parsed || 0;
@@ -12366,6 +12380,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             plugins: {
               legend: { display: false },
               tooltip: {
+                position: "outerArc",
                 callbacks: {
                   label: (ctx) => {
                     const v = ctx.parsed || 0;
