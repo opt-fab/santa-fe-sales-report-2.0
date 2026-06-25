@@ -46,16 +46,20 @@ const BRANCHES_HEADERS = [
 
 const MANPOWER_HEADERS = [
   "id", "branch_code", "year", "month",
-  // ทีมผู้จัดการสาขา
-  "rgm", "sam", "am", "ss",
-  // พนักงานครัว (6 ช่อง)
-  "k_basic_pt", "k_basic_ft", "k_silver_pt", "k_silver_ft", "k_gold_pt", "k_gold_ft",
-  // พนักงานบริการ (6 ช่อง)
-  "s_basic_pt", "s_basic_ft", "s_silver_pt", "s_silver_ft", "s_gold_pt", "s_gold_ft",
+  // Plan + Actual Team (admin ตั้ง plan_*; user กรอก actual_team)
+  "plan_team", "plan_staff", "actual_team",
+  // Service (5 ช่อง: FT/PT/Basic/Silver/Gold)
+  "s_ft", "s_pt", "s_basic", "s_silver", "s_gold",
+  // Kitchen (5 ช่อง)
+  "k_ft", "k_pt", "k_basic", "k_silver", "k_gold",
   // รายละเอียด Part-time
   "pt_8h", "pt_dual40", "pt_45h",
   // รายละเอียด ทวิภาคี
   "dual_ft", "dual_pt",
+  // Legacy (per-tier PT/FT + ทีมผู้จัดการเก่า — เผื่อข้อมูลเก่า)
+  "rgm", "sam", "am", "ss",
+  "k_basic_pt", "k_basic_ft", "k_silver_pt", "k_silver_ft", "k_gold_pt", "k_gold_ft",
+  "s_basic_pt", "s_basic_ft", "s_silver_pt", "s_silver_ft", "s_gold_pt", "s_gold_ft",
   "created_at", "updated_at"
 ];
 

@@ -182,6 +182,23 @@ alter table public.manpower add column if not exists pt_45h    int default 0;
 alter table public.manpower add column if not exists dual_ft   int default 0;
 alter table public.manpower add column if not exists dual_pt   int default 0;
 
+-- ALTER (โครงสร้างใหม่ Excel template — Plan/Actual Team + FT/PT/Basic/Silver/Gold ต่อกลุ่ม)
+alter table public.manpower add column if not exists plan_team   int default 0;
+alter table public.manpower add column if not exists plan_staff  int default 0;
+alter table public.manpower add column if not exists actual_team int default 0;
+-- Service (5 inputs)
+alter table public.manpower add column if not exists s_ft     int default 0;
+alter table public.manpower add column if not exists s_pt     int default 0;
+alter table public.manpower add column if not exists s_basic  int default 0;
+alter table public.manpower add column if not exists s_silver int default 0;
+alter table public.manpower add column if not exists s_gold   int default 0;
+-- Kitchen (5 inputs)
+alter table public.manpower add column if not exists k_ft     int default 0;
+alter table public.manpower add column if not exists k_pt     int default 0;
+alter table public.manpower add column if not exists k_basic  int default 0;
+alter table public.manpower add column if not exists k_silver int default 0;
+alter table public.manpower add column if not exists k_gold   int default 0;
+
 drop trigger if exists trg_manpower_updated on public.manpower;
 create trigger trg_manpower_updated
   before update on public.manpower

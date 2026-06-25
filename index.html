@@ -1252,20 +1252,38 @@
       .mp-bulk-tbl thead th.sub.sub-end, .mp-bulk-tbl tbody td.sub-end { border-right: 1px dashed #cbd5e1 !important; }
 
       /* คอลัมน์ตามไซด์พีริยด (FT/PT) + ตัวรวม (read-only calc) */
-      .mp-bulk-tbl tbody td.c-pt    { background: #f5edff !important; }
-      .mp-bulk-tbl tbody td.c-ft    { background: #ffe4ec !important; }
-      .mp-bulk-tbl tbody td.c-pt-tot{ background: #e9d5ff !important; }
-      .mp-bulk-tbl tbody td.c-ft-tot{ background: #fbcfe8 !important; }
-      .mp-bulk-tbl tbody td.c-tot-team { background: #d1fae5 !important; }
-      .mp-bulk-tbl tbody td.c-tot-kit  { background: #cffafe !important; }
-      .mp-bulk-tbl tbody td.c-tot-srv  { background: #fed7aa !important; }
-      .mp-bulk-tbl thead th.sub.h-pt    { background: #ede9fe !important; color: #6d28d9 !important; }
-      .mp-bulk-tbl thead th.sub.h-ft    { background: #fce7f3 !important; color: #be185d !important; }
-      .mp-bulk-tbl thead th.sub.h-pt-tot{ background: #c4b5fd !important; color: #4c1d95 !important; }
-      .mp-bulk-tbl thead th.sub.h-ft-tot{ background: #f9a8d4 !important; color: #831843 !important; }
-      .mp-bulk-tbl thead th.sub.h-tot-team{ background: #86efac !important; color: #14532d !important; }
-      .mp-bulk-tbl thead th.sub.h-tot-kit { background: #67e8f9 !important; color: #155e75 !important; }
-      .mp-bulk-tbl thead th.sub.h-tot-srv { background: #fdba74 !important; color: #9a3412 !important; }
+      .mp-bulk-tbl tbody td.c-pt          { background: #f5edff !important; }
+      .mp-bulk-tbl tbody td.c-ft          { background: #ffe4ec !important; }
+      .mp-bulk-tbl tbody td.c-ft-grand    { background: #fbcfe8 !important; }
+      .mp-bulk-tbl tbody td.c-pt-grand    { background: #ddd6fe !important; }
+      .mp-bulk-tbl tbody td.c-plan        { background: #f3f4f6 !important; }
+      .mp-bulk-tbl tbody td.c-act         { background: #ecfeff !important; }
+      .mp-bulk-tbl tbody td.c-act-staff   { background: #ecfeff !important; }
+      .mp-bulk-tbl tbody td.c-vs-plan     { background: #fee2e2 !important; }
+      .mp-bulk-tbl tbody td.c-tot-srv     { background: #fed7aa !important; }
+      .mp-bulk-tbl tbody td.c-tot-kit     { background: #67e8f9 !important; color: #0c4a6e; }
+      .mp-bulk-tbl tbody td.c-tier-basic  { background: #fed7aa !important; }
+      .mp-bulk-tbl tbody td.c-tier-silver { background: #fef3c7 !important; }
+      .mp-bulk-tbl tbody td.c-tier-gold   { background: #fef9c3 !important; }
+      .mp-bulk-tbl thead th.sub.h-pt         { background: #ede9fe !important; color: #6d28d9 !important; }
+      .mp-bulk-tbl thead th.sub.h-ft         { background: #fce7f3 !important; color: #be185d !important; }
+      .mp-bulk-tbl thead th.sub.h-ft-grand   { background: #f9a8d4 !important; color: #831843 !important; }
+      .mp-bulk-tbl thead th.sub.h-pt-grand   { background: #c4b5fd !important; color: #4c1d95 !important; }
+      .mp-bulk-tbl thead th.sub.h-plan       { background: #e5e7eb !important; color: #1f2937 !important; }
+      .mp-bulk-tbl thead th.sub.h-act        { background: #a5f3fc !important; color: #155e75 !important; }
+      .mp-bulk-tbl thead th.sub.h-act-staff  { background: #a5f3fc !important; color: #155e75 !important; }
+      .mp-bulk-tbl thead th.sub.h-vs-plan    { background: #fecaca !important; color: #991b1b !important; }
+      .mp-bulk-tbl thead th.sub.h-tot-srv    { background: #fdba74 !important; color: #9a3412 !important; }
+      .mp-bulk-tbl thead th.sub.h-tot-kit    { background: #22d3ee !important; color: #0c4a6e !important; }
+      .mp-bulk-tbl thead th.sub.h-tier-basic { background: #fdba74 !important; color: #9a3412 !important; }
+      .mp-bulk-tbl thead th.sub.h-tier-silver{ background: #fde68a !important; color: #92400e !important; }
+      .mp-bulk-tbl thead th.sub.h-tier-gold  { background: #fef08a !important; color: #854d0e !important; }
+      /* pct cell ที่ต่ำกว่า 100% เป็นแดงอ่อน */
+      .mp-bulk-tbl tbody td .pct-val.low  { color: #b91c1c; }
+      .mp-bulk-tbl tbody td .pct-val.ok   { color: #166534; }
+      .mp-bulk-tbl tbody td .pct-val.zero { color: #cbd5e1; }
+      /* readonly input (admin-only) — เทาๆ */
+      .mp-bulk-tbl tbody td input[readonly] { background: #f8fafc !important; cursor: not-allowed; color: #475569; }
       /* sub-tier label (Basic/Silver/Gold) ที่หัวคอลัมน์ */
       .mp-bulk-tbl thead th.sub .sub-tier {
         display:block; font-size:9.5px; font-weight:700;
@@ -6270,6 +6288,9 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
 
         <!-- ── Bulk fill view ── -->
         <div id="mpBulkView" style="display:none">
+          <div style="background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:12.5px;line-height:1.6">
+            <strong>📌 หมายเหตุ:</strong> โครงสร้าง Plan Team / Plan staff / Actual Team / Service-Kitchen (FT/PT/Basic/Silver/Gold) ใช้ field ใหม่ใน DB — ถ้ายังไม่ได้รัน SQL อัปเดต schema ให้รัน <code>supabase_schema.sql</code> ส่วน ALTER ใน Supabase ก่อน
+          </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:12px 14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px">
             <button class="btn btn-outline" onclick="_mpBulkClose()" style="font-size:13px">← กลับ</button>
             <div style="font-size:14px;font-weight:800;color:#9a3412">📝 กรอกพร้อมกันหลายสาขา · <span id="mpBulkPeriod">—</span> · <b id="mpBulkRowCnt">0</b> สาขา</div>
@@ -6279,7 +6300,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             </div>
           </div>
           <div class="dash-card-wrap" style="padding:0;overflow:auto;max-height:75vh">
-            <table id="mpBulkTbl" class="mp-bulk-tbl" style="border-collapse:separate;border-spacing:0;font-size:12.5px;width:100%;min-width:2000px"></table>
+            <table id="mpBulkTbl" class="mp-bulk-tbl" style="border-collapse:separate;border-spacing:0;font-size:12.5px;width:100%;min-width:2200px"></table>
           </div>
           <div id="mpBulkSummary" style="margin-top:12px;font-size:13px;color:var(--txt2)"></div>
         </div>
@@ -8636,9 +8657,14 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           // ── Desktop table rows ──
           body.innerHTML = inZone.map(b => {
             const r = _mpData[b.branch_code];
-            const totMgr = r ? (r.rgm + r.sam + r.am + r.ss) : 0;
-            const totKit = r ? (r.k_basic_pt + r.k_basic_ft + r.k_silver_pt + r.k_silver_ft + r.k_gold_pt + r.k_gold_ft) : 0;
-            const totSrv = r ? (r.s_basic_pt + r.s_basic_ft + r.s_silver_pt + r.s_silver_ft + r.s_gold_pt + r.s_gold_ft) : 0;
+            // ใช้ field ใหม่ก่อน · fallback ไป legacy ถ้าไม่มีค่าใหม่
+            const useNew = r && (r.actual_team > 0 || r.s_ft > 0 || r.s_pt > 0 || r.k_ft > 0 || r.k_pt > 0);
+            const totMgr = !r ? 0 : (useNew ? (r.actual_team || 0)
+                                          : (r.rgm + r.sam + r.am + r.ss));
+            const totKit = !r ? 0 : (useNew ? ((r.k_ft || 0) + (r.k_pt || 0))
+                                          : (r.k_basic_pt + r.k_basic_ft + r.k_silver_pt + r.k_silver_ft + r.k_gold_pt + r.k_gold_ft));
+            const totSrv = !r ? 0 : (useNew ? ((r.s_ft || 0) + (r.s_pt || 0))
+                                          : (r.s_basic_pt + r.s_basic_ft + r.s_silver_pt + r.s_silver_ft + r.s_gold_pt + r.s_gold_ft));
             const has = !!r;
             const numStyle = (n, col) => `font-weight:800;font-variant-numeric:tabular-nums;font-size:16px;color:${n > 0 ? col : '#cbd5e1'}`;
             const editBtn = canEdit
@@ -8996,75 +9022,82 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         renderManpowerList();
       }
       var _MP_BULK_FIELDS = [
-        // type:input = ช่องกรอก · type:calc = สรุปอัตโนมัติ (read-only)
-        // color: ft (ชมพู) / pt (ม่วง) / tot-team (เขียว) / tot-kit (ฟ้า) / tot-srv (ส้ม) / tot-tier (เทา)
-        { type:"input", k:"rgm",         g:"mgr",  l:"RGM" },
-        { type:"input", k:"sam",         g:"mgr",  l:"SAM" },
-        { type:"input", k:"am",          g:"mgr",  l:"AM" },
-        { type:"input", k:"ss",          g:"mgr",  l:"SS" },
-        { type:"calc",  k:"actTeam",     g:"mgr",  l:"Actual Team", color:"tot-team",
-          calc:["rgm","sam","am","ss"] },
-
-        { type:"input", k:"k_basic_pt",  g:"kit",  l:"PT",     color:"pt", sub:"Basic" },
-        { type:"input", k:"k_basic_ft",  g:"kit",  l:"FT",     color:"ft", sub:"Basic", subEnd:true },
-        { type:"input", k:"k_silver_pt", g:"kit",  l:"PT",     color:"pt", sub:"Silver" },
-        { type:"input", k:"k_silver_ft", g:"kit",  l:"FT",     color:"ft", sub:"Silver", subEnd:true },
-        { type:"input", k:"k_gold_pt",   g:"kit",  l:"PT",     color:"pt", sub:"Gold" },
-        { type:"input", k:"k_gold_ft",   g:"kit",  l:"FT",     color:"ft", sub:"Gold", subEnd:true },
-        { type:"calc",  k:"kitPT",       g:"kit",  l:"PT รวม", color:"pt-tot",
-          calc:["k_basic_pt","k_silver_pt","k_gold_pt"] },
-        { type:"calc",  k:"kitFT",       g:"kit",  l:"FT รวม", color:"ft-tot",
-          calc:["k_basic_ft","k_silver_ft","k_gold_ft"] },
-        { type:"calc",  k:"totKit",      g:"kit",  l:"Total Kitchen", color:"tot-kit",
-          calc:["k_basic_pt","k_basic_ft","k_silver_pt","k_silver_ft","k_gold_pt","k_gold_ft"] },
-
-        { type:"input", k:"s_basic_pt",  g:"srv",  l:"PT",     color:"pt", sub:"Basic" },
-        { type:"input", k:"s_basic_ft",  g:"srv",  l:"FT",     color:"ft", sub:"Basic", subEnd:true },
-        { type:"input", k:"s_silver_pt", g:"srv",  l:"PT",     color:"pt", sub:"Silver" },
-        { type:"input", k:"s_silver_ft", g:"srv",  l:"FT",     color:"ft", sub:"Silver", subEnd:true },
-        { type:"input", k:"s_gold_pt",   g:"srv",  l:"PT",     color:"pt", sub:"Gold" },
-        { type:"input", k:"s_gold_ft",   g:"srv",  l:"FT",     color:"ft", sub:"Gold", subEnd:true },
-        { type:"calc",  k:"srvPT",       g:"srv",  l:"PT รวม", color:"pt-tot",
-          calc:["s_basic_pt","s_silver_pt","s_gold_pt"] },
-        { type:"calc",  k:"srvFT",       g:"srv",  l:"FT รวม", color:"ft-tot",
-          calc:["s_basic_ft","s_silver_ft","s_gold_ft"] },
+        // Plan — admin only (color: plan)
+        { type:"input", k:"plan_team",   g:"plan", l:"Plan Team",  color:"plan", adminOnly:true },
+        { type:"input", k:"plan_staff",  g:"plan", l:"Plan staff", color:"plan", adminOnly:true },
+        // Actual Team (single input — admin หรือ user)
+        { type:"input", k:"actual_team", g:"act",  l:"Actual Team", color:"act" },
+        // Actual staff (calc: Total Service + Total Kitchen)
+        { type:"calc",  k:"actStaff",    g:"act",  l:"Actual staff", color:"act-staff",
+          calc:["s_ft","s_pt","k_ft","k_pt"] },
+        // Actual vs Plan %  (special: actual_staff / plan_staff * 100)
+        { type:"pct",   k:"vsPlan",      g:"act",  l:"Actual vs Plan", color:"vs-plan" },
+        // FT + PT (grand totals — calc)
+        { type:"calc",  k:"grandFT",     g:"sum",  l:"FT", color:"ft-grand",
+          calc:["s_ft","k_ft"] },
+        { type:"calc",  k:"grandPT",     g:"sum",  l:"PT", color:"pt-grand",
+          calc:["s_pt","k_pt"] },
+        // Total Service (calc) + Service 5 inputs
         { type:"calc",  k:"totSrv",      g:"srv",  l:"Total Service", color:"tot-srv",
-          calc:["s_basic_pt","s_basic_ft","s_silver_pt","s_silver_ft","s_gold_pt","s_gold_ft"] },
-
-        { type:"input", k:"pt_8h",       g:"pt",   l:"8 ชม." },
-        { type:"input", k:"pt_dual40",   g:"pt",   l:"ทวิ 40h" },
-        { type:"input", k:"pt_45h",      g:"pt",   l:"4-5 ชม." },
+          calc:["s_ft","s_pt"] },
+        { type:"input", k:"s_ft",        g:"srv",  l:"FT",     color:"ft" },
+        { type:"input", k:"s_pt",        g:"srv",  l:"PT",     color:"pt" },
+        { type:"input", k:"s_basic",     g:"srv",  l:"Basic",  color:"tier-basic" },
+        { type:"input", k:"s_silver",    g:"srv",  l:"Silver", color:"tier-silver" },
+        { type:"input", k:"s_gold",      g:"srv",  l:"Gold",   color:"tier-gold" },
+        // Total Kitchen (calc) + Kitchen 5 inputs
+        { type:"calc",  k:"totKit",      g:"kit",  l:"Total Kitchen", color:"tot-kit",
+          calc:["k_ft","k_pt"] },
+        { type:"input", k:"k_ft",        g:"kit",  l:"FT",     color:"ft" },
+        { type:"input", k:"k_pt",        g:"kit",  l:"PT",     color:"pt" },
+        { type:"input", k:"k_basic",     g:"kit",  l:"Basic",  color:"tier-basic" },
+        { type:"input", k:"k_silver",    g:"kit",  l:"Silver", color:"tier-silver" },
+        { type:"input", k:"k_gold",      g:"kit",  l:"Gold",   color:"tier-gold" },
+        // PT details
+        { type:"input", k:"pt_8h",       g:"pt",   l:"Pt 8 ชม." },
+        { type:"input", k:"pt_dual40",   g:"pt",   l:"Pt ทวิ 40h" },
+        { type:"input", k:"pt_45h",      g:"pt",   l:"Pt 4-5 ชม." },
+        // ทวิภาคี
         { type:"input", k:"dual_ft",     g:"dual", l:"ทวิ FT" },
         { type:"input", k:"dual_pt",     g:"dual", l:"ทวิ PT" }
       ];
       function _mpBulkRender() {
         const tbl = document.getElementById("mpBulkTbl");
         if (!tbl) return;
-        const grpCount = { mgr:0, kit:0, srv:0, pt:0, dual:0 };
-        _MP_BULK_FIELDS.forEach(f => { grpCount[f.g]++; });
+        const isAdmin = (S.role === "admin" || S.code === "ADMIN");
+        const grpCount = {};
+        _MP_BULK_FIELDS.forEach(f => { grpCount[f.g] = (grpCount[f.g]||0) + 1; });
         const isGroupStart = (idx) => {
           if (idx === 0) return true;
           return _MP_BULK_FIELDS[idx].g !== _MP_BULK_FIELDS[idx-1].g;
         };
-        // header rows
-        let h1 = `<tr><th rowspan="2" class="branch-cell">สาขา</th>`;
-        h1 += `<th colspan="${grpCount.mgr}"  class="mp-bulk-grp mgr  gstart mgr">👔 ทีมผู้จัดการสาขา</th>`;
-        h1 += `<th colspan="${grpCount.kit}"  class="mp-bulk-grp kit  gstart kit">🍳 พนักงานครัว · Basic | Silver | Gold + รวม</th>`;
-        h1 += `<th colspan="${grpCount.srv}"  class="mp-bulk-grp srv  gstart srv">🍽️ พนักงานบริการ · Basic | Silver | Gold + รวม</th>`;
-        h1 += `<th colspan="${grpCount.pt}"   class="mp-bulk-grp pt   gstart pt">⏱️ รายละเอียด Part-time</th>`;
-        h1 += `<th colspan="${grpCount.dual}" class="mp-bulk-grp dual gstart dual">🎓 ทวิภาคี</th>`;
+        const groupTitle = {
+          plan: "Plan (Admin ตั้ง)",
+          act:  "Actual + เทียบ Plan",
+          sum:  "รวม FT/PT",
+          srv:  "Service",
+          kit:  "Kitchen",
+          pt:   "⏱️ รายละเอียด Part time",
+          dual: "🎓 รายละเอียด ทวิ"
+        };
+        // header รวมกลุ่ม
+        let h1 = `<tr><th rowspan="2" class="branch-cell">Branch</th>`;
+        const seen = new Set();
+        _MP_BULK_FIELDS.forEach(f => {
+          if (seen.has(f.g)) return;
+          seen.add(f.g);
+          h1 += `<th colspan="${grpCount[f.g]}" class="mp-bulk-grp ${f.g} gstart ${f.g}">${escHtml(groupTitle[f.g] || f.g)}</th>`;
+        });
         h1 += `<th rowspan="2" class="status-cell">สถานะ</th></tr>`;
         let h2 = `<tr>`;
         _MP_BULK_FIELDS.forEach((f, idx) => {
           let cls = `sub ${f.g}`;
           if (isGroupStart(idx)) cls += ` gstart ${f.g}`;
-          if (f.subEnd) cls += " sub-end";
           if (f.color) cls += " h-" + f.color;
-          const tier = f.sub ? `<span class="sub-tier">${escHtml(f.sub)}</span>` : "";
-          h2 += `<th class="${cls}">${tier}${escHtml(f.l)}</th>`;
+          h2 += `<th class="${cls}">${escHtml(f.l)}</th>`;
         });
         h2 += `</tr>`;
-        // body rows
+        // body
         const rows = _mpBulkCodes.map(code => {
           const r = _mpData[code] || {};
           const bInfo = BRANCH_DM_MAP[code] || {};
@@ -9072,14 +9105,16 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           _MP_BULK_FIELDS.forEach((f, idx) => {
             let cls = `g-${f.g}`;
             if (isGroupStart(idx)) cls += ` gstart ${f.g}`;
-            if (f.subEnd) cls += " sub-end";
             if (f.color) cls += " c-" + f.color;
             if (f.type === "calc") {
               row += `<td class="${cls}"><span class="calc-val zero" id="mpb_${code}_${f.k}">0</span></td>`;
+            } else if (f.type === "pct") {
+              row += `<td class="${cls}"><span class="calc-val pct-val zero" id="mpb_${code}_${f.k}">0%</span></td>`;
             } else {
               const rawVal = r[f.k];
               const valAttr = (rawVal != null && rawVal !== 0) ? `value="${rawVal}"` : `value=""`;
-              row += `<td class="${cls}"><input id="mpb_${code}_${f.k}" type="number" min="0" inputmode="numeric" placeholder="0" ${valAttr} oninput="_mpBulkRowRecalc('${code}')"></td>`;
+              const ro = (f.adminOnly && !isAdmin) ? "readonly" : "";
+              row += `<td class="${cls}"><input id="mpb_${code}_${f.k}" type="number" min="0" inputmode="numeric" placeholder="0" ${valAttr} ${ro} oninput="_mpBulkRowRecalc('${code}')"></td>`;
             }
           });
           row += `<td class="status-cell" id="mpbstat_${code}"><span class="stat-chip blank">— รอกรอก</span></td></tr>`;
@@ -9106,6 +9141,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         return p;
       }
       function _mpBulkUpdateCalcs(code) {
+        // calc fields (sum)
         _MP_BULK_FIELDS.filter(f => f.type === "calc").forEach(f => {
           const sum = (f.calc || []).reduce((t, k) => t + _mpBulkGet(code, k), 0);
           const el = document.getElementById(`mpb_${code}_${f.k}`);
@@ -9114,19 +9150,43 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             el.classList.toggle("zero", sum === 0);
           }
         });
+        // pct: actual_staff / plan_staff
+        const planStaff   = _mpBulkGet(code, "plan_staff");
+        const actualStaff = _mpBulkGet(code, "s_ft") + _mpBulkGet(code, "s_pt")
+                          + _mpBulkGet(code, "k_ft") + _mpBulkGet(code, "k_pt");
+        const pctEl = document.getElementById(`mpb_${code}_vsPlan`);
+        if (pctEl) {
+          if (planStaff <= 0) {
+            pctEl.textContent = "0%";
+            pctEl.className = "calc-val pct-val zero";
+          } else {
+            const pct = Math.round((actualStaff / planStaff) * 1000) / 10;
+            pctEl.textContent = pct + "%";
+            pctEl.className = "calc-val pct-val " + (pct >= 100 ? "ok" : "low");
+          }
+        }
       }
       function _mpBulkRowValidate(p) {
-        const totMgr = p.rgm + p.sam + p.am + p.ss;
-        const kPT = p.k_basic_pt + p.k_silver_pt + p.k_gold_pt;
-        const sPT = p.s_basic_pt + p.s_silver_pt + p.s_gold_pt;
-        const totKitSrv = p.k_basic_pt+p.k_basic_ft+p.k_silver_pt+p.k_silver_ft+p.k_gold_pt+p.k_gold_ft
-                        + p.s_basic_pt+p.s_basic_ft+p.s_silver_pt+p.s_silver_ft+p.s_gold_pt+p.s_gold_ft;
-        if (totMgr === 0) return { ok:false, err:"ทีมผู้จัดการ = 0", bad:["rgm","sam","am","ss"] };
-        if (totKitSrv === 0) return { ok:false, err:"ครัว+บริการ = 0", bad:[] };
-        if (p.dual_pt !== p.pt_dual40) return { ok:false, err:`ทวิภาคี PT ต้องเป็น ${p.pt_dual40}`, bad:["dual_pt","pt_dual40"] };
+        // Actual Team
+        if ((p.actual_team || 0) === 0) return { ok:false, err:"Actual Team = 0" };
+        // Service: FT+PT > 0
+        const sFP = p.s_ft + p.s_pt;
+        if (sFP === 0) return { ok:false, err:"Service FT+PT = 0" };
+        // Kitchen: FT+PT > 0
+        const kFP = p.k_ft + p.k_pt;
+        if (kFP === 0) return { ok:false, err:"Kitchen FT+PT = 0" };
+        // Service: Basic + Silver + Gold = FT + PT
+        const sTier = p.s_basic + p.s_silver + p.s_gold;
+        if (sTier !== sFP) return { ok:false, err:`Service: Basic+Silver+Gold (${sTier}) ≠ FT+PT (${sFP})` };
+        // Kitchen: Basic + Silver + Gold = FT + PT
+        const kTier = p.k_basic + p.k_silver + p.k_gold;
+        if (kTier !== kFP) return { ok:false, err:`Kitchen: Basic+Silver+Gold (${kTier}) ≠ FT+PT (${kFP})` };
+        // PT details: sum = grand PT (s_pt + k_pt)
         const ptSum = p.pt_8h + p.pt_dual40 + p.pt_45h;
-        const ptRef = kPT + sPT;
-        if (ptSum !== ptRef) return { ok:false, err:`PT รวม ${ptSum} ≠ ${ptRef}`, bad:["pt_8h","pt_dual40","pt_45h"] };
+        const ptRef = p.s_pt + p.k_pt;
+        if (ptSum !== ptRef) return { ok:false, err:`Part-time รวม (${ptSum}) ≠ PT รวม Service+Kitchen (${ptRef})` };
+        // ทวิภาคี PT = pt_dual40
+        if (p.dual_pt !== p.pt_dual40) return { ok:false, err:`ทวิภาคี PT (${p.dual_pt}) ≠ Pt ทวิ 40h (${p.pt_dual40})` };
         return { ok:true };
       }
       function _mpBulkShowErr(code, err) {
@@ -13755,15 +13815,23 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             const N = (v) => { const n = parseInt(v, 10); return isNaN(n) ? 0 : Math.max(0, n); };
             const row = {
               branch_code: bc, year: y, month: m,
+              // NEW model (Excel template)
+              plan_team: N(params.plan_team), plan_staff: N(params.plan_staff),
+              actual_team: N(params.actual_team),
+              s_ft: N(params.s_ft), s_pt: N(params.s_pt),
+              s_basic: N(params.s_basic), s_silver: N(params.s_silver), s_gold: N(params.s_gold),
+              k_ft: N(params.k_ft), k_pt: N(params.k_pt),
+              k_basic: N(params.k_basic), k_silver: N(params.k_silver), k_gold: N(params.k_gold),
+              pt_8h: N(params.pt_8h), pt_dual40: N(params.pt_dual40), pt_45h: N(params.pt_45h),
+              dual_ft: N(params.dual_ft), dual_pt: N(params.dual_pt),
+              // LEGACY (per-tier PT/FT + RGM/SAM/AM/SS) — เก็บไว้กัน null
               rgm: N(params.rgm), sam: N(params.sam), am: N(params.am), ss: N(params.ss),
               k_basic_pt: N(params.k_basic_pt), k_basic_ft: N(params.k_basic_ft),
               k_silver_pt: N(params.k_silver_pt), k_silver_ft: N(params.k_silver_ft),
               k_gold_pt: N(params.k_gold_pt), k_gold_ft: N(params.k_gold_ft),
               s_basic_pt: N(params.s_basic_pt), s_basic_ft: N(params.s_basic_ft),
               s_silver_pt: N(params.s_silver_pt), s_silver_ft: N(params.s_silver_ft),
-              s_gold_pt: N(params.s_gold_pt), s_gold_ft: N(params.s_gold_ft),
-              pt_8h: N(params.pt_8h), pt_dual40: N(params.pt_dual40), pt_45h: N(params.pt_45h),
-              dual_ft: N(params.dual_ft), dual_pt: N(params.dual_pt)
+              s_gold_pt: N(params.s_gold_pt), s_gold_ft: N(params.s_gold_ft)
             };
             const { error } = await sb.from("manpower")
               .upsert(row, { onConflict: "branch_code,year,month" });
