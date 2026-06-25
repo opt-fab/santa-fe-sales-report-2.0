@@ -838,6 +838,11 @@
 
       /* Row + cards */
       .dash3-row { gap: 18px; margin-bottom: 18px; }
+      .dash3-row-full {
+        display: block !important;
+        grid-template-columns: 1fr !important;
+        width: 100%;
+      }
       .dash3-card {
         background: var(--surface) !important;
         border: 1px solid var(--bd) !important;
@@ -12032,17 +12037,18 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             <div class="dash3-row">${topPanel}</div>
             <div class="dash3-row">${channelMega}</div>`;
         } else {
-          // w/m/y → ใช้ channel panel แบบ daily (donut + per-channel stats) วางใต้สรุปยอดขาย
+          // w/m/y → สรุปยอดขาย เต็มจอ · ใต้ลงมา สัดส่วนช่องทางการขาย · ต่อด้วยกราฟแนวโน้ม
           const channelPanel = _ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่า · บิล · เฉลี่ย/บิล",
             `<div id="sec${C}ChanBox"></div>`);
           const _weekBranchSkipTrend = (sec === 'week' && _isBranchRole);
-          bodyEl.innerHTML = `
-            <div class="dash3-row">${topPanel}</div>
-            <div class="dash3-row">${channelPanel}</div>
-            ` + (_weekBranchSkipTrend ? '' : `
-            <div class="dash3-row">
+          const trendRow = _weekBranchSkipTrend ? '' :
+            `<div class="dash3-row dash3-row-full">
               ${_ddPanel(trendTitle, trendSub, `<div id="sec${C}TrendBox" style="position:relative;min-height:280px"></div>`)}
-            </div>`);
+            </div>`;
+          bodyEl.innerHTML =
+            `<div class="dash3-row dash3-row-full">${topPanel}</div>
+             <div class="dash3-row dash3-row-full">${channelPanel}</div>
+             ${trendRow}`;
         }
         // ── Charts ──
         if (sec === 'day') _ddRenderDayChannels(rows, sec);
