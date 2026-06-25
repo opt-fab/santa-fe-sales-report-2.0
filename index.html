@@ -810,11 +810,12 @@
         display: flex; align-items: center; gap: 5px;
       }
       .dash3-kpi-val {
-        font-size: 1.7rem; font-weight: 800;
+        font-size: 1.35rem; font-weight: 800;
         color: var(--txt);
         font-variant-numeric: tabular-nums;
         letter-spacing: -0.03em;
         line-height: 1.1;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
       .dash3-kpi-hero {
         background: linear-gradient(135deg, rgba(255,140,66,0.14), rgba(255,107,26,0.08));
@@ -830,7 +831,7 @@
         background: var(--brand-grad);
       }
       .dash3-kpi-hero .dash3-kpi-val {
-        font-size: 2.1rem;
+        font-size: 1.55rem;
         color: var(--brand);
         text-shadow: 0 0 24px rgba(255,140,66,0.4);
       }
@@ -12031,15 +12032,13 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             <div class="dash3-row">${topPanel}</div>
             <div class="dash3-row">${channelMega}</div>`;
         } else {
-          // w/m/y → ใช้ channel panel แบบ daily (donut + per-channel stats) แทน donut+legend+table
+          // w/m/y → ใช้ channel panel แบบ daily (donut + per-channel stats) วางใต้สรุปยอดขาย
           const channelPanel = _ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่า · บิล · เฉลี่ย/บิล",
             `<div id="sec${C}ChanBox"></div>`);
           const _weekBranchSkipTrend = (sec === 'week' && _isBranchRole);
           bodyEl.innerHTML = `
-            <div class="dash3-row dd-grid2">
-              ${topPanel}
-              ${channelPanel}
-            </div>
+            <div class="dash3-row">${topPanel}</div>
+            <div class="dash3-row">${channelPanel}</div>
             ` + (_weekBranchSkipTrend ? '' : `
             <div class="dash3-row">
               ${_ddPanel(trendTitle, trendSub, `<div id="sec${C}TrendBox" style="position:relative;min-height:280px"></div>`)}
