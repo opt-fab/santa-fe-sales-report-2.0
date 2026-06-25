@@ -5888,18 +5888,18 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           <select id="histBranchFilter" onchange="loadHistory()" style="display:none;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;min-width:180px"></select>
           <button class="btn btn-sm btn-outline" onclick="showForm()">← ส่งยอด</button>
         </div>
-        <!-- Date range — จาก / ถึง (จำกัด 30 วัน) + Slot filter -->
+        <!-- เลือกวันที่ + รอบ -->
         <div class="hist-filter" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:12px 14px;background:#fff;border:1px solid var(--bd);border-radius:10px">
-          <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">📅 จาก</label>
-          <input type="date" id="histDateFrom" onchange="loadHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
-          <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">ถึง</label>
-          <input type="date" id="histDateTo" onchange="loadHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
+          <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">📅 วันที่</label>
+          <input type="date" id="histDate" onchange="loadHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
           <label style="font-size:12.5px;font-weight:700;color:var(--txt2);margin-left:8px">🕓 รอบ</label>
           <select id="histSlotFilter" onchange="_renderHistoryCached()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
             <option value="">ทุกรอบ</option>
             <option value="16.00">16.00</option>
             <option value="สิ้นวัน">สิ้นวัน</option>
           </select>
+          <!-- กันโค้ดเก่าพังเฉพาะ hidden -->
+          <input type="hidden" id="histDateFrom"><input type="hidden" id="histDateTo">
         </div>
 
         <!-- Desktop: table -->
@@ -13381,20 +13381,22 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         populateBranchFilter("histBranchFilter");
         const queryCodes = getQueryBranchCodes("histBranchFilter"); // array | null
 
-        // Init date inputs + ล็อก min/max ให้เลือกได้แค่ในช่วง 30 วันย้อนหลัง → วันนี้
+        // เลือกวันเดียว — limit 30 วันย้อนหลัง → วันนี้
+        const dateEl = document.getElementById("histDate");
         const fromEl = document.getElementById("histDateFrom");
         const toEl   = document.getElementById("histDateTo");
         const _fmt = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
         const today = todayStr();
         const minDate = (function(){ const d = new Date(); d.setDate(d.getDate() - 30); return _fmt(d); })();
-        if (fromEl) { fromEl.min = minDate; fromEl.max = today; if (!fromEl.value || fromEl.value < minDate) fromEl.value = minDate; }
-        if (toEl)   { toEl.min   = minDate; toEl.max   = today; if (!toEl.value   || toEl.value   > today)   toEl.value   = today; }
-        // กัน from > to
-        if (fromEl.value > toEl.value) { const t = fromEl.value; fromEl.value = toEl.value; toEl.value = t; }
-        // ปลอดภัยอีกชั้น: validate ช่วงไม่เกิน 30 (popup ถ้ามีการพิมพ์ตรงๆทะลุ min/max)
-        if (!_validateDateSpan30(fromEl, toEl, loadHistory)) return;
-        const since = fromEl.value;
-        const until = toEl.value;
+        if (dateEl) {
+          dateEl.min = minDate; dateEl.max = today;
+          if (!dateEl.value || dateEl.value < minDate || dateEl.value > today) dateEl.value = today;
+        }
+        const since = dateEl ? dateEl.value : today;
+        const until = since;
+        // sync hidden fields กันโค้ดเก่าอ่านได้
+        if (fromEl) fromEl.value = since;
+        if (toEl)   toEl.value   = until;
         const titleEl = document.getElementById("histTitle");
         if (titleEl) titleEl.textContent = `📊 ประวัติ`;
 
@@ -13441,10 +13443,10 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         const slot = (document.getElementById("histSlotFilter") || {}).value || "";
         if (slot) rows = rows.filter(r => r.submit_time_slot === slot);
         if (!rows.length) {
-          const fr = (document.getElementById("histDateFrom") || {}).value;
-          const to = (document.getElementById("histDateTo")   || {}).value;
-          const lbl = (fr && to) ? `${fr} → ${to}` : "ช่วงที่เลือก";
-          const empty = `<div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">ไม่พบข้อมูลในช่วงนี้<br><span style="font-size:11px;color:var(--txt2)">${escHtml(lbl)}</span></div></div>`;
+          const d = (document.getElementById("histDate") || {}).value;
+          const slot = (document.getElementById("histSlotFilter") || {}).value || "";
+          const lbl = (d ? d : "วันที่ที่เลือก") + (slot ? ` · รอบ ${slot}` : "");
+          const empty = `<div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">ไม่พบข้อมูล<br><span style="font-size:11px;color:var(--txt2)">${escHtml(lbl)}</span></div></div>`;
           document.getElementById("histTableContent").innerHTML = empty;
           document.getElementById("histCardsContent").innerHTML = empty;
           return;
