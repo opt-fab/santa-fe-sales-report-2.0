@@ -13808,15 +13808,28 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           if (mode === "saveManpower") {
             const allowed = (S.role === "admin" || S.role === "vp" || S.role === "bzm" || S.code === "ADMIN");
             if (!allowed) { cb({ ok: false, error: "permission denied" }); return; }
+            const isAdmin = (S.role === "admin" || S.code === "ADMIN");
             const bc = String(params.branch_code || "").trim();
             const y  = parseInt(params.year, 10);
             const m  = parseInt(params.month, 10);
             if (!bc || !y || !m) { cb({ ok: false, error: "missing branch_code/year/month" }); return; }
             const N = (v) => { const n = parseInt(v, 10); return isNaN(n) ? 0 : Math.max(0, n); };
+            // ถ้าไม่ใช่ admin → อ่านค่า plan_* ปัจจุบันใน DB มาใช้แทน (กันเขียนทับ)
+            let lockedPlanTeam = N(params.plan_team);
+            let lockedPlanStaff = N(params.plan_staff);
+            if (!isAdmin) {
+              try {
+                const { data: cur } = await sb.from("manpower")
+                  .select("plan_team,plan_staff")
+                  .eq("branch_code", bc).eq("year", y).eq("month", m).maybeSingle();
+                lockedPlanTeam  = (cur && cur.plan_team  != null) ? cur.plan_team  : 0;
+                lockedPlanStaff = (cur && cur.plan_staff != null) ? cur.plan_staff : 0;
+              } catch (_) {}
+            }
             const row = {
               branch_code: bc, year: y, month: m,
-              // NEW model (Excel template)
-              plan_team: N(params.plan_team), plan_staff: N(params.plan_staff),
+              // NEW model (Excel template) — plan_* lock เฉพาะ admin
+              plan_team: lockedPlanTeam, plan_staff: lockedPlanStaff,
               actual_team: N(params.actual_team),
               s_ft: N(params.s_ft), s_pt: N(params.s_pt),
               s_basic: N(params.s_basic), s_silver: N(params.s_silver), s_gold: N(params.s_gold),
