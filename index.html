@@ -11999,26 +11999,22 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
 
         // โหมดรายวัน → รวม donut + bars + table เป็นการ์ดเดียว · สรุปผลสาขาเต็มแถว
         const isDayMode = (sec === 'day');
-        // มือถือ — w/m/y ใช้ "ช่องทางการขาย" แบบเดียวกับ daily
+        // มือถือ + ไม่ใช่ branch user → ใช้ layout ช่องทางการขายแบบ daily (donut + ตารางสถิติ)
+        // (branch user มี channel info ใน hero อยู่แล้ว — ไม่ต้องเพิ่ม)
+        const _isBranchRole = (role === 'branch' || role === 'franchise');
         const _isMobile = (typeof window !== "undefined") &&
           window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
-        const useDayChannels = isDayMode || _isMobile;
+        const useDayChannels = isDayMode || (_isMobile && !_isBranchRole);
         kpiEl.innerHTML = _ddKpiCards(_ddAgg(rows), codes, map);
         if (useDayChannels) {
-          // ช่องทางการขาย = donut + ตารางสถิติช่องทาง (_ddRenderDayChannels)
-          const channelMega = _ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่า · บิล · เฉลี่ย/บิล",
+          const channelMega = _ddPanel(isDayMode ? trendTitle : "🍽️ สัดส่วนช่องทางการขาย",
+                                       isDayMode ? trendSub   : "มูลค่า · บิล · เฉลี่ย/บิล",
             `<div id="sec${C}TrendBox"></div>`);
-          // ถ้าเป็น w/m/y บนมือถือ → ต่อด้วย panel แนวโน้ม (อีก TrendBox)
-          const extraTrendPanel = !isDayMode
-            ? `<div class="dash3-row">
-                 ${_ddPanel(trendTitle, trendSub, `<div id="sec${C}TrendBox2" style="position:relative;min-height:240px"></div>`)}
-               </div>` : '';
           bodyEl.innerHTML = `
             <div class="dash3-row">${topPanel}</div>
-            <div class="dash3-row">${channelMega}</div>
-            ${extraTrendPanel}`;
+            <div class="dash3-row">${channelMega}</div>`;
         } else {
-          // Desktop week/month/year — donut + legend + ตาราง
+          // donut + legend + ตาราง
           const channelCombined = _ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่ายอดขายแยกตามช่องทาง",
             `<div class="dd-donut-row">
               <div class="dd-donut-canvas">
@@ -12039,34 +12035,16 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             </div>`);
         }
         // ── Charts ──
-        if (useDayChannels) {
+        _ddRenderDonut(rows, sec);
+        if (sec === 'day') _ddRenderDayChannels(rows, sec);
+        else if (_isMobile && !_isBranchRole) {
+          // มือถือ w/m/y (non-branch) → ใช้ channel-stats panel แทน trend chart
           _ddRenderDayChannels(rows, sec);
-          // มือถือ w/m/y — render trend chart ลง TrendBox2 (rename id ชั่วคราว)
-          if (!isDayMode) {
-            const t1 = document.getElementById("sec" + C + "TrendBox");
-            const t2 = document.getElementById("sec" + C + "TrendBox2");
-            if (t1 && t2) {
-              const oldId = t1.id;
-              t1.id = oldId + "_used";
-              t2.id = oldId;
-              try {
-                if (sec === 'week') _ddRenderBranchTrend(rows, codes, sec, d);
-                else if (sec === 'year') _ddRenderTrend(rows, sec, d);
-                else if (isBranch) _ddRenderBranchTrend(rows, codes, sec, d);
-                else _ddRenderTrend(rows, sec, d);
-              } finally {
-                t2.id = "sec" + C + "TrendBox2";
-                t1.id = oldId;
-              }
-            }
-          }
-        } else {
-          _ddRenderDonut(rows, sec);
-          if (sec === 'week') _ddRenderBranchTrend(rows, codes, sec, d);
-          else if (sec === 'year') _ddRenderTrend(rows, sec, d);
-          else if (isBranch) _ddRenderBranchTrend(rows, codes, sec, d);
-          else _ddRenderTrend(rows, sec, d);
         }
+        else if (sec === 'week') _ddRenderBranchTrend(rows, codes, sec, d);
+        else if (sec === 'year') _ddRenderTrend(rows, sec, d);
+        else if (isBranch) _ddRenderBranchTrend(rows, codes, sec, d);
+        else _ddRenderTrend(rows, sec, d);
       }
 
       let _secResetPending = false;
