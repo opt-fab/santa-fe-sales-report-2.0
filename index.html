@@ -1883,6 +1883,13 @@
         .dd-bar-head span:last-child { text-align:right; min-width:100px; }
       }
 
+      /* Dashboard mobile-only / desktop-only row switching */
+      .mob-only-row { display: none; }
+      @media (max-width: 640px) {
+        .desk-only-row { display: none !important; }
+        .mob-only-row  { display: block; }
+      }
+
       /* มือถือ — กัน week/month/year section ดันความกว้างทะลุจอ → ป้องกัน iOS auto zoom-out */
       @media (max-width: 640px) {
         #sDash { overflow-x: hidden; }
@@ -11601,12 +11608,17 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
 
       // เลือกวันเดียว — แสดงช่องทางการขายเป็นแท่งแนวนอน (HTML, ไม่ใช้ Chart.js)
       //   แต่ละแถว: ชื่อช่องทาง + บิลเฉลี่ย · แท่งสัดส่วน · ฿ + %
-      function _ddRenderDayChannels(rows, sec) {
+      var _secChanCharts = { day:{}, week:{}, month:{}, year:{} };
+      function _ddRenderDayChannels(rows, sec, targetSuffix) {
         sec = sec || 'day';
         const C = _cap(sec);
-        const box = document.getElementById("sec" + C + "TrendBox");
+        const useCustom = !!targetSuffix && targetSuffix !== "TrendBox";
+        const boxId    = "sec" + C + (targetSuffix || "TrendBox");
+        const canvasId = useCustom ? ("sec" + C + targetSuffix + "Canvas") : ("sec" + C + "Trend");
+        const box = document.getElementById(boxId);
         if (!box) return;
-        const _st = _secCharts[sec];
+        // ใช้ chart slot แยกถ้า custom — ไม่ทับ trend chart หลัก
+        const _st = useCustom ? _secChanCharts[sec] : _secCharts[sec];
         if (_st && _st.trend) { _st.trend.destroy(); _st.trend = null; }
         const a = _ddAgg(rows);
         const items = CHANNEL_DEFS.map(c => ({
@@ -11654,7 +11666,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           <div class="dd-chan-donut-wrap">
             <div class="dd-chan-donut-side">
               <div class="dd-chan-donut-canvas">
-                <canvas id="sec${C}Trend"></canvas>
+                <canvas id="${canvasId}"></canvas>
                 <div class="dd-chan-donut-center">
                   <div class="dd-chan-donut-val">฿${fmt(Math.round(total))}</div>
                   <div class="dd-chan-donut-lbl">ยอดขายจริง</div>
@@ -11666,7 +11678,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               ${legendRows}
             </div>
           </div>`;
-        _st.trend = new Chart(document.getElementById("sec" + C + "Trend"), {
+        _st.trend = new Chart(document.getElementById(canvasId), {
           type: "doughnut",
           data: {
             labels: segmentItems.map(t => t.label),
@@ -11997,24 +12009,20 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           trendSub = "ยอดขายจริงรายวันในช่วงที่เลือก";
         }
 
-        // โหมดรายวัน → รวม donut + bars + table เป็นการ์ดเดียว · สรุปผลสาขาเต็มแถว
         const isDayMode = (sec === 'day');
-        // มือถือ + ไม่ใช่ branch user → ใช้ layout ช่องทางการขายแบบ daily (donut + ตารางสถิติ)
-        // (branch user มี channel info ใน hero อยู่แล้ว — ไม่ต้องเพิ่ม)
         const _isBranchRole = (role === 'branch' || role === 'franchise');
         const _isMobile = (typeof window !== "undefined") &&
           window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
-        const useDayChannels = isDayMode || (_isMobile && !_isBranchRole);
+        // มือถือ + w/m/y → เพิ่ม channel panel แบบ daily (ใช้ id เฉพาะ "ChanBox" ไม่ชน TrendBox ใน hero)
+        const addMobileChannelPanel = _isMobile && !isDayMode;
         kpiEl.innerHTML = _ddKpiCards(_ddAgg(rows), codes, map);
-        if (useDayChannels) {
-          const channelMega = _ddPanel(isDayMode ? trendTitle : "🍽️ สัดส่วนช่องทางการขาย",
-                                       isDayMode ? trendSub   : "มูลค่า · บิล · เฉลี่ย/บิล",
-            `<div id="sec${C}TrendBox"></div>`);
+        if (isDayMode) {
+          const channelMega = _ddPanel(trendTitle, trendSub, `<div id="sec${C}TrendBox"></div>`);
           bodyEl.innerHTML = `
             <div class="dash3-row">${topPanel}</div>
             <div class="dash3-row">${channelMega}</div>`;
         } else {
-          // donut + legend + ตาราง
+          // donut + legend + ตาราง (desktop)
           const channelCombined = _ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่ายอดขายแยกตามช่องทาง",
             `<div class="dd-donut-row">
               <div class="dd-donut-canvas">
@@ -12024,12 +12032,20 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               <div id="sec${C}DonutLeg" class="dash2-chan-legend dd-donut-legend"></div>
             </div>
             <div class="dd-donut-table-wrap">${_ddChannelTable(rows)}</div>`);
-          const _weekBranchSkipTrend = (sec === 'week' && (role === 'branch' || role === 'franchise'));
+          const _weekBranchSkipTrend = (sec === 'week' && _isBranchRole);
+          // ─ มือถือ: เพิ่ม channel panel เป็นการ์ดเดี่ยวแบบ daily ─
+          const mobileChannelPanel = addMobileChannelPanel
+            ? `<div class="dash3-row mob-only-row">
+                 ${_ddPanel("🍽️ สัดส่วนช่องทางการขาย", "มูลค่า · บิล · เฉลี่ย/บิล", `<div id="sec${C}ChanBox"></div>`)}
+               </div>` : '';
           bodyEl.innerHTML = `
-            <div class="dash3-row dd-grid2">
+            <div class="dash3-row dd-grid2 desk-only-row">
               ${topPanel}
               ${channelCombined}
-            </div>` + (_weekBranchSkipTrend ? '' : `
+            </div>
+            <div class="dash3-row mob-only-row">${topPanel}</div>
+            ${mobileChannelPanel}
+            ` + (_weekBranchSkipTrend ? '' : `
             <div class="dash3-row">
               ${_ddPanel(trendTitle, trendSub, `<div id="sec${C}TrendBox" style="position:relative;min-height:280px"></div>`)}
             </div>`);
@@ -12037,14 +12053,12 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         // ── Charts ──
         _ddRenderDonut(rows, sec);
         if (sec === 'day') _ddRenderDayChannels(rows, sec);
-        else if (_isMobile && !_isBranchRole) {
-          // มือถือ w/m/y (non-branch) → ใช้ channel-stats panel แทน trend chart
-          _ddRenderDayChannels(rows, sec);
-        }
         else if (sec === 'week') _ddRenderBranchTrend(rows, codes, sec, d);
         else if (sec === 'year') _ddRenderTrend(rows, sec, d);
         else if (isBranch) _ddRenderBranchTrend(rows, codes, sec, d);
         else _ddRenderTrend(rows, sec, d);
+        // มือถือ w/m/y — render channel panel (donut + per-channel stats) ลง id "ChanBox"
+        if (addMobileChannelPanel) _ddRenderDayChannels(rows, sec, "ChanBox");
       }
 
       let _secResetPending = false;
