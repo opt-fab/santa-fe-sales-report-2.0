@@ -1214,21 +1214,21 @@
         text-shadow: none !important;
       }
       .mp-bulk-tbl thead .mp-bulk-grp {
-        font-size: 13px !important; padding: 10px 12px !important;
-        border-bottom: 2px solid #1f2937 !important;
-        letter-spacing: .02em !important;
+        font-size: 13px !important; padding: 9px 12px !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        letter-spacing: 0 !important;
         font-weight: 800 !important;
       }
-      /* ── Excel-palette group bars ── */
-      .mp-bulk-tbl thead .mp-bulk-grp.plan { background: #d9d9d9 !important; color: #1f2937 !important; }
-      .mp-bulk-tbl thead .mp-bulk-grp.act  { background: #deebf7 !important; color: #1e3a8a !important; }
-      .mp-bulk-tbl thead .mp-bulk-grp.sum  { background: #fff2cc !important; color: #7c2d12 !important; }
-      .mp-bulk-tbl thead .mp-bulk-grp.srv  { background: #f4b084 !important; color: #fff !important; text-shadow: 0 1px 0 rgba(0,0,0,.2) !important; }
-      .mp-bulk-tbl thead .mp-bulk-grp.kit  { background: #4fb0c6 !important; color: #fff !important; text-shadow: 0 1px 0 rgba(0,0,0,.2) !important; }
-      .mp-bulk-tbl thead .mp-bulk-grp.pt   { background: #e7e6e6 !important; color: #1f2937 !important; }
-      .mp-bulk-tbl thead .mp-bulk-grp.dual { background: #e7e6e6 !important; color: #1f2937 !important; }
-      /* subheader (row 2) — สี neutral เทาอ่อน เน้นด้วย color column แทน */
-      .mp-bulk-tbl thead .sub { background: #f3f4f6 !important; color: #1f2937 !important; font-weight: 800 !important; }
+      /* ── Soft pastel palette — เน้นเฉพาะ Total + FT/PT ── */
+      .mp-bulk-tbl thead .mp-bulk-grp.plan { background: #f1f5f9 !important; color: #475569 !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.act  { background: #eff6ff !important; color: #1e40af !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.sum  { background: #f5f3ff !important; color: #6d28d9 !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.srv  { background: #fff7ed !important; color: #c2410c !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.kit  { background: #ecfeff !important; color: #0e7490 !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.pt   { background: #fefce8 !important; color: #854d0e !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.dual { background: #fdf2f8 !important; color: #9d174d !important; }
+      /* subheader (row 2) */
+      .mp-bulk-tbl thead .sub { background: #fafafa !important; color: #334155 !important; font-weight: 700 !important; font-size: 11.5px !important; padding: 7px 4px !important; }
       /* thead branch + status sticky cells (rowspan=2) — แก้ให้ !important กัน global th{} ทับ */
       .mp-bulk-tbl thead th.branch-cell {
         background: #f1f5f9 !important;
@@ -1255,34 +1255,36 @@
       /* แบ่ง sub-group ภายในครัว/บริการ (ทุก 2 คอลัมน์ = B/S/G) */
       .mp-bulk-tbl thead th.sub.sub-end, .mp-bulk-tbl tbody td.sub-end { border-right: 1px dashed #cbd5e1 !important; }
 
-      /* ── Excel-palette column tints (body cells) ── */
-      .mp-bulk-tbl tbody td.c-plan        { background: #ededed !important; }
-      .mp-bulk-tbl tbody td.c-act         { background: #deebf7 !important; }
-      .mp-bulk-tbl tbody td.c-act-staff   { background: #d9e2f3 !important; }
-      .mp-bulk-tbl tbody td.c-vs-plan     { background: #fbe4e4 !important; }
-      .mp-bulk-tbl tbody td.c-ft-grand    { background: #f4cccc !important; }
-      .mp-bulk-tbl tbody td.c-pt-grand    { background: #ccc0da !important; }
-      .mp-bulk-tbl tbody td.c-tot-srv     { background: #f4b084 !important; }
-      .mp-bulk-tbl tbody td.c-tot-kit     { background: #4fb0c6 !important; color: #fff !important; }
-      .mp-bulk-tbl tbody td.c-ft          { background: #fbe5e5 !important; }
-      .mp-bulk-tbl tbody td.c-pt          { background: #e5dff4 !important; }
-      .mp-bulk-tbl tbody td.c-tier-basic  { background: #f4b084 !important; }
-      .mp-bulk-tbl tbody td.c-tier-silver { background: #ffe699 !important; }
-      .mp-bulk-tbl tbody td.c-tier-gold   { background: #ffe699 !important; }
-      /* subheader tints — แมตช์ body */
-      .mp-bulk-tbl thead th.sub.h-plan       { background: #d9d9d9 !important; color: #1f2937 !important; }
-      .mp-bulk-tbl thead th.sub.h-act        { background: #b4c7e7 !important; color: #1e3a8a !important; }
-      .mp-bulk-tbl thead th.sub.h-act-staff  { background: #b4c7e7 !important; color: #1e3a8a !important; }
-      .mp-bulk-tbl thead th.sub.h-vs-plan    { background: #f4cccc !important; color: #7f1d1d !important; }
-      .mp-bulk-tbl thead th.sub.h-ft-grand   { background: #ea9999 !important; color: #7f1d1d !important; }
-      .mp-bulk-tbl thead th.sub.h-pt-grand   { background: #b4a7d6 !important; color: #4c1d95 !important; }
-      .mp-bulk-tbl thead th.sub.h-tot-srv    { background: #f4b084 !important; color: #7c2d12 !important; }
-      .mp-bulk-tbl thead th.sub.h-tot-kit    { background: #4fb0c6 !important; color: #fff !important; }
-      .mp-bulk-tbl thead th.sub.h-ft         { background: #f4cccc !important; color: #7f1d1d !important; }
-      .mp-bulk-tbl thead th.sub.h-pt         { background: #ccc0da !important; color: #4c1d95 !important; }
-      .mp-bulk-tbl thead th.sub.h-tier-basic { background: #f4b084 !important; color: #7c2d12 !important; }
-      .mp-bulk-tbl thead th.sub.h-tier-silver{ background: #ffe699 !important; color: #78350f !important; }
-      .mp-bulk-tbl thead th.sub.h-tier-gold  { background: #ffe699 !important; color: #78350f !important; }
+      /* ── Body column tints — calc/pct เท่านั้นที่มีสี · input เป็นขาว ── */
+      .mp-bulk-tbl tbody td.is-calc.c-plan        { background: #f1f5f9 !important; color: #334155 !important; }
+      .mp-bulk-tbl tbody td.is-calc.c-act         { background: #eff6ff !important; color: #1e40af !important; }
+      .mp-bulk-tbl tbody td.is-calc.c-act-staff   { background: #dbeafe !important; color: #1e40af !important; }
+      .mp-bulk-tbl tbody td.is-pct.c-vs-plan      { background: #fef2f2 !important; }
+      .mp-bulk-tbl tbody td.is-calc.c-ft-grand    { background: #fce7f3 !important; color: #9d174d !important; }
+      .mp-bulk-tbl tbody td.is-calc.c-pt-grand    { background: #ede9fe !important; color: #6d28d9 !important; }
+      .mp-bulk-tbl tbody td.is-calc.c-tot-srv     { background: #fed7aa !important; color: #9a3412 !important; font-weight: 800; }
+      .mp-bulk-tbl tbody td.is-calc.c-tot-kit     { background: #a5f3fc !important; color: #155e75 !important; font-weight: 800; }
+      /* input column hints (เฉพาะ FT/PT) — แค่ tint บางๆเพื่อช่วยอ่าน · ไม่ทับสีน้ำเงิน input */
+      .mp-bulk-tbl tbody td.is-input.c-ft  { background: #fdf2f8 !important; }
+      .mp-bulk-tbl tbody td.is-input.c-pt  { background: #f5f3ff !important; }
+      .mp-bulk-tbl tbody td.is-input.c-tier-basic  { background: #fff7ed !important; }
+      .mp-bulk-tbl tbody td.is-input.c-tier-silver { background: #fefce8 !important; }
+      .mp-bulk-tbl tbody td.is-input.c-tier-gold   { background: #fefce8 !important; }
+      .mp-bulk-tbl tbody td.is-input.c-act         { background: #eff6ff !important; }
+      /* subheader tints — soft, แมตช์กับ body */
+      .mp-bulk-tbl thead th.sub.h-plan       { background: #e2e8f0 !important; color: #334155 !important; }
+      .mp-bulk-tbl thead th.sub.h-act        { background: #dbeafe !important; color: #1e40af !important; }
+      .mp-bulk-tbl thead th.sub.h-act-staff  { background: #bfdbfe !important; color: #1e3a8a !important; }
+      .mp-bulk-tbl thead th.sub.h-vs-plan    { background: #fecaca !important; color: #991b1b !important; }
+      .mp-bulk-tbl thead th.sub.h-ft-grand   { background: #fbcfe8 !important; color: #9d174d !important; }
+      .mp-bulk-tbl thead th.sub.h-pt-grand   { background: #ddd6fe !important; color: #6d28d9 !important; }
+      .mp-bulk-tbl thead th.sub.h-tot-srv    { background: #fb923c !important; color: #fff !important; }
+      .mp-bulk-tbl thead th.sub.h-tot-kit    { background: #22d3ee !important; color: #fff !important; }
+      .mp-bulk-tbl thead th.sub.h-ft         { background: #fbcfe8 !important; color: #9d174d !important; }
+      .mp-bulk-tbl thead th.sub.h-pt         { background: #ddd6fe !important; color: #6d28d9 !important; }
+      .mp-bulk-tbl thead th.sub.h-tier-basic { background: #fdba74 !important; color: #7c2d12 !important; }
+      .mp-bulk-tbl thead th.sub.h-tier-silver{ background: #fde047 !important; color: #713f12 !important; }
+      .mp-bulk-tbl thead th.sub.h-tier-gold  { background: #fde047 !important; color: #713f12 !important; }
       /* pct */
       .mp-bulk-tbl tbody td .pct-val.low  { color: #b91c1c; }
       .mp-bulk-tbl tbody td .pct-val.ok   { color: #14532d; }
@@ -1296,19 +1298,22 @@
         pointer-events: none;
         font-weight: 700;
       }
-      /* Input cells (กรอกได้) — น้ำเงินอ่อนเหมือน Excel · override c-* tints */
-      .mp-bulk-tbl tbody td.is-input { background: #cfe2f3 !important; }
-      .mp-bulk-tbl tbody td.is-input input { background: transparent !important; }
-      /* Plan input (admin only) — สีเทาทั้งเซลล์ → BZM/VP เห็นเป็น read-only ชัดเจน */
-      .mp-bulk-tbl tbody td.is-input.c-plan { background: #ededed !important; }
-      .mp-bulk-tbl tbody td.is-input.c-plan input:not([readonly]) {
-        background: #fff !important; border: 1.5px solid #c2410c !important;
+      /* Input cells (กรอกได้) — พื้นขาวเรียบ · input ใช้กรอบบางๆ */
+      .mp-bulk-tbl tbody td.is-input input {
+        background: #fff !important;
+        border: 1px solid #cbd5e1 !important;
+        transition: border-color .12s, box-shadow .12s;
+      }
+      .mp-bulk-tbl tbody td.is-input input:hover { border-color: #94a3b8 !important; }
+      .mp-bulk-tbl tbody td.is-input input:focus {
+        border-color: var(--brand) !important;
+        box-shadow: 0 0 0 3px rgba(242,108,28,.18) !important;
       }
       /* Plan readonly — แสดง 🔒 ก่อนค่า + ไม่มีกรอบ input */
       .mp-bulk-tbl tbody td.is-input.c-plan input[readonly] {
         background: transparent !important;
-        border: none !important;
-        color: #475569 !important;
+        border: 1px dashed #cbd5e1 !important;
+        color: #64748b !important;
       }
       .mp-bulk-tbl tbody td.is-input.c-plan:has(input[readonly])::before {
         content: "🔒";
