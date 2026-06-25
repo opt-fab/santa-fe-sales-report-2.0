@@ -11106,6 +11106,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         const plan = _ddPlan(codes, map);
         const pct    = plan > 0 ? a.actual / plan : 0;
         const ticket = a.bills > 0 ? a.actual / a.bills : 0;
+        const perCust = a.cust > 0 ? a.actual / a.cust : 0;
         const labPct = a.actual > 0 ? a.labBaht / a.actual : 0;
         const dp = a.actual - plan;
         const cards = [
@@ -11115,6 +11116,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             subColor: plan > 0 ? _ddAchvColor(pct) : null },
           { lbl: "🧾 จำนวนบิล", val: fmt(a.bills), sub: "ลูกค้า " + fmt(a.cust) + " คน" },
           { lbl: "💵 บิลเฉลี่ย", val: a.bills > 0 ? "฿" + fmt(Math.round(ticket)) : "-", sub: "ต่อบิล" },
+          { lbl: "🙋 ค่าเฉลี่ยต่อคน", val: a.cust > 0 ? "฿" + fmt(Math.round(perCust)) : "-", sub: "ต่อลูกค้า" },
           { lbl: "👥 ค่าแรง %", val: a.actual > 0 ? (labPct * 100).toFixed(1) + "%" : "-", sub: fmt(Math.round(a.labHr)) + " ชม." }
         ];
         return cards.map(k => `
