@@ -1323,20 +1323,24 @@
         border-color: var(--brand) !important;
         box-shadow: 0 0 0 3px rgba(242,108,28,.18) !important;
       }
-      /* Plan readonly — กรอบเส้นประ + 🔒 ภายในขอบช่อง (ไม่ใช่ก่อน input) */
+      /* Plan cells — กรอบแน่น ไม่ใส padding รอบในเซลล์ */
       .mp-bulk-tbl tbody td.is-input.c-plan {
-        position: relative; min-width: 70px;
+        position: relative; min-width: 56px;
+        padding: 2px 3px !important;
+      }
+      .mp-bulk-tbl tbody td.is-input.c-plan input {
+        padding: 3px 4px !important; min-width: 0;
       }
       .mp-bulk-tbl tbody td.is-input.c-plan input[readonly] {
         background: transparent !important;
         border: 1px dashed #000 !important;
         color: #000 !important;
-        padding-left: 16px !important;
+        padding-left: 14px !important;
       }
       .mp-bulk-tbl tbody td.is-input.c-plan:has(input[readonly])::before {
         content: "🔒";
-        position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
-        font-size: 9px; opacity: .6; pointer-events: none;
+        position: absolute; left: 5px; top: 50%; transform: translateY(-50%);
+        font-size: 8px; opacity: .55; pointer-events: none; line-height: 1;
       }
       /* sub-tier label (Basic/Silver/Gold) ที่หัวคอลัมน์ */
       .mp-bulk-tbl thead th.sub .sub-tier {
