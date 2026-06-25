@@ -1071,6 +1071,17 @@
         flex: 1 1 100%;
         min-width: 0 !important;
       }
+      /* History (sHistory) — มือถือ: บรรทัด 1 = วันที่จาก+ถึง · บรรทัด 2 = รอบ */
+      body.is-touch #sHistory .hist-filter { row-gap: 8px; }
+      body.is-touch #sHistory .hist-filter > #histDateFrom,
+      body.is-touch #sHistory .hist-filter > #histDateTo { flex: 1; min-width: 0; }
+      body.is-touch #sHistory .hist-filter > #histSlotFilter {
+        flex: 1 1 100%; min-width: 0 !important; margin-left: 0 !important;
+      }
+      /* label "🕓 รอบ" ก่อน select — ดันลงบรรทัดใหม่เป็นกลุ่มเดียวกับ dropdown */
+      body.is-touch #sHistory .hist-filter > label[style*="margin-left"] {
+        flex-basis: 100%; margin-left: 0 !important; margin-top: 4px;
+      }
 
       /* Manpower BZM select — ขยายเต็มจอ */
       body.is-touch #mpBzmSel { min-width: 0 !important; flex: 1; }
@@ -5056,12 +5067,11 @@ body { background: var(--bg); color: var(--txt); }
 .dd-chan-donut-val {
   font-weight: 800; letter-spacing: -.02em;
   color: #f26c1c;
-  font-size: clamp(20px, 3.4vw, 30px);
+  font-size: clamp(14px, 3vw, 30px);  /* initial — JS auto-shrink ทับให้พอดีในวงกลม */
   font-variant-numeric: tabular-nums;
-  max-width: 80%;
+  max-width: 84%;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.05;
 }
 .dd-chan-donut-lbl {
   margin-top: 3px;
@@ -10907,6 +10917,33 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         </div>`;
       }
 
+      /* Auto-fit donut center text: ลดขนาดอัตโนมัติถ้า text ล้น container */
+      function _fitDonutCenter(centerEl) {
+        if (!centerEl) return;
+        const val = centerEl.querySelector(".dd-chan-donut-val");
+        if (!val) return;
+        const maxW = centerEl.clientWidth * 0.78;
+        if (maxW <= 0) return;
+        // เริ่มจากขนาดใหญ่สุด (30px) แล้วลดทีละ 1px จนกว่าจะพอดี (หรือถึง 10px)
+        let fs = 30;
+        val.style.fontSize = fs + "px";
+        let guard = 0;
+        while (val.scrollWidth > maxW && fs > 10 && guard < 30) {
+          fs -= 1;
+          val.style.fontSize = fs + "px";
+          guard++;
+        }
+      }
+      function _fitAllDonutCenters() {
+        document.querySelectorAll(".dd-chan-donut-center").forEach(_fitDonutCenter);
+      }
+      // re-fit เมื่อหน้าจอเปลี่ยนขนาด (debounced)
+      var _fitDonutTimer = null;
+      window.addEventListener("resize", function() {
+        if (_fitDonutTimer) clearTimeout(_fitDonutTimer);
+        _fitDonutTimer = setTimeout(_fitAllDonutCenters, 120);
+      });
+
       function _ddChannelTable(rows) {
         const a = _ddAgg(rows);
         const items = CHANNEL_DEFS.slice().map(c => ({ c, s: a.sale[c.key], t: a.trans[c.key] }));
@@ -10978,6 +11015,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             } } } }
           }
         });
+        setTimeout(_fitAllDonutCenters, 0);
       }
 
       // เก็บ label/byDate/มี-ข้อมูล จากช่วงที่เลือก (ใช้ร่วมกันทั้งเส้นและแท่ง)
@@ -11298,6 +11336,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             }
           },
         });
+        // หลัง render donut → fit ตัวเลขกลางให้พอดี
+        setTimeout(_fitAllDonutCenters, 0);
       }
 
       function _ddPanel(title, sub, inner, extraClass) {
@@ -12393,6 +12433,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             }
           }
         });
+        setTimeout(_fitAllDonutCenters, 0);
       }
 
       /* ════════════════════════════════════════════
