@@ -1213,18 +1213,22 @@
         text-transform: none !important; letter-spacing: 0 !important;
         text-shadow: none !important;
       }
-      .mp-bulk-tbl thead .mp-bulk-grp { font-size: 12.5px !important; padding: 8px 10px !important; border-bottom: 2px solid #cbd5e1 !important; letter-spacing: .02em !important; }
-      .mp-bulk-tbl thead .mp-bulk-grp.mgr { background: #ede9fe !important; color: #5b21b6 !important; }
-      .mp-bulk-tbl thead .mp-bulk-grp.kit { background: #ffedd5 !important; color: #9a3412 !important; }
-      .mp-bulk-tbl thead .mp-bulk-grp.srv { background: #dcfce7 !important; color: #14532d !important; }
-      .mp-bulk-tbl thead .mp-bulk-grp.pt  { background: #dbeafe !important; color: #1e3a8a !important; }
-      .mp-bulk-tbl thead .mp-bulk-grp.dual{ background: #fae8ff !important; color: #701a75 !important; }
-      /* subheader (row 2) — สีอ่อนของกลุ่ม + ตัวอักษรเข้ม */
-      .mp-bulk-tbl thead .sub.mgr { background: #f5f3ff !important; color: #6d28d9 !important; }
-      .mp-bulk-tbl thead .sub.kit { background: #fff7ed !important; color: #c2410c !important; }
-      .mp-bulk-tbl thead .sub.srv { background: #f0fdf4 !important; color: #15803d !important; }
-      .mp-bulk-tbl thead .sub.pt  { background: #eff6ff !important; color: #1d4ed8 !important; }
-      .mp-bulk-tbl thead .sub.dual{ background: #fdf4ff !important; color: #a21caf !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp {
+        font-size: 13px !important; padding: 10px 12px !important;
+        border-bottom: 2px solid #1f2937 !important;
+        letter-spacing: .02em !important;
+        font-weight: 800 !important;
+      }
+      /* ── Excel-palette group bars ── */
+      .mp-bulk-tbl thead .mp-bulk-grp.plan { background: #d9d9d9 !important; color: #1f2937 !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.act  { background: #deebf7 !important; color: #1e3a8a !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.sum  { background: #fff2cc !important; color: #7c2d12 !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.srv  { background: #f4b084 !important; color: #fff !important; text-shadow: 0 1px 0 rgba(0,0,0,.2) !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.kit  { background: #4fb0c6 !important; color: #fff !important; text-shadow: 0 1px 0 rgba(0,0,0,.2) !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.pt   { background: #e7e6e6 !important; color: #1f2937 !important; }
+      .mp-bulk-tbl thead .mp-bulk-grp.dual { background: #e7e6e6 !important; color: #1f2937 !important; }
+      /* subheader (row 2) — สี neutral เทาอ่อน เน้นด้วย color column แทน */
+      .mp-bulk-tbl thead .sub { background: #f3f4f6 !important; color: #1f2937 !important; font-weight: 800 !important; }
       /* thead branch + status sticky cells (rowspan=2) — แก้ให้ !important กัน global th{} ทับ */
       .mp-bulk-tbl thead th.branch-cell {
         background: #f1f5f9 !important;
@@ -1251,39 +1255,48 @@
       /* แบ่ง sub-group ภายในครัว/บริการ (ทุก 2 คอลัมน์ = B/S/G) */
       .mp-bulk-tbl thead th.sub.sub-end, .mp-bulk-tbl tbody td.sub-end { border-right: 1px dashed #cbd5e1 !important; }
 
-      /* คอลัมน์ตามไซด์พีริยด (FT/PT) + ตัวรวม (read-only calc) */
-      .mp-bulk-tbl tbody td.c-pt          { background: #f5edff !important; }
-      .mp-bulk-tbl tbody td.c-ft          { background: #ffe4ec !important; }
-      .mp-bulk-tbl tbody td.c-ft-grand    { background: #fbcfe8 !important; }
-      .mp-bulk-tbl tbody td.c-pt-grand    { background: #ddd6fe !important; }
-      .mp-bulk-tbl tbody td.c-plan        { background: #f3f4f6 !important; }
-      .mp-bulk-tbl tbody td.c-act         { background: #ecfeff !important; }
-      .mp-bulk-tbl tbody td.c-act-staff   { background: #ecfeff !important; }
-      .mp-bulk-tbl tbody td.c-vs-plan     { background: #fee2e2 !important; }
-      .mp-bulk-tbl tbody td.c-tot-srv     { background: #fed7aa !important; }
-      .mp-bulk-tbl tbody td.c-tot-kit     { background: #67e8f9 !important; color: #0c4a6e; }
-      .mp-bulk-tbl tbody td.c-tier-basic  { background: #fed7aa !important; }
-      .mp-bulk-tbl tbody td.c-tier-silver { background: #fef3c7 !important; }
-      .mp-bulk-tbl tbody td.c-tier-gold   { background: #fef9c3 !important; }
-      .mp-bulk-tbl thead th.sub.h-pt         { background: #ede9fe !important; color: #6d28d9 !important; }
-      .mp-bulk-tbl thead th.sub.h-ft         { background: #fce7f3 !important; color: #be185d !important; }
-      .mp-bulk-tbl thead th.sub.h-ft-grand   { background: #f9a8d4 !important; color: #831843 !important; }
-      .mp-bulk-tbl thead th.sub.h-pt-grand   { background: #c4b5fd !important; color: #4c1d95 !important; }
-      .mp-bulk-tbl thead th.sub.h-plan       { background: #e5e7eb !important; color: #1f2937 !important; }
-      .mp-bulk-tbl thead th.sub.h-act        { background: #a5f3fc !important; color: #155e75 !important; }
-      .mp-bulk-tbl thead th.sub.h-act-staff  { background: #a5f3fc !important; color: #155e75 !important; }
-      .mp-bulk-tbl thead th.sub.h-vs-plan    { background: #fecaca !important; color: #991b1b !important; }
-      .mp-bulk-tbl thead th.sub.h-tot-srv    { background: #fdba74 !important; color: #9a3412 !important; }
-      .mp-bulk-tbl thead th.sub.h-tot-kit    { background: #22d3ee !important; color: #0c4a6e !important; }
-      .mp-bulk-tbl thead th.sub.h-tier-basic { background: #fdba74 !important; color: #9a3412 !important; }
-      .mp-bulk-tbl thead th.sub.h-tier-silver{ background: #fde68a !important; color: #92400e !important; }
-      .mp-bulk-tbl thead th.sub.h-tier-gold  { background: #fef08a !important; color: #854d0e !important; }
-      /* pct cell ที่ต่ำกว่า 100% เป็นแดงอ่อน */
+      /* ── Excel-palette column tints (body cells) ── */
+      .mp-bulk-tbl tbody td.c-plan        { background: #ededed !important; }
+      .mp-bulk-tbl tbody td.c-act         { background: #deebf7 !important; }
+      .mp-bulk-tbl tbody td.c-act-staff   { background: #d9e2f3 !important; }
+      .mp-bulk-tbl tbody td.c-vs-plan     { background: #fbe4e4 !important; }
+      .mp-bulk-tbl tbody td.c-ft-grand    { background: #f4cccc !important; }
+      .mp-bulk-tbl tbody td.c-pt-grand    { background: #ccc0da !important; }
+      .mp-bulk-tbl tbody td.c-tot-srv     { background: #f4b084 !important; }
+      .mp-bulk-tbl tbody td.c-tot-kit     { background: #4fb0c6 !important; color: #fff !important; }
+      .mp-bulk-tbl tbody td.c-ft          { background: #fbe5e5 !important; }
+      .mp-bulk-tbl tbody td.c-pt          { background: #e5dff4 !important; }
+      .mp-bulk-tbl tbody td.c-tier-basic  { background: #f4b084 !important; }
+      .mp-bulk-tbl tbody td.c-tier-silver { background: #ffe699 !important; }
+      .mp-bulk-tbl tbody td.c-tier-gold   { background: #ffe699 !important; }
+      /* subheader tints — แมตช์ body */
+      .mp-bulk-tbl thead th.sub.h-plan       { background: #d9d9d9 !important; color: #1f2937 !important; }
+      .mp-bulk-tbl thead th.sub.h-act        { background: #b4c7e7 !important; color: #1e3a8a !important; }
+      .mp-bulk-tbl thead th.sub.h-act-staff  { background: #b4c7e7 !important; color: #1e3a8a !important; }
+      .mp-bulk-tbl thead th.sub.h-vs-plan    { background: #f4cccc !important; color: #7f1d1d !important; }
+      .mp-bulk-tbl thead th.sub.h-ft-grand   { background: #ea9999 !important; color: #7f1d1d !important; }
+      .mp-bulk-tbl thead th.sub.h-pt-grand   { background: #b4a7d6 !important; color: #4c1d95 !important; }
+      .mp-bulk-tbl thead th.sub.h-tot-srv    { background: #f4b084 !important; color: #7c2d12 !important; }
+      .mp-bulk-tbl thead th.sub.h-tot-kit    { background: #4fb0c6 !important; color: #fff !important; }
+      .mp-bulk-tbl thead th.sub.h-ft         { background: #f4cccc !important; color: #7f1d1d !important; }
+      .mp-bulk-tbl thead th.sub.h-pt         { background: #ccc0da !important; color: #4c1d95 !important; }
+      .mp-bulk-tbl thead th.sub.h-tier-basic { background: #f4b084 !important; color: #7c2d12 !important; }
+      .mp-bulk-tbl thead th.sub.h-tier-silver{ background: #ffe699 !important; color: #78350f !important; }
+      .mp-bulk-tbl thead th.sub.h-tier-gold  { background: #ffe699 !important; color: #78350f !important; }
+      /* pct */
       .mp-bulk-tbl tbody td .pct-val.low  { color: #b91c1c; }
-      .mp-bulk-tbl tbody td .pct-val.ok   { color: #166534; }
-      .mp-bulk-tbl tbody td .pct-val.zero { color: #cbd5e1; }
-      /* readonly input (admin-only) — เทาๆ */
-      .mp-bulk-tbl tbody td input[readonly] { background: #f8fafc !important; cursor: not-allowed; color: #475569; }
+      .mp-bulk-tbl tbody td .pct-val.ok   { color: #14532d; }
+      .mp-bulk-tbl tbody td .pct-val.zero { color: #94a3b8; }
+      /* readonly input — เทาขีดทับ */
+      .mp-bulk-tbl tbody td input[readonly] { background: rgba(255,255,255,.5) !important; cursor: not-allowed; color: #475569; }
+      /* Input cells (กรอกได้) — น้ำเงินอ่อนเหมือน Excel · override c-* tints */
+      .mp-bulk-tbl tbody td.is-input { background: #cfe2f3 !important; }
+      .mp-bulk-tbl tbody td.is-input input { background: transparent !important; }
+      /* Plan input (admin only) — ใช้สีเทา + ขอบส้ม */
+      .mp-bulk-tbl tbody td.is-input.c-plan { background: #ededed !important; }
+      .mp-bulk-tbl tbody td.is-input.c-plan input:not([readonly]) {
+        background: #fff !important; border: 1.5px solid #c2410c !important;
+      }
       /* sub-tier label (Basic/Silver/Gold) ที่หัวคอลัมน์ */
       .mp-bulk-tbl thead th.sub .sub-tier {
         display:block; font-size:9.5px; font-weight:700;
@@ -1309,18 +1322,11 @@
       .mp-bulk-tbl thead th { padding: 6px 4px !important; min-width: 56px; }
       .mp-bulk-tbl thead .mp-bulk-grp { padding: 7px 6px !important; font-size: 12px !important; }
       .mp-bulk-tbl thead th.branch-cell, .mp-bulk-tbl thead th.status-cell { min-width: 0; }
-      /* สีพื้นอ่อนๆในเซลล์ body ตามกลุ่ม → แยกชัดเจน */
-      .mp-bulk-tbl tbody td.g-mgr  { background: #faf5ff; }
-      .mp-bulk-tbl tbody td.g-kit  { background: #fff8ef; }
-      .mp-bulk-tbl tbody td.g-srv  { background: #f3fdf6; }
-      .mp-bulk-tbl tbody td.g-pt   { background: #f5f9ff; }
-      .mp-bulk-tbl tbody td.g-dual { background: #fcf5fe; }
-      /* row alternation บน background กลุ่ม */
-      .mp-bulk-tbl tbody tr:nth-child(even) td.g-mgr  { background: #f5f0ff; }
-      .mp-bulk-tbl tbody tr:nth-child(even) td.g-kit  { background: #fff3e3; }
-      .mp-bulk-tbl tbody tr:nth-child(even) td.g-srv  { background: #ebfaf1; }
-      .mp-bulk-tbl tbody tr:nth-child(even) td.g-pt   { background: #ecf3ff; }
-      .mp-bulk-tbl tbody tr:nth-child(even) td.g-dual { background: #f8ebfb; }
+      /* default body bg (จะถูก override ด้วย c-* / is-input) */
+      .mp-bulk-tbl tbody td { background: #ffffff; }
+      /* row alternation เบาๆเฉพาะ branch + status sticky cells */
+      .mp-bulk-tbl tbody tr:nth-child(even) td.branch-cell,
+      .mp-bulk-tbl tbody tr:nth-child(even) td.status-cell { background: #f9fafb; }
 
       .mp-bulk-tbl tbody td.branch-cell {
         position: sticky; left: 0; background: #fff;
@@ -9107,10 +9113,13 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             if (isGroupStart(idx)) cls += ` gstart ${f.g}`;
             if (f.color) cls += " c-" + f.color;
             if (f.type === "calc") {
+              cls += " is-calc";
               row += `<td class="${cls}"><span class="calc-val zero" id="mpb_${code}_${f.k}">0</span></td>`;
             } else if (f.type === "pct") {
+              cls += " is-pct";
               row += `<td class="${cls}"><span class="calc-val pct-val zero" id="mpb_${code}_${f.k}">0%</span></td>`;
             } else {
+              cls += " is-input";
               const rawVal = r[f.k];
               const valAttr = (rawVal != null && rawVal !== 0) ? `value="${rawVal}"` : `value=""`;
               const ro = (f.adminOnly && !isAdmin) ? "readonly" : "";
