@@ -1910,26 +1910,28 @@
         .dd-bar-name { overflow: hidden; }
         .dd-bar-name .dd-bar-name-text { overflow: hidden; text-overflow: ellipsis; }
         .dd-donut-canvas, .dd-chan-donut-canvas { max-width: 100%; }
-        /* trend chart wrapper — ไม่ overflow:hidden กัน y-axis label โดนตัด */
         [id^="sec"][id$="TrendBox"] {
           max-width: 100%; margin: 0 !important;
         }
-        .dash3-row > .dash3-card { padding: 14px 12px !important; overflow: visible !important; }
+        .dash3-row > .dash3-card { padding: 14px 14px !important; overflow: visible !important; }
         .dash3-card { overflow: visible !important; }
-        .dash3-card canvas { margin: 0 !important; }
-        /* ช่องทางการขาย — donut กึ่งกลาง · per-channel stats ชิดซ้าย */
+        .dash3-card canvas { margin: 0 !important; max-width: 100% !important; }
+        /* ช่องทางการขาย — donut กึ่งกลาง · stats ชิดซ้าย (.dd-chan-donut-wrap เป็น grid) */
         .dd-chan-donut-wrap {
-          flex-direction: column !important;
-          align-items: center !important;
-          gap: 12px !important;
+          grid-template-columns: 1fr !important;
+          gap: 14px !important;
+          justify-items: center !important;
+          align-items: start !important;
         }
         .dd-chan-donut-side {
-          align-self: center !important;
           width: 100%; max-width: 220px;
+          margin: 0 auto !important;
+          justify-self: center !important;
         }
+        .dd-chan-donut-canvas { width: 100% !important; max-width: 220px; height: 200px !important; }
         .dd-chan-stats {
-          align-items: stretch !important;
-          width: 100%;
+          width: 100% !important;
+          justify-self: stretch !important;
         }
         .dd-chan-stat, .dd-chan-summary { text-align: left !important; }
       }
@@ -11532,7 +11534,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               responsive: true, maintainAspectRatio: false,
               interaction: { mode: "index", intersect: false },
               plugins: {
-                legend: { display: hasPlan, position: "bottom", labels: { boxWidth: 12, font: { size: 11 }, color: "#475569" } },
+                legend: { display: hasPlan, position: "bottom", align: "start", labels: { boxWidth: 12, font: { size: 11 }, color: "#475569" } },
                 tooltip: {
                   callbacks: {
                     label: (c) => {
@@ -11621,7 +11623,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           options: {
             responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
             plugins: {
-              legend: { display: dailyTarget > 0, position: "bottom", labels: { boxWidth: 12, font: { size: 11 }, color: "#475569" } },
+              legend: { display: dailyTarget > 0, position: "bottom", align: "start", labels: { boxWidth: 12, font: { size: 11 }, color: "#475569" } },
               tooltip: { callbacks: { label: (c) => {
                 if (c.dataset.type === "line") return "เป้า/วัน: ฿" + Math.round(c.parsed.y).toLocaleString();
                 const v = c.parsed.y;
