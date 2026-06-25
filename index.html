@@ -11481,12 +11481,17 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             if (isNaN(d0.getTime()) || d0.getFullYear() !== _Y) return;
             monthVals[d0.getMonth()] += parseFloat(r.actual_sale) || 0;
           });
-          // รวม plan ของแต่ละเดือนจาก planByDate
-          Object.keys((d && d.planByDate) || {}).forEach(k => {
-            const parts = String(k).split('-');
-            if (parts.length < 3 || parseInt(parts[0], 10) !== _Y) return;
-            const mi = parseInt(parts[1], 10) - 1;
-            if (mi >= 0 && mi < 12) monthPlans[mi] += parseFloat(d.planByDate[k]) || 0;
+          // รวม plan เฉพาะของสาขาที่อยู่ในขอบเขต `rows` (เพื่อให้สเกล plan ตรงกับ actual)
+          const scopedCodes = new Set((rows || []).map(r => r.branch_code).filter(Boolean));
+          const pbd = (d && d.planByBranchDate) || {};
+          Object.keys(pbd).forEach(bc => {
+            if (scopedCodes.size && !scopedCodes.has(bc)) return;
+            Object.keys(pbd[bc]).forEach(k => {
+              const parts = String(k).split('-');
+              if (parts.length < 3 || parseInt(parts[0], 10) !== _Y) return;
+              const mi = parseInt(parts[1], 10) - 1;
+              if (mi >= 0 && mi < 12) monthPlans[mi] += parseFloat(pbd[bc][k]) || 0;
+            });
           });
           const hasData = monthVals.some(v => v > 0);
           const hasPlan = monthPlans.some(v => v > 0);
@@ -11592,13 +11597,21 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           box.innerHTML = `<div class="dd-empty">📭 สาขานี้ยังไม่มียอดขายในช่วงที่เลือก</div>`;
           return;
         }
-        // ── เป้ารายวัน (ดึงจาก planByDate ของจริง · ไม่ใช่เฉลี่ย) ──
-        const planByDate = (d && d.planByDate) || {};
+        // ── เป้ารายวัน — สเกล plan ตามขอบเขตของ rows (สาขาที่กำลังดู) เท่านั้น ──
+        const planByBranchDate = (d && d.planByBranchDate) || {};
+        const scopedCodes = new Set((rows || []).map(r => r.branch_code).filter(Boolean));
+        const scopedPlanByDate = {};
+        Object.keys(planByBranchDate).forEach(bc => {
+          if (scopedCodes.size && !scopedCodes.has(bc)) return;
+          Object.keys(planByBranchDate[bc]).forEach(k => {
+            scopedPlanByDate[k] = (scopedPlanByDate[k] || 0) + (parseFloat(planByBranchDate[bc][k]) || 0);
+          });
+        });
         const planSeries = [];
         const _sD = new Date(range.startDate + "T00:00:00");
         const _eD = new Date(range.endDate + "T00:00:00");
         for (let dt = new Date(_sD); dt <= _eD; dt.setDate(dt.getDate() + 1)) {
-          planSeries.push(planByDate[_fmtDate(dt)] || 0);
+          planSeries.push(scopedPlanByDate[_fmtDate(dt)] || 0);
         }
         const hasAnyPlan = planSeries.some(v => v > 0);
         // สีแท่ง: เทียบเป้าของวันนั้นๆ (ไม่ใช่เป้าเฉลี่ย)
@@ -12113,11 +12126,15 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         let _h = null, _p = null, _n = 0;
         function done() {
           if (++_n < 2) return;
-          const planByDate = {}, planByBranch = {};
+          const planByDate = {}, planByBranch = {}, planByBranchDate = {};
           if (_p && _p.ok && Array.isArray(_p.rows)) _p.rows.forEach(r => {
             const amt = parseFloat(r.plan_amount) || 0;
             planByDate[r.plan_date] = (planByDate[r.plan_date] || 0) + amt;
-            if (r.branch_code) planByBranch[r.branch_code] = (planByBranch[r.branch_code] || 0) + amt;
+            if (r.branch_code) {
+              planByBranch[r.branch_code] = (planByBranch[r.branch_code] || 0) + amt;
+              if (!planByBranchDate[r.branch_code]) planByBranchDate[r.branch_code] = {};
+              planByBranchDate[r.branch_code][r.plan_date] = (planByBranchDate[r.branch_code][r.plan_date] || 0) + amt;
+            }
           });
           const rows = (_h && _h.ok && _h.rows) ? _h.rows
             // ตัดสาขาที่ยังไม่ระบุโซน (dm ว่าง) ออกจาก dashboard ทั้งหมด
@@ -12126,7 +12143,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               ...r,
               plan_sale: planByDate[r.submit_date] !== undefined ? planByDate[r.submit_date] : (parseFloat(r.plan_sale) || 0)
             })) : [];
-          _secData[sec] = { rows, planByDate, planByBranch, range: { startDate: pr.startDate, endDate: pr.endDate, periodDays: pr.periodDays } };
+          _secData[sec] = { rows, planByDate, planByBranch, planByBranchDate, range: { startDate: pr.startDate, endDate: pr.endDate, periodDays: pr.periodDays } };
           // ช่วงที่กำลังดู = แหล่งโครงโซน/สาขา (drill source)
           if (sec === _secActive) { _dashRows = rows; _dashPlanByBranch = planByBranch; _dashPlans = planByDate; }
           if (renderAfter && sec === _secActive) {
