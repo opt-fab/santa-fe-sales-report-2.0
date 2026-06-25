@@ -1071,17 +1071,14 @@
         flex: 1 1 100%;
         min-width: 0 !important;
       }
-      /* History (sHistory) — มือถือ: บรรทัด 1 = วันที่จาก+ถึง · บรรทัด 2 = รอบ */
+      /* History (sHistory) — มือถือ: บรรทัด 1 = จาก+ถึง · บรรทัด 2 = 🕓 รอบ + select ติดกัน */
       body.is-touch #sHistory .hist-filter { row-gap: 8px; }
       body.is-touch #sHistory .hist-filter > #histDateFrom,
       body.is-touch #sHistory .hist-filter > #histDateTo { flex: 1; min-width: 0; }
-      body.is-touch #sHistory .hist-filter > #histSlotFilter {
-        flex: 1 1 100%; min-width: 0 !important; margin-left: 0 !important;
+      body.is-touch #sHistory .hist-filter > .hist-slot-group {
+        flex: 1 1 100%; margin-left: 0 !important;
       }
-      /* label "🕓 รอบ" ก่อน select — ดันลงบรรทัดใหม่เป็นกลุ่มเดียวกับ dropdown */
-      body.is-touch #sHistory .hist-filter > label[style*="margin-left"] {
-        flex-basis: 100%; margin-left: 0 !important; margin-top: 4px;
-      }
+      body.is-touch #sHistory .hist-filter > .hist-slot-group select { flex: 1; min-width: 0; }
 
       /* Manpower BZM select — ขยายเต็มจอ */
       body.is-touch #mpBzmSel { min-width: 0 !important; flex: 1; }
@@ -5067,7 +5064,7 @@ body { background: var(--bg); color: var(--txt); }
 .dd-chan-donut-val {
   font-weight: 800; letter-spacing: -.02em;
   color: #f26c1c;
-  font-size: clamp(14px, 3vw, 30px);  /* initial — JS auto-shrink ทับให้พอดีในวงกลม */
+  font-size: clamp(12px, 2vw, 20px);  /* initial — JS auto-shrink ทับให้พอดี */
   font-variant-numeric: tabular-nums;
   max-width: 84%;
   white-space: nowrap;
@@ -5905,12 +5902,14 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           <input type="date" id="histDateFrom" onchange="loadHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
           <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">ถึง</label>
           <input type="date" id="histDateTo" onchange="loadHistory()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
-          <label style="font-size:12.5px;font-weight:700;color:var(--txt2);margin-left:8px">🕓 รอบ</label>
-          <select id="histSlotFilter" onchange="_renderHistoryCached()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
-            <option value="">ทุกรอบ</option>
-            <option value="16.00">16.00</option>
-            <option value="สิ้นวัน">สิ้นวัน</option>
-          </select>
+          <div class="hist-slot-group" style="display:flex;align-items:center;gap:8px;margin-left:8px">
+            <label style="font-size:12.5px;font-weight:700;color:var(--txt2)">🕓 รอบ</label>
+            <select id="histSlotFilter" onchange="_renderHistoryCached()" style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;color:#0f172a">
+              <option value="">ทุกรอบ</option>
+              <option value="16.00">16.00</option>
+              <option value="สิ้นวัน">สิ้นวัน</option>
+            </select>
+          </div>
         </div>
 
         <!-- Desktop: table -->
@@ -10922,13 +10921,13 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         if (!centerEl) return;
         const val = centerEl.querySelector(".dd-chan-donut-val");
         if (!val) return;
-        const maxW = centerEl.clientWidth * 0.78;
+        const maxW = centerEl.clientWidth * 0.74;
         if (maxW <= 0) return;
-        // เริ่มจากขนาดใหญ่สุด (30px) แล้วลดทีละ 1px จนกว่าจะพอดี (หรือถึง 10px)
-        let fs = 30;
+        // เริ่ม 20px แล้วลดทีละ 1px จนกว่าจะพอดี (ขั้นต่ำ 9px)
+        let fs = 20;
         val.style.fontSize = fs + "px";
         let guard = 0;
-        while (val.scrollWidth > maxW && fs > 10 && guard < 30) {
+        while (val.scrollWidth > maxW && fs > 9 && guard < 20) {
           fs -= 1;
           val.style.fontSize = fs + "px";
           guard++;
