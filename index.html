@@ -14484,6 +14484,9 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               q = q.eq("plan_date", params.date);
             }
 
+            // ── ORDER (สำคัญ!): pagination ที่ไม่มี order → PostgreSQL คืน rows random order → page ทับ/ขาด → plan รวมผิด
+            q = q.order("plan_date", { ascending: true }).order("branch_code", { ascending: true });
+
             // ── PAGINATION (เหมือน history) ──
             const PLAN_PAGE = 1000;
             let allPlan = [];
