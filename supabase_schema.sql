@@ -272,4 +272,25 @@ create trigger trg_sales_audit
   when (old.* is distinct from new.*)
   execute function trg_capture_sales_edit();
 
+-- ──────────────────────────────────────────────
+-- 9. LOGIN_LOGS — ประวัติการเข้าใช้งานทุก user (admin เท่านั้นที่ดู)
+-- ──────────────────────────────────────────────
+create table if not exists public.login_logs (
+  id           bigserial primary key,
+  user_code    text not null,
+  user_name    text,
+  role         text,
+  branch_code  text,
+  branch_name  text,
+  dm           text,
+  ua           text,         -- user agent (เช่น Chrome/iPhone/Samsung)
+  platform     text,         -- iOS/Android/Windows/macOS
+  logged_at    timestamptz not null default now()
+);
+
+create index if not exists idx_login_logs_time on public.login_logs(logged_at desc);
+create index if not exists idx_login_logs_user on public.login_logs(user_code, logged_at desc);
+
+alter table public.login_logs disable row level security;
+
 -- ✅ DONE — ตรวจดูได้ที่ Database → Tables

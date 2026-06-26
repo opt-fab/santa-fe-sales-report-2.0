@@ -6467,6 +6467,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           <button class="admin-tab"        data-tab="bzms"      onclick="adminSwitchTab('bzms')">👤 จัดการ BZM</button>
           <button class="admin-tab"        data-tab="zones"     onclick="adminSwitchTab('zones')">🗺️ โซน BZM</button>
           <button class="admin-tab"        data-tab="users"     onclick="adminSwitchTab('users')">🔐 จัดการผู้ใช้</button>
+          <button class="admin-tab"        data-tab="logins"    onclick="adminSwitchTab('logins')">👣 ประวัติเข้าใช้</button>
           <button class="admin-tab"        data-tab="import"    onclick="adminSwitchTab('import')">📥 นำเข้าข้อมูล</button>
           <button class="btn btn-sm" onclick="adminTabReload()" style="background:#f1f5f9;color:#475569;margin-left:auto;margin-bottom:6px">🔄 รีเฟรช</button>
         </div>
@@ -6591,6 +6592,40 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             </table>
           </div>
           <div id="adminUserMob" class="adm-mob-wrap"></div>
+        </div>
+
+        <!-- ── Tab: Login Logs (admin only) ── -->
+        <div class="admin-tab-pane" data-tab="logins" style="display:none">
+          <div class="adm-add-toolbar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+            <input type="text" id="adminLoginSearch" placeholder="🔍 ค้นหา รหัส/ชื่อ/สาขา..." oninput="renderAdminLogins()"
+                   style="flex:1;min-width:200px;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;outline:none">
+            <select id="adminLoginRoleFilter" onchange="renderAdminLogins()"
+                    style="background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px">
+              <option value="">— ทุก role —</option>
+              <option value="admin">Admin</option>
+              <option value="vp">VP</option>
+              <option value="bzm">BZM</option>
+              <option value="branch">สาขา</option>
+              <option value="franchise">Franchise</option>
+            </select>
+            <span id="adminLoginCount" style="font-size:12px;color:var(--txt2);font-weight:600">— ครั้ง</span>
+          </div>
+          <div class="dash-card-wrap adm-desk-wrap" style="overflow-x:auto">
+            <table class="dash-tbl" style="min-width:760px">
+              <thead><tr>
+                <th>เวลา</th>
+                <th>รหัส</th>
+                <th>ชื่อ / สาขา</th>
+                <th>Role</th>
+                <th>BZM</th>
+                <th>อุปกรณ์</th>
+              </tr></thead>
+              <tbody id="adminLoginBody">
+                <tr><td colspan="6" style="color:#94a3b8;padding:16px;text-align:center">⏳ กำลังโหลด...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="adminLoginMob" class="adm-mob-wrap"></div>
         </div>
 
         <!-- ── Tab: Import Excel → sales_data ── -->
@@ -7747,11 +7782,40 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
 
       const _ROLE_LBL = { admin:"Admin", vp:"VP", bzm:"BZM", branch:"สาขา", franchise:"สาขา" };
 
+      // ── บันทึก login event ลง Supabase (fire-and-forget) ──
+      function _logLoginEvent(rec) {
+        try {
+          const ua = navigator.userAgent || "";
+          let platform = "Unknown";
+          if (/iPhone|iPad|iPod/i.test(ua)) platform = "iOS";
+          else if (/Android/i.test(ua)) platform = "Android";
+          else if (/Windows/i.test(ua)) platform = "Windows";
+          else if (/Macintosh|Mac OS/i.test(ua)) platform = "macOS";
+          else if (/Linux/i.test(ua)) platform = "Linux";
+          sb.from("login_logs").insert({
+            user_code:   rec.code || "",
+            user_name:   rec.name || "",
+            role:        rec.role || "",
+            branch_code: rec.branch_code || "",
+            branch_name: rec.branch_name || "",
+            dm:          rec.dm || "",
+            ua:          ua.slice(0, 300),
+            platform:    platform
+          }).then(({ error }) => {
+            if (error) console.warn("[login_logs]", error.message);
+          });
+        } catch (e) { console.warn("[login_logs]", e); }
+      }
+
       function _doLoginCommit(u) {
         const newS = _stateFromDbUser(u);
         if (!newS) { showAlert('❌', 'รหัสไม่ถูกต้อง', 'role ในระบบไม่ถูกต้อง'); return; }
         S = newS;
         localStorage.setItem(LS_CODE, u.code);
+        _logLoginEvent({
+          code: u.code, name: u.name || u.nick || "", role: u.role || "",
+          branch_code: u.branch_code || "", branch_name: u.branch_name || "", dm: u.dm || ""
+        });
         const isBranch = (u.role === "branch" || u.role === "franchise");
         let msg;
         if (isBranch) {
@@ -7770,6 +7834,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           if (su) {
             S = _stateFromSpecialUser(code, su);
             localStorage.setItem(LS_CODE, code);
+            _logLoginEvent({ code: code, name: su.name || "", role: su.role || "", dm: su.dm || "" });
             const msg = (su.role === "bzm") ? `${su.name} (BZM)` : su.name;
             showAlert('👋', 'ยินดีต้อนรับ!', msg, enterApp);
             return;
@@ -7780,6 +7845,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         if (!info) { showAlert('❌', 'รหัสไม่ถูกต้อง', 'ไม่พบรหัสสาขา ' + code); return; }
         S = { code: code, branch: info.branch, dm: info.dm, role: "branch" };
         localStorage.setItem(LS_CODE, code);
+        _logLoginEvent({ code: code, role: "branch", branch_code: code, branch_name: info.branch, dm: info.dm });
         showAlert('👋', 'ยินดีต้อนรับ!', `${code} ${info.branch}`, enterApp);
       }
 
@@ -8244,7 +8310,91 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         else if (tab === "bzms") loadAdminBzms();
         else if (tab === "zones") loadAdminZones();
         else if (tab === "users") loadAdminUsers();
+        else if (tab === "logins") loadAdminLogins();
         else if (tab === "import") adminImportReset();
+      }
+
+      /* ══════════════════════════════════════════════
+         ADMIN: LOGIN LOGS — ประวัติการเข้าใช้งาน
+      ══════════════════════════════════════════════ */
+      let _adminLogins = [];
+      async function loadAdminLogins() {
+        const body = document.getElementById("adminLoginBody");
+        if (body) body.innerHTML = `<tr><td colspan="6" style="color:#94a3b8;padding:16px;text-align:center">⏳ กำลังโหลด...</td></tr>`;
+        try {
+          const { data, error } = await sb.from("login_logs")
+            .select("*").order("logged_at", { ascending: false }).range(0, 999);
+          if (error) {
+            if (body) body.innerHTML = `<tr><td colspan="6" style="color:#dc2626;padding:16px;text-align:center">⚠️ โหลดไม่สำเร็จ: ${escHtml(error.message)}</td></tr>`;
+            return;
+          }
+          _adminLogins = data || [];
+          renderAdminLogins();
+        } catch (e) {
+          if (body) body.innerHTML = `<tr><td colspan="6" style="color:#dc2626;padding:16px;text-align:center">⚠️ โหลดไม่สำเร็จ: ${escHtml(e.message || "")}</td></tr>`;
+        }
+      }
+      function renderAdminLogins() {
+        const q = (document.getElementById("adminLoginSearch")?.value || "").toLowerCase().trim();
+        const roleF = document.getElementById("adminLoginRoleFilter")?.value || "";
+        const rows = _adminLogins.filter(r => {
+          if (roleF && r.role !== roleF) return false;
+          if (!q) return true;
+          const hay = [r.user_code, r.user_name, r.branch_code, r.branch_name, r.dm].join(" ").toLowerCase();
+          return hay.includes(q);
+        });
+        const cnt = document.getElementById("adminLoginCount");
+        if (cnt) cnt.textContent = `${rows.length.toLocaleString()} ครั้ง`;
+
+        // Desktop table
+        const body = document.getElementById("adminLoginBody");
+        if (body) {
+          if (!rows.length) {
+            body.innerHTML = `<tr><td colspan="6" style="color:#94a3b8;padding:16px;text-align:center">— ไม่พบ —</td></tr>`;
+          } else {
+            body.innerHTML = rows.map(r => {
+              const roleLbl = _ROLE_LABEL[r.role] || r.role || "—";
+              const roleClr = _ROLE_COLOR[r.role] || "#64748b";
+              const name = r.role === "branch" || r.role === "franchise"
+                ? `${escHtml(r.branch_name || r.user_name || "—")}`
+                : escHtml(r.user_name || "—");
+              const code = r.role === "branch" || r.role === "franchise"
+                ? `${escHtml(r.branch_code || r.user_code || "")}`
+                : escHtml(r.user_code || "");
+              return `<tr>
+                <td style="font-size:12px;color:var(--txt2);white-space:nowrap">${escHtml(fmtThaiDateTime(r.logged_at))}</td>
+                <td><span class="dd-bar-chip">${code}</span></td>
+                <td>${name}</td>
+                <td><span style="display:inline-block;padding:2px 10px;border-radius:999px;background:${roleClr}22;color:${roleClr};font-weight:700;font-size:11.5px">${roleLbl}</span></td>
+                <td style="color:var(--txt2);font-size:12.5px">${escHtml(r.dm || "—")}</td>
+                <td style="color:var(--txt2);font-size:12px">${escHtml(r.platform || "—")}</td>
+              </tr>`;
+            }).join("");
+          }
+        }
+        // Mobile cards
+        const mob = document.getElementById("adminLoginMob");
+        if (mob) {
+          if (!rows.length) { mob.innerHTML = `<div style="color:#94a3b8;padding:16px;text-align:center">— ไม่พบ —</div>`; return; }
+          mob.innerHTML = rows.map(r => {
+            const roleLbl = _ROLE_LABEL[r.role] || r.role || "—";
+            const roleClr = _ROLE_COLOR[r.role] || "#64748b";
+            const isBranch = (r.role === "branch" || r.role === "franchise");
+            const name = isBranch ? (r.branch_name || r.user_name || "—") : (r.user_name || "—");
+            const code = isBranch ? (r.branch_code || r.user_code || "") : (r.user_code || "");
+            return `<div class="adm-row" style="flex-wrap:wrap;align-items:flex-start;padding:10px 12px;gap:6px">
+              <div style="flex:1 1 100%;display:flex;justify-content:space-between;align-items:center;gap:8px">
+                <div style="font-weight:700;font-size:13px">${escHtml(name)}</div>
+                <span style="padding:2px 10px;border-radius:999px;background:${roleClr}22;color:${roleClr};font-weight:700;font-size:11px">${roleLbl}</span>
+              </div>
+              <div style="flex:1 1 100%;display:flex;justify-content:space-between;gap:8px;color:var(--txt2);font-size:12px">
+                <span><span class="dd-bar-chip">${escHtml(code)}</span> ${escHtml(r.dm || "")}</span>
+                <span>${escHtml(r.platform || "—")}</span>
+              </div>
+              <div style="flex:1 1 100%;font-size:11.5px;color:var(--txt3)">🕒 ${escHtml(fmtThaiDateTime(r.logged_at))}</div>
+            </div>`;
+          }).join("");
+        }
       }
 
       function adminTabReload() {
