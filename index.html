@@ -12073,19 +12073,6 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         const _isBranchRole = (role === 'branch' || role === 'franchise');
         kpiEl.innerHTML = _ddKpiCards(_ddAgg(rows), codes, map);
 
-        // ── DEBUG indicator: row count + months covered (ตรวจปัญหา year vs month) ──
-        try {
-          const _allDates = d.rows.map(r => r.submit_date).filter(Boolean);
-          const _eodRows = d.rows.filter(r => r.submit_time_slot === "สิ้นวัน");
-          const _eodWithSale = _eodRows.filter(r => (parseFloat(r.actual_sale) || 0) > 0);
-          const _months = [...new Set(_eodWithSale.map(r => r.submit_date.slice(0, 7)))].sort();
-          const _firstDate = _allDates.length ? _allDates.slice().sort()[0] : '-';
-          const _lastDate  = _allDates.length ? _allDates.slice().sort().slice(-1)[0] : '-';
-          const _dbg = `🔎 DEBUG · ${sec.toUpperCase()} · range ${d.range.startDate}→${d.range.endDate} · rows=${d.rows.length} · EOD=${_eodRows.length} (มียอด=${_eodWithSale.length}) · ครอบคลุม ${_firstDate}→${_lastDate} · เดือนที่มียอด: ${_months.join(', ') || '(ไม่มี)'}`;
-          kpiEl.insertAdjacentHTML('afterend',
-            `<div style="margin:8px 0 12px;padding:10px 14px;background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;font-size:12px;color:#92400e;font-family:monospace;line-height:1.6;word-break:break-all">${_dbg}</div>`);
-        } catch (e) { console.warn('[dbg]', e); }
-
         // ── สำหรับ company/zone view บน month/year → เพิ่ม "สรุปยอดขายช่วง" (สัปดาห์ที่ 1-5 / มกราคม-ธันวาคม) ──
         let _periodPanel = '';
         if (!isBranch && (sec === 'month' || sec === 'year')) {
