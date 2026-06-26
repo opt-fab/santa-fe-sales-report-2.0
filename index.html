@@ -1933,7 +1933,10 @@
           width: 100% !important;
           justify-self: stretch !important;
         }
-        .dd-chan-stat, .dd-chan-summary { text-align: left !important; }
+        .dd-chan-stat { text-align: left !important; }
+        /* summary row (ยอดขายจริง / บิลทั้งหมด / เฉลี่ย/บิล) — center ในแต่ละคอลัมน์ให้ระยะห่างเท่ากัน */
+        .dd-chan-summary { text-align: center !important; grid-template-columns: 1fr 1fr 1fr !important; gap: 0 !important; }
+        .dd-chan-summary > div { align-items: center !important; padding: 0 4px !important; }
         /* สรุปยอดขาย — ขยับชื่อเดือน/period nav ทางขวานิดนึง */
         .dsum-hdr .dash3-nav { margin-left: auto; padding-right: 4px; }
       }
@@ -5274,14 +5277,15 @@ body { background: var(--bg); color: var(--txt); }
   gap: 14px;
   align-items: center;
   font-size: 12.5px;
-  padding-left: 24px;
 }
 .dd-rb-label {
   color: var(--txt2);
   font-weight: 600;
   white-space: nowrap;
-  padding-left: 10px;
 }
+/* เฉพาะแถบสัปดาห์/เดือน (compact) เท่านั้นที่ดัน label ไปทางขวา */
+.dd-rounds-bars-compact .dd-rb-row { padding-left: 24px; }
+.dd-rounds-bars-compact .dd-rb-label { padding-left: 10px; }
 .dd-rb-track {
   position: relative;
   height: 14px;
@@ -5633,9 +5637,12 @@ body { background: var(--bg); color: var(--txt); }
   .dd-hero-pct { font-size: 2.1rem; text-align: center; }
   /* สรุปยอดขาย — ไม่เอากราฟแท่ง: 1 บรรทัด: ⏰ ช่วง · ฿ยอด ──*/
   .dd-rounds-bars { gap: 10px; }
-  .dd-rb-row { grid-template-columns: auto 1fr; column-gap: 12px; row-gap: 6px; padding: 10px 16px 10px 28px; background: #fafafa; border: 1px solid var(--bd); border-radius: 10px; align-items: center; }
+  .dd-rb-row { grid-template-columns: auto 1fr; column-gap: 12px; row-gap: 6px; padding: 10px 16px; background: #fafafa; border: 1px solid var(--bd); border-radius: 10px; align-items: center; }
   .dd-rb-track { display: none; }
-  .dd-rb-label { font-size: 14px; font-weight: 700; padding-left: 8px; }
+  .dd-rb-label { font-size: 14px; font-weight: 700; }
+  /* compact (สัปดาห์/เดือน) — ดัน label ขวา */
+  .dd-rounds-bars-compact .dd-rb-row { padding: 10px 16px 10px 28px; }
+  .dd-rounds-bars-compact .dd-rb-label { padding-left: 8px; }
   .dd-rb-val { grid-column: 2; justify-self: end; white-space: nowrap; flex-wrap: wrap; gap: 6px; font-size: 16px; }
   .dd-rb-val b { font-size: 1em; }
   .dd-rb-growth { margin-left: 0; font-size: 10.5px; padding: 2px 7px; grid-column: 1 / -1; justify-self: end; }
