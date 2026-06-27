@@ -6617,14 +6617,14 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             <span id="adminLoginCount" style="font-size:12px;color:var(--txt2);font-weight:600">— ครั้ง</span>
           </div>
           <div class="dash-card-wrap adm-desk-wrap" style="overflow-x:auto">
-            <table class="dash-tbl" style="min-width:760px">
+            <table class="dash-tbl" style="min-width:680px">
               <thead><tr>
-                <th>เวลา</th>
-                <th>รหัส</th>
+                <th style="width:36px"></th>
                 <th>ชื่อ / สาขา</th>
                 <th>Role</th>
                 <th>BZM</th>
                 <th>อุปกรณ์</th>
+                <th style="text-align:right">เข้าใช้ล่าสุด</th>
               </tr></thead>
               <tbody id="adminLoginBody">
                 <tr><td colspan="6" style="color:#94a3b8;padding:16px;text-align:center">⏳ กำลังโหลด...</td></tr>
@@ -7806,7 +7806,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             branch_name: rec.branch_name || "",
             dm:          rec.dm || "",
             ua:          ua.slice(0, 300),
-            platform:    platform
+            platform:    platform,
+            event_type:  rec.event_type || "login"
           }).then(({ error }) => {
             if (error) console.warn("[login_logs]", error.message);
           });
@@ -7866,6 +7867,14 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
 
       function doLogout() {
         try {
+          // บันทึก logout event ก่อนเคลียร์ S
+          if (S && S.code) {
+            _logLoginEvent({
+              code: S.code, name: S.name || S.nick || "", role: S.role || "",
+              branch_code: S.branch_code || S.code || "", branch_name: S.branch || "", dm: S.dm || "",
+              event_type: "logout"
+            });
+          }
           // SSO: ล้าง shared session → Hub และแอปอื่นต้อง login ใหม่
           clearFabSession();
           try { localStorage.removeItem(LS_CODE); } catch (e) {}
@@ -8323,13 +8332,14 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
       /* ══════════════════════════════════════════════
          ADMIN: LOGIN LOGS — ประวัติการเข้าใช้งาน
       ══════════════════════════════════════════════ */
-      let _adminLogins = [];
+      let _adminLogins = [];        // all events (login + logout) เรียงใหม่→เก่า
+      let _adminLoginExpanded = {}; // session key → bool
       async function loadAdminLogins() {
         const body = document.getElementById("adminLoginBody");
         if (body) body.innerHTML = `<tr><td colspan="6" style="color:#94a3b8;padding:16px;text-align:center">⏳ กำลังโหลด...</td></tr>`;
         try {
           const { data, error } = await sb.from("login_logs")
-            .select("*").order("logged_at", { ascending: false }).range(0, 999);
+            .select("*").order("logged_at", { ascending: false }).range(0, 1999);
           if (error) {
             if (body) body.innerHTML = `<tr><td colspan="6" style="color:#dc2626;padding:16px;text-align:center">⚠️ โหลดไม่สำเร็จ: ${escHtml(error.message)}</td></tr>`;
             return;
@@ -8340,64 +8350,112 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           if (body) body.innerHTML = `<tr><td colspan="6" style="color:#dc2626;padding:16px;text-align:center">⚠️ โหลดไม่สำเร็จ: ${escHtml(e.message || "")}</td></tr>`;
         }
       }
+      function _adminLoginToggle(key) {
+        _adminLoginExpanded[key] = !_adminLoginExpanded[key];
+        renderAdminLogins();
+      }
+      // หาเวลาออกระบบของ session: logout แรกของ user_code ที่ logged_at > login_at (rows เรียงใหม่→เก่า → loop ย้อน)
+      function _findLogoutAfter(allRows, loginRow) {
+        const lAt = new Date(loginRow.logged_at).getTime();
+        let best = null;
+        for (const r of allRows) {
+          if (r.event_type !== "logout") continue;
+          if (r.user_code !== loginRow.user_code) continue;
+          const t = new Date(r.logged_at).getTime();
+          if (t <= lAt) continue;
+          if (best === null || t < new Date(best.logged_at).getTime()) best = r;
+        }
+        return best;
+      }
+      function _fmtDuration(ms) {
+        if (ms < 60000) return Math.round(ms / 1000) + " วิ";
+        if (ms < 3600000) return Math.round(ms / 60000) + " นาที";
+        const h = Math.floor(ms / 3600000); const m = Math.round((ms % 3600000) / 60000);
+        return h + " ชม. " + (m ? m + " นาที" : "");
+      }
       function renderAdminLogins() {
         const q = (document.getElementById("adminLoginSearch")?.value || "").toLowerCase().trim();
         const roleF = document.getElementById("adminLoginRoleFilter")?.value || "";
-        const rows = _adminLogins.filter(r => {
+        // แสดงเฉพาะ event_type = 'login' เป็นแถวหลัก · logout match ในการขยาย
+        const logins = _adminLogins.filter(r => (r.event_type || "login") === "login").filter(r => {
           if (roleF && r.role !== roleF) return false;
           if (!q) return true;
           const hay = [r.user_code, r.user_name, r.branch_code, r.branch_name, r.dm].join(" ").toLowerCase();
           return hay.includes(q);
         });
         const cnt = document.getElementById("adminLoginCount");
-        if (cnt) cnt.textContent = `${rows.length.toLocaleString()} ครั้ง`;
+        if (cnt) cnt.textContent = `${logins.length.toLocaleString()} ครั้ง`;
+
+        const rowLabel = (r) => {
+          const isBranch = (r.role === "branch" || r.role === "franchise");
+          return isBranch ? (r.branch_name || r.user_name || "—") : (r.user_name || "—");
+        };
 
         // Desktop table
         const body = document.getElementById("adminLoginBody");
         if (body) {
-          if (!rows.length) {
+          if (!logins.length) {
             body.innerHTML = `<tr><td colspan="6" style="color:#94a3b8;padding:16px;text-align:center">— ไม่พบ —</td></tr>`;
           } else {
-            body.innerHTML = rows.map(r => {
+            body.innerHTML = logins.map(r => {
+              const key = r.id;
+              const open = !!_adminLoginExpanded[key];
               const roleLbl = _ROLE_LABEL[r.role] || r.role || "—";
               const roleClr = _ROLE_COLOR[r.role] || "#64748b";
-              const name = r.role === "branch" || r.role === "franchise"
-                ? `${escHtml(r.branch_name || r.user_name || "—")}`
-                : escHtml(r.user_name || "—");
-              const code = r.role === "branch" || r.role === "franchise"
-                ? `${escHtml(r.branch_code || r.user_code || "")}`
-                : escHtml(r.user_code || "");
-              return `<tr>
-                <td style="font-size:12px;color:var(--txt2);white-space:nowrap">${escHtml(fmtThaiDateTime(r.logged_at))}</td>
-                <td><span class="dd-bar-chip">${code}</span></td>
-                <td>${name}</td>
+              const lo = _findLogoutAfter(_adminLogins, r);
+              const durTxt = lo ? _fmtDuration(new Date(lo.logged_at) - new Date(r.logged_at)) : "ยังอยู่ในระบบ";
+              const detail = open ? `
+                <tr class="adm-login-detail">
+                  <td></td>
+                  <td colspan="5" style="background:#f8fafc;padding:12px 14px">
+                    <div style="display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px">
+                      <div><b style="color:#16a34a">🟢 เข้าใช้:</b> ${escHtml(fmtThaiDateTime(r.logged_at))}</div>
+                      <div><b style="color:#dc2626">🔴 ออกระบบ:</b> ${lo ? escHtml(fmtThaiDateTime(lo.logged_at)) : '<span style="color:var(--txt3)">— ยังไม่ออก —</span>'}</div>
+                      <div><b style="color:var(--txt2)">⏱ ระยะเวลา:</b> ${escHtml(durTxt)}</div>
+                      <div style="flex:1 1 100%;color:var(--txt3);font-size:11px;font-family:monospace;word-break:break-all">${escHtml(r.ua || "")}</div>
+                    </div>
+                  </td>
+                </tr>` : "";
+              return `<tr style="cursor:pointer" onclick="_adminLoginToggle(${key})">
+                <td style="text-align:center;color:var(--txt2);font-size:12px">${open ? "▾" : "▸"}</td>
+                <td style="font-weight:700">${escHtml(rowLabel(r))}</td>
                 <td><span style="display:inline-block;padding:2px 10px;border-radius:999px;background:${roleClr}22;color:${roleClr};font-weight:700;font-size:11.5px">${roleLbl}</span></td>
                 <td style="color:var(--txt2);font-size:12.5px">${escHtml(r.dm || "—")}</td>
                 <td style="color:var(--txt2);font-size:12px">${escHtml(r.platform || "—")}</td>
-              </tr>`;
+                <td style="text-align:right;font-size:12px;color:var(--txt2);white-space:nowrap">${escHtml(fmtThaiDateTime(r.logged_at))}</td>
+              </tr>${detail}`;
             }).join("");
           }
         }
         // Mobile cards
         const mob = document.getElementById("adminLoginMob");
         if (mob) {
-          if (!rows.length) { mob.innerHTML = `<div style="color:#94a3b8;padding:16px;text-align:center">— ไม่พบ —</div>`; return; }
-          mob.innerHTML = rows.map(r => {
+          if (!logins.length) { mob.innerHTML = `<div style="color:#94a3b8;padding:16px;text-align:center">— ไม่พบ —</div>`; return; }
+          mob.innerHTML = logins.map(r => {
+            const key = r.id;
+            const open = !!_adminLoginExpanded[key];
             const roleLbl = _ROLE_LABEL[r.role] || r.role || "—";
             const roleClr = _ROLE_COLOR[r.role] || "#64748b";
-            const isBranch = (r.role === "branch" || r.role === "franchise");
-            const name = isBranch ? (r.branch_name || r.user_name || "—") : (r.user_name || "—");
-            const code = isBranch ? (r.branch_code || r.user_code || "") : (r.user_code || "");
-            return `<div class="adm-row" style="flex-wrap:wrap;align-items:flex-start;padding:10px 12px;gap:6px">
+            const lo = _findLogoutAfter(_adminLogins, r);
+            const durTxt = lo ? _fmtDuration(new Date(lo.logged_at) - new Date(r.logged_at)) : "ยังอยู่ในระบบ";
+            const detail = open ? `
+              <div style="flex:1 1 100%;background:#f8fafc;border-radius:8px;padding:10px 12px;margin-top:6px;display:flex;flex-direction:column;gap:6px;font-size:12.5px">
+                <div><b style="color:#16a34a">🟢 เข้าใช้:</b> ${escHtml(fmtThaiDateTime(r.logged_at))}</div>
+                <div><b style="color:#dc2626">🔴 ออกระบบ:</b> ${lo ? escHtml(fmtThaiDateTime(lo.logged_at)) : '<span style="color:var(--txt3)">— ยังไม่ออก —</span>'}</div>
+                <div><b style="color:var(--txt2)">⏱ ระยะเวลา:</b> ${escHtml(durTxt)}</div>
+                <div style="color:var(--txt3);font-size:11px;font-family:monospace;word-break:break-all">${escHtml(r.ua || "")}</div>
+              </div>` : "";
+            return `<div class="adm-row" style="flex-wrap:wrap;align-items:flex-start;padding:10px 12px;gap:6px;cursor:pointer" onclick="_adminLoginToggle(${key})">
               <div style="flex:1 1 100%;display:flex;justify-content:space-between;align-items:center;gap:8px">
-                <div style="font-weight:700;font-size:13px">${escHtml(name)}</div>
+                <div style="font-weight:700;font-size:13px">${open ? "▾" : "▸"} ${escHtml(rowLabel(r))}</div>
                 <span style="padding:2px 10px;border-radius:999px;background:${roleClr}22;color:${roleClr};font-weight:700;font-size:11px">${roleLbl}</span>
               </div>
               <div style="flex:1 1 100%;display:flex;justify-content:space-between;gap:8px;color:var(--txt2);font-size:12px">
-                <span><span class="dd-bar-chip">${escHtml(code)}</span> ${escHtml(r.dm || "")}</span>
+                <span>${escHtml(r.dm || "—")}</span>
                 <span>${escHtml(r.platform || "—")}</span>
               </div>
               <div style="flex:1 1 100%;font-size:11.5px;color:var(--txt3)">🕒 ${escHtml(fmtThaiDateTime(r.logged_at))}</div>
+              ${detail}
             </div>`;
           }).join("");
         }

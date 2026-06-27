@@ -285,8 +285,12 @@ create table if not exists public.login_logs (
   dm           text,
   ua           text,         -- user agent (เช่น Chrome/iPhone/Samsung)
   platform     text,         -- iOS/Android/Windows/macOS
+  event_type   text not null default 'login' check (event_type in ('login','logout')),
   logged_at    timestamptz not null default now()
 );
+
+-- ALTER (สำหรับตารางที่มีอยู่แล้ว) — รัน idempotent
+alter table public.login_logs add column if not exists event_type text not null default 'login';
 
 create index if not exists idx_login_logs_time on public.login_logs(logged_at desc);
 create index if not exists idx_login_logs_user on public.login_logs(user_code, logged_at desc);
