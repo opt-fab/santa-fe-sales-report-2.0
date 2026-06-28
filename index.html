@@ -922,15 +922,17 @@
       body.is-touch .desk-sidebar { display: none !important; }
       body.is-touch:not(.on-login) #appHdr { display: flex !important; }
       body.is-touch.on-login #appHdr { display: none !important; }
-      /* บนหน้า login → ซ่อนทุกอย่างที่ไม่เกี่ยว: logout / hub / test banners / sidebar */
+      /* บนหน้า login (ทุกขนาดจอ) → ซ่อน HEADER ทั้งหมด + chrome อื่นๆ
+         การซ่อน #appHdr ทั้งอันแก้ปัญหาปุ่ม "ออกจากระบบ" โผล่บนหน้า login
+         (เร็วกว่าและกัน specificity battle กับ rule มือถือเดิม) */
+      body.on-login #appHdr,
       body.on-login #hdrLogoutBtn,
       body.on-login #hdrHubBtn,
       body.on-login #testModeBanner,
       body.on-login #bypassOrderBanner,
       body.on-login #deskSidebar,
-      body.on-login #mobNav { display: none !important; }
-      /* แถบสีพื้นหลัง (border-top สีเขียวบางๆ) บนหน้า login → ตัดทิ้ง */
-      body.on-login #appHdr { border-bottom: none; }
+      body.on-login #mobNav,
+      body.on-login .hdr-logout-btn { display: none !important; }
       body.is-touch .screen.active:not(#sLogin) { margin-left: 0 !important; padding-bottom: 80px; }
       body.is-touch .mob-nav.visible {
         display: block !important;
