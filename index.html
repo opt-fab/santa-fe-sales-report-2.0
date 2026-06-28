@@ -1506,6 +1506,16 @@
       .mp-bulk-tbl:not(.mp-single-tbl) thead th { white-space: nowrap !important; }
       .mp-bulk-tbl:not(.mp-single-tbl) tbody td input { width: 56px; }
 
+      /* Bulk view: เปิดเต็มจอเหมือน modal → ตารางได้พื้นที่ 98vw เทียบเท่ารายสาขา */
+      #mpBulkView.is-fullscreen {
+        position: fixed; inset: 0;
+        background: #fff;
+        z-index: 9999;
+        padding: 20px;
+        overflow: auto;
+      }
+      body.is-bulk-fullscreen { overflow: hidden; }
+
       /* Single-row table ใน modal — compact ให้ฟิตในกรอบ ไม่ต้องเลื่อน */
       .mp-single-tbl th {
         padding: 6px 2px !important; font-size: 10px !important;
@@ -11210,7 +11220,10 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         if (!codes.length) return;
         _mpBulkCodes = codes;
         document.getElementById("mpListView").style.display = "none";
-        document.getElementById("mpBulkView").style.display = "";
+        const bulkView = document.getElementById("mpBulkView");
+        bulkView.style.display = "";
+        bulkView.classList.add("is-fullscreen");
+        document.body.classList.add("is-bulk-fullscreen");
         const y = parseInt(document.getElementById("manpowerYear").value, 10);
         const m = parseInt(document.getElementById("manpowerMonth").value, 10);
         document.getElementById("mpBulkPeriod").textContent = `${_MP_MONTHS_TH[m-1]} ${y+543}`;
@@ -11251,7 +11264,10 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         });
       }
       function _mpBulkClose() {
-        document.getElementById("mpBulkView").style.display = "none";
+        const bulkView = document.getElementById("mpBulkView");
+        bulkView.style.display = "none";
+        bulkView.classList.remove("is-fullscreen");
+        document.body.classList.remove("is-bulk-fullscreen");
         document.getElementById("mpListView").style.display = "";
         _mpBulkCodes = [];
         // refresh list (in case saves happened)
