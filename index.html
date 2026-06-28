@@ -4241,6 +4241,9 @@ body { background: var(--bg); color: var(--txt); }
 
 /* ─── MANPOWER modal — polished ─── */
 .mp-sec { border-radius:14px; padding:16px 18px 18px; margin-bottom:14px; border:1px solid; }
+/* Admin mode: ซ่อนทุก section ยกเว้น Plan */
+#mManpower.mp-admin-mode .mp-sec:not(.mp-sec-plan) { display: none !important; }
+#mManpower.mp-admin-mode .mp-sec-plan { display: block !important; }
 .mp-sec-mgr { background:linear-gradient(135deg,#faf5ff 0%,#f5f3ff 100%); border-color:#e9d5ff; }
 .mp-sec-kit { background:linear-gradient(135deg,#fff7ed 0%,#fef2e2 100%); border-color:#fed7aa; }
 .mp-sec-srv { background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%); border-color:#bbf7d0; }
@@ -6977,6 +6980,26 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           <input type="hidden" id="mp_branchCode">
           <input type="hidden" id="mp_year">
           <input type="hidden" id="mp_month">
+
+          <!-- ── 📋 Plan (Admin เท่านั้น — แสดงเมื่อ S.role=admin) ── -->
+          <div class="mp-sec mp-sec-plan" style="display:none;background:linear-gradient(135deg,#faf5ff,#ede9fe);border:1px solid #ddd6fe">
+            <div class="mp-sec-hdr">
+              <div class="mp-sec-title" style="color:#5b21b6">📋 Plan (Admin ตั้งเป้า)</div>
+              <div style="font-size:12px;color:#7c3aed">เฉพาะ Plan Team / Plan staff</div>
+            </div>
+            <div class="mp-grid-mgr" style="grid-template-columns:1fr 1fr;gap:18px">
+              <div class="mp-cell" style="background:#fff;border:2px solid #ddd6fe;border-radius:12px;padding:14px">
+                <label style="color:#5b21b6;font-weight:800">👔 Plan Team</label>
+                <input id="mp_plan_team" type="number" min="0" placeholder="0" inputmode="numeric"
+                  style="font-size:22px;font-weight:800;text-align:center;color:#5b21b6;background:#faf5ff;border:1.5px solid #ddd6fe;border-radius:10px">
+              </div>
+              <div class="mp-cell" style="background:#fff;border:2px solid #ddd6fe;border-radius:12px;padding:14px">
+                <label style="color:#5b21b6;font-weight:800">🧑‍🍳 Plan staff</label>
+                <input id="mp_plan_staff" type="number" min="0" placeholder="0" inputmode="numeric"
+                  style="font-size:22px;font-weight:800;text-align:center;color:#5b21b6;background:#faf5ff;border:1.5px solid #ddd6fe;border-radius:10px">
+              </div>
+            </div>
+          </div>
 
           <!-- ── ทีมผู้จัดการสาขา ── -->
           <div class="mp-sec mp-sec-mgr">
@@ -10453,6 +10476,16 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         document.getElementById("mpTitle").textContent = `Manpower · ${bName} · ${_MP_MONTHS_TH[m-1]} ${y+543}`;
         const r = _mpData[branchCode] || {};
         const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = (v == null ? 0 : v); };
+        // ── ADMIN mode: ใส่ค่า Plan + เปิด class ซ่อน section อื่น ──
+        const isAdmin = (S.role === "admin" || S.code === "ADMIN");
+        const modal = document.getElementById("mManpower");
+        if (modal) modal.classList.toggle("mp-admin-mode", isAdmin);
+        // Plan inputs: ค่าว่างถ้า 0 (ให้ admin เห็น placeholder)
+        const planTeam  = document.getElementById("mp_plan_team");
+        const planStaff = document.getElementById("mp_plan_staff");
+        if (planTeam)  planTeam.value  = (r.plan_team  > 0 ? r.plan_team  : "");
+        if (planStaff) planStaff.value = (r.plan_staff > 0 ? r.plan_staff : "");
+        // ───────────────────────────────────────────────────────────
         setV("mp_rgm", r.rgm); setV("mp_sam", r.sam); setV("mp_am", r.am); setV("mp_ss", r.ss);
         setV("mp_k_basic_pt", r.k_basic_pt); setV("mp_k_basic_ft", r.k_basic_ft);
         setV("mp_k_silver_pt", r.k_silver_pt); setV("mp_k_silver_ft", r.k_silver_ft);
@@ -10817,6 +10850,31 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         const warn = document.getElementById("mp_warn");
         const fail = (m) => { warn.style.display = ""; warn.textContent = "⚠️ " + m; };
         const get = (id) => parseInt((document.getElementById(id) || {}).value, 10) || 0;
+        // ── ADMIN: ส่งเฉพาะ plan_team + plan_staff (ไม่ overwrite ฟิลด์ user ด้วย 0) ──
+        const isAdmin = (S.role === "admin" || S.code === "ADMIN");
+        if (isAdmin) {
+          const planTeam  = get("mp_plan_team");
+          const planStaff = get("mp_plan_staff");
+          if (planTeam === 0)  return fail("ยังไม่ได้กรอก Plan Team");
+          if (planStaff === 0) return fail("ยังไม่ได้กรอก Plan staff");
+          const adminPayload = {
+            mode: "saveManpower",
+            branch_code: document.getElementById("mp_branchCode").value,
+            year:  parseInt(document.getElementById("mp_year").value, 10),
+            month: parseInt(document.getElementById("mp_month").value, 10),
+            plan_team: planTeam, plan_staff: planStaff
+          };
+          const btn = document.getElementById("mpSaveBtn");
+          if (btn) { btn.disabled = true; btn.textContent = "⏳ กำลังบันทึก..."; }
+          apiCall(adminPayload, function(res) {
+            if (btn) { btn.disabled = false; btn.textContent = "บันทึก ✓"; }
+            if (!res || !res.ok) { return fail((res && res.error) || "บันทึกไม่สำเร็จ"); }
+            closeM("mManpower");
+            showAlert("✅", "บันทึก Plan สำเร็จ", `${BRANCH_DM_MAP[adminPayload.branch_code]?.branch || adminPayload.branch_code}`);
+            renderManpowerList();
+          });
+          return;
+        }
         const payload = {
           mode: "saveManpower",
           branch_code: document.getElementById("mp_branchCode").value,
