@@ -7814,6 +7814,99 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         } catch (e) { console.warn("[login_logs]", e); }
       }
 
+      /* ══════════════════════════════════════════════
+         IDLE TIMEOUT — เด้งออก 30 นาทีถ้าไม่กดอะไรเลย
+         + popup เตือน 2 นาทีก่อนเด้ง
+      ══════════════════════════════════════════════ */
+      const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 นาที
+      const IDLE_WARN_MS    =  2 * 60 * 1000; // เตือน 2 นาทีก่อนเด้ง
+      let _idleTimer = null, _idleWarnTimer = null, _idleWarnEl = null;
+      let _idleCountdownInt = null;
+
+      function _idleClose() {
+        if (_idleWarnEl) { _idleWarnEl.remove(); _idleWarnEl = null; }
+        if (_idleCountdownInt) { clearInterval(_idleCountdownInt); _idleCountdownInt = null; }
+      }
+      function _idleStop() {
+        if (_idleTimer)     { clearTimeout(_idleTimer); _idleTimer = null; }
+        if (_idleWarnTimer) { clearTimeout(_idleWarnTimer); _idleWarnTimer = null; }
+        _idleClose();
+      }
+      function _idleLogoutNow() {
+        _idleClose();
+        try {
+          if (S && S.code) {
+            _logLoginEvent({
+              code: S.code, name: S.name || "", role: S.role || "",
+              branch_code: S.branch_code || S.code || "", branch_name: S.branch || "", dm: S.dm || "",
+              event_type: "logout"
+            });
+          }
+        } catch (_) {}
+        // ตั้ง flag ให้หน้า login แสดงข้อความ
+        try { sessionStorage.setItem("idleTimeoutMsg", "1"); } catch (_) {}
+        if (typeof doLogout === "function") doLogout();
+        else window.location.reload();
+      }
+      function _idleShowWarn() {
+        _idleClose();
+        let secsLeft = Math.floor(IDLE_WARN_MS / 1000);
+        const el = document.createElement("div");
+        el.id = "idleWarnModal";
+        el.style.cssText = "position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.55);backdrop-filter:blur(2px);font-family:inherit";
+        el.innerHTML = `
+          <div style="background:#fff;border-radius:16px;width:min(380px,90vw);padding:24px 22px;box-shadow:0 16px 48px rgba(0,0,0,.25);text-align:center">
+            <div style="font-size:48px;margin-bottom:8px">⏰</div>
+            <div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:6px">หมดเวลาเกือบ ๆ แล้ว</div>
+            <div style="font-size:13.5px;color:#64748b;margin-bottom:18px;line-height:1.6">
+              คุณไม่ได้ใช้งานมาสักครู่ — ระบบจะออกอัตโนมัติใน<br>
+              <span style="color:#dc2626;font-weight:800;font-size:24px;font-variant-numeric:tabular-nums" id="idleCountdown">2:00</span>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-outline" style="flex:1;font-size:13.5px;padding:10px" onclick="_idleLogoutNow()">ออกจากระบบ</button>
+              <button class="btn btn-brand" style="flex:1;font-size:13.5px;padding:10px;font-weight:800" onclick="_idleStayLoggedIn()">อยู่ต่อ ✓</button>
+            </div>
+          </div>`;
+        document.body.appendChild(el);
+        _idleWarnEl = el;
+        const cd = document.getElementById("idleCountdown");
+        _idleCountdownInt = setInterval(() => {
+          secsLeft--;
+          if (cd) {
+            const m = Math.floor(secsLeft / 60), s = secsLeft % 60;
+            cd.textContent = m + ":" + String(s).padStart(2, "0");
+          }
+          if (secsLeft <= 0) _idleLogoutNow();
+        }, 1000);
+      }
+      function _idleStayLoggedIn() {
+        _idleResetTimer();   // ปิด popup + เริ่มนับใหม่
+      }
+      function _idleResetTimer() {
+        if (!S || !S.code) return; // ยังไม่ login → ไม่ต้องนับ
+        _idleStop();
+        _idleWarnTimer = setTimeout(_idleShowWarn, IDLE_TIMEOUT_MS - IDLE_WARN_MS);
+        _idleTimer     = setTimeout(_idleLogoutNow, IDLE_TIMEOUT_MS);
+      }
+      function _idleStart() {
+        _idleStop();
+        // ฟัง activity ทุกแบบ — reset timer
+        ["mousemove","keydown","touchstart","click","scroll"].forEach(ev =>
+          window.addEventListener(ev, _idleOnActivity, { passive: true })
+        );
+        _idleResetTimer();
+      }
+      // throttle: reset ไม่ถี่กว่าทุก 5 วินาที (กัน mousemove ลั่นทุก ms)
+      let _idleLastReset = 0;
+      function _idleOnActivity() {
+        const now = Date.now();
+        if (now - _idleLastReset < 5000) return;
+        _idleLastReset = now;
+        // ถ้า popup เปิดอยู่ → ผู้ใช้ต้องกดปุ่มเอง (อย่า auto-extend จาก mousemove)
+        if (_idleWarnEl) return;
+        _idleResetTimer();
+      }
+
       function _doLoginCommit(u) {
         const newS = _stateFromDbUser(u);
         if (!newS) { showAlert('❌', 'รหัสไม่ถูกต้อง', 'role ในระบบไม่ถูกต้อง'); return; }
@@ -7867,6 +7960,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
 
       function doLogout() {
         try {
+          // หยุดจับ idle timer
+          _idleStop();
           // บันทึก logout event ก่อนเคลียร์ S
           if (S && S.code) {
             _logLoginEvent({
@@ -7926,6 +8021,15 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         document.getElementById(id).classList.add("active");
         // mark login state on body — CSS uses it to gate header/nav on touch
         document.body.classList.toggle("on-login", id === "sLogin");
+        // ถ้าเด้งออกเพราะ idle timeout → แสดง banner เตือน 1 ครั้ง
+        if (id === "sLogin") {
+          try {
+            if (sessionStorage.getItem("idleTimeoutMsg") === "1") {
+              sessionStorage.removeItem("idleTimeoutMsg");
+              setTimeout(() => showAlert("⏰", "หมดเวลาเข้าใช้งาน", "คุณไม่ได้ใช้งานเกิน 30 นาที — กรุณา login ใหม่อีกครั้ง"), 200);
+            }
+          } catch (_) {}
+        }
       }
 
       function setMobTab(btnId) {
@@ -7950,6 +8054,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
       }
 
       async function enterApp() {
+        // เริ่มจับ idle: 30 นาที → เด้งออก (เตือนล่วงหน้า 2 นาที)
+        _idleStart();
         // โหลด users DB cache เป็น background (ใช้สำหรับ login รอบต่อๆ ไป)
         _refreshUsersCache();
         // ซ่อนหน้า login ก่อน (กันแสดงค้างระหว่าง await branches load ด้านล่าง)
