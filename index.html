@@ -2842,6 +2842,22 @@
         background: #fff8f2;
       }
 
+      /* ─── Login history table polish ─── */
+      .adm-login-tbl tbody tr:not(.adm-login-detail) {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background .12s ease;
+      }
+      .adm-login-tbl tbody tr:not(.adm-login-detail):hover {
+        background: #fffbeb;
+      }
+      .adm-login-tbl tbody tr td {
+        padding: 12px 16px;
+        vertical-align: middle;
+      }
+      .adm-login-tbl tr.adm-login-detail td {
+        border-bottom: 2px solid #fde68a;
+      }
+
       /* กระพริบช่อง Plan ที่เด้งมาจาก popup "ยังไม่มี Plan" */
       @keyframes planFocusPulse {
         0%, 100% { background-color: #fff7ed; box-shadow: 0 0 0 0 rgba(242,108,28,0); }
@@ -6636,18 +6652,20 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             </select>
             <span id="adminLoginCount" style="font-size:12px;color:var(--txt2);font-weight:600">— ครั้ง</span>
           </div>
-          <div class="dash-card-wrap adm-desk-wrap" style="overflow-x:auto">
-            <table class="dash-tbl" style="min-width:680px">
-              <thead><tr>
-                <th style="width:36px"></th>
-                <th>ชื่อ / สาขา</th>
-                <th>Role</th>
-                <th>BZM</th>
-                <th>อุปกรณ์</th>
-                <th style="text-align:right">เข้าใช้ล่าสุด</th>
-              </tr></thead>
+          <div class="dash-card-wrap adm-desk-wrap" style="overflow:hidden;padding:0">
+            <table class="dash-tbl adm-login-tbl" style="min-width:680px;width:100%;border-collapse:collapse">
+              <thead>
+                <tr style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-bottom:2px solid #fbbf24">
+                  <th style="width:36px;padding:14px 6px"></th>
+                  <th style="padding:14px 16px;text-align:left;font-weight:800;color:#92400e;font-size:13px">👤 ชื่อ / สาขา</th>
+                  <th style="padding:14px 12px;text-align:left;font-weight:800;color:#92400e;font-size:13px">Role</th>
+                  <th style="padding:14px 12px;text-align:left;font-weight:800;color:#92400e;font-size:13px">BZM</th>
+                  <th style="padding:14px 12px;text-align:left;font-weight:800;color:#92400e;font-size:13px">อุปกรณ์</th>
+                  <th style="padding:14px 16px;text-align:right;font-weight:800;color:#92400e;font-size:13px">⏰ เข้าใช้ล่าสุด</th>
+                </tr>
+              </thead>
               <tbody id="adminLoginBody">
-                <tr><td colspan="6" style="color:#94a3b8;padding:16px;text-align:center">⏳ กำลังโหลด...</td></tr>
+                <tr><td colspan="6" style="color:#94a3b8;padding:32px;text-align:center">⏳ กำลังโหลด...</td></tr>
               </tbody>
             </table>
           </div>
@@ -14191,16 +14209,34 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             const _br   = S.branch || "";
             const _date = _pendingPayload.submit_date;
             const _slot = _pendingPayload.submit_time_slot;
-            const _msg = `<div style="text-align:center;line-height:1.7">
-                <div style="font-size:14px;color:#15803d;font-weight:700">💾 ${escHtml(_br)}</div>
-                <div style="font-size:12.5px;color:#475569;margin-top:2px">วันที่ ${escHtml(_date)} · รอบ ${escHtml(_slot)}</div>
-                <div style="margin-top:14px;padding:12px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;font-size:13px;color:#1e40af;font-weight:600">
-                  📊 ดูข้อมูลเบื้องต้นได้ที่<br><b>หน้าแดชบอร์ด</b>
+            // วันที่เป็นไทย: "25 มิ.ย. 69"
+            const _TH_M = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+            const _parts = _date.split("-");
+            const _thDate = `${parseInt(_parts[2], 10)} ${_TH_M[parseInt(_parts[1], 10) - 1]} ${(parseInt(_parts[0], 10) + 543) % 100}`;
+            const _slotIco  = _slot === "16.00" ? "🕓" : "🌙";
+            const _slotLbl  = _slot === "16.00" ? "รอบ 16:00 น." : "รอบสิ้นวัน";
+            const _msg = `<div style="text-align:left">
+                <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;border-radius:14px;padding:14px 16px;margin-bottom:12px">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                    <span style="font-size:20px">🏬</span>
+                    <span style="font-weight:800;font-size:15px;color:#14532d">${escHtml(_br)}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;color:#166534">
+                    <span>📅 ${escHtml(_thDate)}</span>
+                    <span style="font-weight:700">${_slotIco} ${_slotLbl}</span>
+                  </div>
+                </div>
+                <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+                  <span style="font-size:28px">📊</span>
+                  <div style="flex:1;line-height:1.5">
+                    <div style="font-weight:800;font-size:13.5px;color:#1e3a8a">ดูสถิติเบื้องต้นได้ที่</div>
+                    <div style="font-size:12.5px;color:#1e40af">หน้าแดชบอร์ดของระบบ</div>
+                  </div>
                 </div>
               </div>`;
             showAlert("✅", "บันทึกสำเร็จ", _msg,
               function(){ try { showDash(); } catch(_) {} },
-              { html: true, btnText: "📊 ไปแดชบอร์ด", cancelText: "ปิด" });
+              { html: true, btnText: "📊 ไปแดชบอร์ด →", cancelText: "กรอกต่อ" });
             _pendingPayload = null;
             clearForm();
           } else if (res.code === "BUSY_PEAK") {
