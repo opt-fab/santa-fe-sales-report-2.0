@@ -7822,153 +7822,20 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
      MODAL: MANPOWER
 ════════════════════════════════════════ -->
     <div id="mManpower" class="modal-bg">
-      <div class="modal" style="max-width:820px">
+      <div class="modal" style="max-width:min(1400px,95vw)">
         <div class="modal-hdr">
           <h3 id="mpTitle">กรอก Manpower</h3>
           <button class="modal-close" onclick="closeM('mManpower')">×</button>
         </div>
-        <div class="modal-body" style="padding:18px 22px">
+        <div class="modal-body" style="padding:14px 18px">
           <input type="hidden" id="mp_branchCode">
           <input type="hidden" id="mp_year">
           <input type="hidden" id="mp_month">
+          <!-- Single-row bulk-style table (rendered โดย manpowerOpen) -->
+          <div id="mpFormBody"></div>
 
-          <!-- ── 📋 Plan (Admin เท่านั้น — Design เหมือนแถวเดียวของกรอกหลายสาขา) ── -->
-          <div class="mp-sec mp-sec-plan" id="mpSecPlanAdmin" style="display:none;padding:0;overflow:hidden;border:1px solid #ddd6fe">
-            <!-- Header: เหมือน thead ของ bulk admin table -->
-            <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:0;background:linear-gradient(135deg,#ede9fe,#ddd6fe);padding:0">
-              <div style="padding:14px 18px;font-weight:800;color:#5b21b6;font-size:13.5px;text-align:left">สาขา</div>
-              <div style="padding:14px 12px;font-weight:800;color:#5b21b6;font-size:13.5px;text-align:center">👔 Plan Team</div>
-              <div style="padding:14px 12px;font-weight:800;color:#5b21b6;font-size:13.5px;text-align:center">🧑‍🍳 Plan Staff</div>
-            </div>
-            <!-- Row: เหมือน tbody tr ของ bulk admin table -->
-            <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:0;background:#fff;padding:0;border-top:1px solid #ddd6fe">
-              <!-- Branch column -->
-              <div style="padding:18px;border-right:1px solid #f1f5f9">
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                  <span id="mpPlanBranchCode" style="display:inline-block;padding:3px 10px;background:#7c3aed;color:#fff;border-radius:8px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums">—</span>
-                  <span id="mpPlanBranchName" style="font-weight:700;color:#0f172a;font-size:14px">—</span>
-                </div>
-                <div id="mpPlanBranchBZM" style="font-size:11.5px;color:#64748b;margin-top:6px">BZM: —</div>
-              </div>
-              <!-- Plan Team input -->
-              <div style="padding:14px 12px;text-align:center;border-right:1px solid #f1f5f9">
-                <input id="mp_plan_team" type="number" min="0" inputmode="numeric" placeholder="—"
-                  style="width:90px;text-align:center;font-size:18px;font-weight:800;padding:10px 12px;border:2px solid #ddd6fe;border-radius:10px;background:#faf5ff;color:#5b21b6;font-variant-numeric:tabular-nums;transition:all .15s ease;font-family:inherit"
-                  onfocus="this.style.borderColor='#7c3aed';this.style.background='#fff'"
-                  onblur="this.style.borderColor='#ddd6fe';this.style.background='#faf5ff'">
-              </div>
-              <!-- Plan Staff input -->
-              <div style="padding:14px 12px;text-align:center">
-                <input id="mp_plan_staff" type="number" min="0" inputmode="numeric" placeholder="—"
-                  style="width:90px;text-align:center;font-size:18px;font-weight:800;padding:10px 12px;border:2px solid #ddd6fe;border-radius:10px;background:#faf5ff;color:#5b21b6;font-variant-numeric:tabular-nums;transition:all .15s ease;font-family:inherit"
-                  onfocus="this.style.borderColor='#7c3aed';this.style.background='#fff'"
-                  onblur="this.style.borderColor='#ddd6fe';this.style.background='#faf5ff'">
-              </div>
-            </div>
-          </div>
 
-          <!-- ═══ NEW LAYOUT — ตรงกับ "กรอกหลายสาขา" (bulk fields) ═══ -->
-          <!-- ── 📊 Actual + เทียบ Plan ── -->
-          <div class="mp-sec mp-sec-act" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe">
-            <div class="mp-sec-hdr">
-              <div class="mp-sec-title" style="color:#1e40af">📊 Actual + เทียบ Plan</div>
-            </div>
-            <div class="mp-grid-mgr" style="grid-template-columns:1fr 1fr 1fr">
-              <div class="mp-cell" style="background:#fff;border:1px solid #bfdbfe">
-                <label style="color:#1e40af;font-weight:700">Actual Team</label>
-                <input id="mp_actual_team" type="number" min="0" value="" placeholder="0" inputmode="numeric"
-                  style="font-size:18px;font-weight:800;text-align:center;color:#1e40af;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px"
-                  oninput="_mpRecalc()">
-              </div>
-              <div class="mp-cell" style="background:#fff;border:1px solid #bfdbfe">
-                <label style="color:#1e40af;font-weight:700">Actual staff</label>
-                <div id="mp_actStaff" style="font-size:20px;font-weight:800;text-align:center;color:#475569;padding:10px;background:#f8fafc;border-radius:8px;font-variant-numeric:tabular-nums">0</div>
-              </div>
-              <div class="mp-cell" style="background:#fff;border:1px solid #bfdbfe">
-                <label style="color:#1e40af;font-weight:700">Actual vs Plan</label>
-                <div id="mp_vsPlan" style="font-size:20px;font-weight:800;text-align:center;color:#475569;padding:10px;background:#f8fafc;border-radius:8px;font-variant-numeric:tabular-nums">0%</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ── 🍽️ พนักงานบริการ (Service) — 5 inputs + total ── -->
-          <div class="mp-sec mp-sec-srv">
-            <div class="mp-sec-hdr">
-              <div class="mp-sec-title">🍽️ พนักงานบริการ</div>
-              <div class="mp-sec-tot">Total: <b id="mp_totSrv">0</b></div>
-            </div>
-            <div class="mp-grid-mgr" style="grid-template-columns:repeat(5,1fr)">
-              <div class="mp-cell"><label>FT</label><input id="mp_s_ft"     type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>PT</label><input id="mp_s_pt"     type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>Basic</label><input id="mp_s_basic"  type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>Silver</label><input id="mp_s_silver" type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>Gold</label><input id="mp_s_gold"   type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
-            </div>
-          </div>
-
-          <!-- ── 🍳 พนักงานครัว (Kitchen) — 5 inputs + total ── -->
-          <div class="mp-sec mp-sec-kit">
-            <div class="mp-sec-hdr">
-              <div class="mp-sec-title">🍳 พนักงานครัว</div>
-              <div class="mp-sec-tot">Total: <b id="mp_totKit">0</b></div>
-            </div>
-            <div class="mp-grid-mgr" style="grid-template-columns:repeat(5,1fr)">
-              <div class="mp-cell"><label>FT</label><input id="mp_k_ft"     type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>PT</label><input id="mp_k_pt"     type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>Basic</label><input id="mp_k_basic"  type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>Silver</label><input id="mp_k_silver" type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>Gold</label><input id="mp_k_gold"   type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
-            </div>
-          </div>
-
-          <!-- ── 📊 รวม FT/PT (calc) ── -->
-          <div class="mp-sec" style="background:#f8fafc;border:1px solid #e2e8f0">
-            <div class="mp-sec-hdr">
-              <div class="mp-sec-title" style="color:#475569">📊 รวม FT / PT</div>
-            </div>
-            <div class="mp-grid-mgr" style="grid-template-columns:1fr 1fr">
-              <div class="mp-cell" style="background:#fff;border:1px solid #e2e8f0">
-                <label style="color:#0ea5e9;font-weight:700">FT (Service + Kitchen)</label>
-                <div id="mp_grandFT" style="font-size:20px;font-weight:800;text-align:center;color:#0369a1;padding:10px;background:#f0f9ff;border-radius:8px;font-variant-numeric:tabular-nums">0</div>
-              </div>
-              <div class="mp-cell" style="background:#fff;border:1px solid #e2e8f0">
-                <label style="color:#a855f7;font-weight:700">PT (Service + Kitchen)</label>
-                <div id="mp_grandPT" style="font-size:20px;font-weight:800;text-align:center;color:#7e22ce;padding:10px;background:#faf5ff;border-radius:8px;font-variant-numeric:tabular-nums">0</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ── รายละเอียด Part-time ── -->
-          <div class="mp-sec mp-sec-pt">
-            <div class="mp-sec-hdr">
-              <div class="mp-sec-title">⏱️ รายละเอียด Part-time</div>
-              <div class="mp-sec-tot"><span>รวม:</span><b id="mpTotPt">0</b></div>
-            </div>
-            <div class="mp-grid-mgr" style="grid-template-columns:repeat(3,1fr)">
-              <div class="mp-cell"><label>PT 8 ชม.</label><input id="mp_pt_8h"     type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>PT ทวิภาคี 40 ชม.</label><input id="mp_pt_dual40" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>PT 4-5 ชม.</label><input id="mp_pt_45h"    type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-            </div>
-            <div id="mpPtMatch" class="mp-chk"></div>
-          </div>
-
-          <!-- ── รายละเอียด ทวิภาคี ── -->
-          <div class="mp-sec mp-sec-dual">
-            <div class="mp-sec-hdr">
-              <div class="mp-sec-title">🎓 รายละเอียด ทวิภาคี</div>
-              <div class="mp-sec-tot">รวม: <b id="mpTotDual">0</b></div>
-            </div>
-            <div class="mp-grid-mgr" style="grid-template-columns:1fr 1fr">
-              <div class="mp-cell"><label>ทวิภาคี FT</label><input id="mp_dual_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-              <div class="mp-cell">
-                <label>ทวิภาคี PT</label>
-                <input id="mp_dual_pt" type="number" min="0" value="0" oninput="_mpRecalc()">
-              </div>
-            </div>
-            <div id="mpDualMatch" class="mp-chk"></div>
-          </div>
-
-          <div id="mp_warn" style="display:none;background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:8px;font-size:13px"></div>
+          <div id="mp_warn" style="display:none;background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px"></div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline" onclick="closeM('mManpower')">ยกเลิก</button>
@@ -10776,68 +10643,68 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         return parseInt(el.value, 10) || 0;
       }
       function _mpRecalc() {
-        // ── NEW LAYOUT — ตรงกับ bulk fields ──
         const sFT = _mpInt("mp_s_ft");
         const sPT = _mpInt("mp_s_pt");
         const kFT = _mpInt("mp_k_ft");
         const kPT = _mpInt("mp_k_pt");
         const actStaff = sFT + sPT + kFT + kPT;
-        const grandFT  = sFT + kFT;
-        const grandPT  = sPT + kPT;
-        const totSrv   = sFT + sPT;
-        const totKit   = kFT + kPT;
-
-        const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v); };
-        setText("mp_actStaff", actStaff);
-        setText("mp_grandFT",  grandFT);
-        setText("mp_grandPT",  grandPT);
-        setText("mp_totSrv",   totSrv);
-        setText("mp_totKit",   totKit);
-
+        // calc cells (เหมือน bulk render — id pattern mp_<key>_calc)
+        const setCalc = (id, v) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.textContent = String(v);
+          el.classList.toggle("zero", v === 0);
+        };
+        setCalc("mp_actStaff_calc", actStaff);
+        setCalc("mp_grandFT_calc",  sFT + kFT);
+        setCalc("mp_grandPT_calc",  sPT + kPT);
+        setCalc("mp_totSrv_calc",   sFT + sPT);
+        setCalc("mp_totKit_calc",   kFT + kPT);
         // Actual vs Plan %
         const planStaff = _mpInt("mp_plan_staff");
-        const vsEl = document.getElementById("mp_vsPlan");
-        if (vsEl) {
+        const pctEl = document.getElementById("mp_vsPlan_calc");
+        if (pctEl) {
           if (planStaff <= 0) {
-            vsEl.textContent = "—";
-            vsEl.style.color = "#94a3b8";
+            pctEl.textContent = "0%";
+            pctEl.className = "calc-val pct-val zero";
           } else {
             const pct = Math.round((actStaff / planStaff) * 1000) / 10;
-            vsEl.textContent = pct + "%";
-            vsEl.style.color = pct >= 100 ? "#15803d" : pct >= 65 ? "#d97706" : "#dc2626";
+            pctEl.textContent = pct + "%";
+            let cls = "ok";
+            if (pct < 65)        cls = "low";
+            else if (pct < 100)  cls = "mid";
+            pctEl.className = "calc-val pct-val " + cls;
           }
         }
-
-        // Part-time details
-        const pt8  = _mpInt("mp_pt_8h");
-        const ptD  = _mpInt("mp_pt_dual40");
-        const pt45 = _mpInt("mp_pt_45h");
-        const ptTot = pt8 + ptD + pt45;
-        setText("mpTotPt", ptTot);
-        const ptRef = grandPT;
-        const ptMatch = document.getElementById("mpPtMatch");
-        if (ptMatch) {
-          if (ptTot === ptRef) {
-            ptMatch.className = "mp-chk ok";
-            ptMatch.innerHTML = `✓ ผลรวมตรงกับ PT (Service + Kitchen) = ${ptRef} คน`;
+        // Status chip + validate
+        const stat = document.getElementById("mpbstat_single");
+        if (stat) {
+          const isAdmin = (S.role === "admin" || S.code === "ADMIN");
+          if (isAdmin) {
+            const pt = _mpInt("mp_plan_team"), ps = _mpInt("mp_plan_staff");
+            if (pt > 0 && ps > 0)      stat.innerHTML = `<span class="stat-chip ok">✓ ถูกต้อง</span>`;
+            else if (pt > 0 || ps > 0) stat.innerHTML = `<span class="stat-chip bad">⚠ ต้องแก้</span>`;
+            else                        stat.innerHTML = `<span class="stat-chip blank">— รอกรอก</span>`;
           } else {
-            ptMatch.className = "mp-chk bad";
-            ptMatch.innerHTML = `❌ ผลรวมต้องเท่ากับ PT (Service + Kitchen) = ${ptRef} คน (ตอนนี้ ${ptTot})`;
-          }
-        }
-
-        // ทวิภาคี
-        const dFT = _mpInt("mp_dual_ft");
-        const dPT = _mpInt("mp_dual_pt");
-        setText("mpTotDual", dFT + dPT);
-        const dMatch = document.getElementById("mpDualMatch");
-        if (dMatch) {
-          if (dPT === ptD) {
-            dMatch.className = "mp-chk ok";
-            dMatch.innerHTML = `✓ ทวิภาคี PT ถูกต้อง`;
-          } else {
-            dMatch.className = "mp-chk bad";
-            dMatch.innerHTML = `❌ ทวิภาคี PT ต้องเป็น ${ptD} คน (ตอนนี้ ${dPT}) — เท่ากับช่อง "PT ทวิภาคี 40 ชม."`;
+            // user view: ใช้ validation เดียวกับ bulk
+            const at = _mpInt("mp_actual_team");
+            const sFP = sFT + sPT, kFP = kFT + kPT;
+            const sTier = _mpInt("mp_s_basic") + _mpInt("mp_s_silver") + _mpInt("mp_s_gold");
+            const kTier = _mpInt("mp_k_basic") + _mpInt("mp_k_silver") + _mpInt("mp_k_gold");
+            const pt8 = _mpInt("mp_pt_8h"), ptD = _mpInt("mp_pt_dual40"), pt45 = _mpInt("mp_pt_45h");
+            const dPT = _mpInt("mp_dual_pt");
+            const anyFilled = at > 0 || sFP > 0 || kFP > 0;
+            if (!anyFilled) {
+              stat.innerHTML = `<span class="stat-chip blank">— รอกรอก</span>`;
+            } else {
+              const ok = at > 0 && sFP > 0 && kFP > 0
+                      && sTier === sFP && kTier === kFP
+                      && (pt8 + ptD + pt45) === (sPT + kPT)
+                      && dPT === ptD;
+              stat.innerHTML = ok
+                ? `<span class="stat-chip ok">✓ ถูกต้อง</span>`
+                : `<span class="stat-chip bad">⚠ ต้องแก้</span>`;
+            }
           }
         }
       }
@@ -11629,51 +11496,123 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         document.getElementById("mp_month").value = m;
         document.getElementById("mpTitle").textContent = `Manpower · ${bName} · ${_MP_MONTHS_TH[m-1]} ${y+543}`;
         const r = _mpData[branchCode] || {};
-        const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = (v == null ? 0 : v); };
-        // ── ADMIN mode: ใส่ค่า Plan + เปิด class ซ่อน section อื่น ──
         const isAdmin = (S.role === "admin" || S.code === "ADMIN");
-        const modal = document.getElementById("mManpower");
-        if (modal) modal.classList.toggle("mp-admin-mode", isAdmin);
-        // Branch info ใน Plan section (admin) — ให้เหมือนแถวเดียวของ bulk
-        if (isAdmin) {
-          const bc = document.getElementById("mpPlanBranchCode");
-          const bn = document.getElementById("mpPlanBranchName");
-          const bd = document.getElementById("mpPlanBranchBZM");
-          if (bc) bc.textContent = branchCode;
-          if (bn) bn.textContent = bInfo.branch || "—";
-          if (bd) bd.textContent = "BZM: " + (bInfo.dm || "—");
-        }
-        // Plan inputs: ค่าว่างถ้า 0 (ให้ admin เห็น placeholder)
-        const planTeam  = document.getElementById("mp_plan_team");
-        const planStaff = document.getElementById("mp_plan_staff");
-        if (planTeam)  planTeam.value  = (r.plan_team  > 0 ? r.plan_team  : "");
-        if (planStaff) planStaff.value = (r.plan_staff > 0 ? r.plan_staff : "");
-        // ───────────────────────────────────────────────────────────
-        // ── NEW LAYOUT — populate fields ตรงกับ bulk ──
-        // ค่าว่าง "" ถ้า 0 — ให้เห็น placeholder
-        const setEmpty = (id, v) => {
-          const el = document.getElementById(id);
-          if (el) el.value = (v > 0 ? v : "");
-        };
-        setEmpty("mp_actual_team", r.actual_team);
-        setEmpty("mp_s_ft",     r.s_ft);
-        setEmpty("mp_s_pt",     r.s_pt);
-        setEmpty("mp_s_basic",  r.s_basic);
-        setEmpty("mp_s_silver", r.s_silver);
-        setEmpty("mp_s_gold",   r.s_gold);
-        setEmpty("mp_k_ft",     r.k_ft);
-        setEmpty("mp_k_pt",     r.k_pt);
-        setEmpty("mp_k_basic",  r.k_basic);
-        setEmpty("mp_k_silver", r.k_silver);
-        setEmpty("mp_k_gold",   r.k_gold);
-        setEmpty("mp_pt_8h",     r.pt_8h);
-        setEmpty("mp_pt_dual40", r.pt_dual40);
-        setEmpty("mp_pt_45h",    r.pt_45h);
-        setEmpty("mp_dual_ft",   r.dual_ft);
-        setEmpty("mp_dual_pt",   r.dual_pt);
+
+        // ── Render 1-row table เหมือน "กรอกหลายสาขา" (bulk) ใน modal ──
+        _mpRenderSingleTable(branchCode, r, isAdmin);
+
         document.getElementById("mp_warn").style.display = "none";
         _mpRecalc();
         openM("mManpower");
+      }
+
+      // Render 1-row table ใน mpFormBody — ใช้ structure เดียวกับ _mpBulkRender (1 สาขา)
+      function _mpRenderSingleTable(branchCode, r, isAdmin) {
+        const box = document.getElementById("mpFormBody");
+        if (!box) return;
+        const bInfo = BRANCH_DM_MAP[branchCode] || {};
+        // ใช้ field filter จาก bulk
+        const fields = isAdmin
+          ? _MP_BULK_FIELDS.filter(f => f.adminOnly)
+          : _MP_BULK_FIELDS.filter(f => !f.adminOnly);
+        const groupTitle = {
+          plan: "📋 Plan (Admin ตั้ง)",
+          act:  "Actual + เทียบ Plan",
+          sum:  "รวม FT/PT",
+          srv:  "Service",
+          kit:  "Kitchen",
+          pt:   "⏱️ รายละเอียด Part time",
+          dual: "🎓 รายละเอียด ทวิ"
+        };
+        // ── ADMIN VIEW: simplified (Branch | Plan Team | Plan Staff | สถานะ) ──
+        if (isAdmin) {
+          box.innerHTML = `
+            <table class="mp-bulk-tbl mp-bulk-admin" style="border-collapse:separate;border-spacing:0;font-size:13px;width:100%;min-width:560px">
+              <thead>
+                <tr style="background:linear-gradient(135deg,#ede9fe,#ddd6fe)">
+                  <th class="branch-cell" style="text-align:left;padding:14px 18px;font-weight:800;color:#5b21b6">สาขา</th>
+                  <th style="text-align:center;padding:14px 12px;font-weight:800;color:#5b21b6;width:180px">👔 Plan Team</th>
+                  <th style="text-align:center;padding:14px 12px;font-weight:800;color:#5b21b6;width:180px">🧑‍🍳 Plan Staff</th>
+                  <th class="status-cell" style="text-align:center;padding:14px 12px;font-weight:800;color:#5b21b6;width:140px">สถานะ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="mpbrow_${branchCode}" class="mp-bulk-admin-row">
+                  <td class="branch-cell" style="padding:14px 18px;border-bottom:1px solid #f1f5f9">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <span class="code" style="display:inline-block;padding:3px 10px;background:#7c3aed;color:#fff;border-radius:8px;font-size:11px;font-weight:800">${escHtml(branchCode)}</span>
+                      <span style="font-weight:700;color:#0f172a;font-size:14px">${escHtml(bInfo.branch || "-")}</span>
+                    </div>
+                    <div style="font-size:11.5px;color:#64748b;margin-top:4px;margin-left:54px">BZM: ${escHtml(bInfo.dm || "—")}</div>
+                  </td>
+                  <td style="text-align:center;padding:14px 12px;border-bottom:1px solid #f1f5f9">
+                    <input id="mp_plan_team" type="number" min="0" inputmode="numeric" placeholder="—" value="${r.plan_team > 0 ? r.plan_team : ''}"
+                      oninput="_mpRecalc()"
+                      style="width:90px;text-align:center;font-size:18px;font-weight:800;padding:10px 12px;border:2px solid #ddd6fe;border-radius:10px;background:#faf5ff;color:#5b21b6;font-variant-numeric:tabular-nums;transition:all .15s ease"
+                      onfocus="this.style.borderColor='#7c3aed';this.style.background='#fff'"
+                      onblur="this.style.borderColor='#ddd6fe';this.style.background='#faf5ff'">
+                  </td>
+                  <td style="text-align:center;padding:14px 12px;border-bottom:1px solid #f1f5f9">
+                    <input id="mp_plan_staff" type="number" min="0" inputmode="numeric" placeholder="—" value="${r.plan_staff > 0 ? r.plan_staff : ''}"
+                      oninput="_mpRecalc()"
+                      style="width:90px;text-align:center;font-size:18px;font-weight:800;padding:10px 12px;border:2px solid #ddd6fe;border-radius:10px;background:#faf5ff;color:#5b21b6;font-variant-numeric:tabular-nums;transition:all .15s ease"
+                      onfocus="this.style.borderColor='#7c3aed';this.style.background='#fff'"
+                      onblur="this.style.borderColor='#ddd6fe';this.style.background='#faf5ff'">
+                  </td>
+                  <td class="status-cell" id="mpbstat_single" style="text-align:center;padding:14px 12px;border-bottom:1px solid #f1f5f9">
+                    <span class="stat-chip blank">— รอกรอก</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>`;
+          return;
+        }
+        // ── USER VIEW: render TABLE เหมือน bulk (1 row + all fields + colored groups) ──
+        const grpCount = {};
+        fields.forEach(f => { grpCount[f.g] = (grpCount[f.g]||0) + 1; });
+        const isGroupStart = (idx) => idx === 0 || fields[idx].g !== fields[idx-1].g;
+        let h1 = `<tr><th rowspan="2" class="branch-cell">Branch</th>`;
+        const seen = new Set();
+        fields.forEach(f => {
+          if (seen.has(f.g)) return;
+          seen.add(f.g);
+          h1 += `<th colspan="${grpCount[f.g]}" class="mp-bulk-grp ${f.g} gstart ${f.g}">${escHtml(groupTitle[f.g] || f.g)}</th>`;
+        });
+        h1 += `<th rowspan="2" class="status-cell">สถานะ</th></tr>`;
+        let h2 = `<tr>`;
+        fields.forEach((f, idx) => {
+          let cls = `sub ${f.g}`;
+          if (isGroupStart(idx)) cls += ` gstart ${f.g}`;
+          if (f.color) cls += " h-" + f.color;
+          h2 += `<th class="${cls}">${escHtml(f.l)}</th>`;
+        });
+        h2 += `</tr>`;
+        let row = `<tr id="mpbrow_single"><td class="branch-cell"><span class="code">${escHtml(branchCode)}</span>${escHtml(bInfo.branch || "-")}</td>`;
+        fields.forEach((f, idx) => {
+          let cls = `g-${f.g}`;
+          if (isGroupStart(idx)) cls += ` gstart ${f.g}`;
+          if (f.color) cls += " c-" + f.color;
+          if (f.type === "calc") {
+            cls += " is-calc";
+            row += `<td class="${cls}"><span class="calc-val zero" id="mp_${f.k}_calc">0</span></td>`;
+          } else if (f.type === "pct") {
+            cls += " is-pct";
+            row += `<td class="${cls}"><span class="calc-val pct-val zero" id="mp_${f.k}_calc">0%</span></td>`;
+          } else {
+            cls += " is-input";
+            const rawVal = r[f.k];
+            const valAttr = (rawVal != null && rawVal !== 0) ? `value="${rawVal}"` : `value=""`;
+            row += `<td class="${cls}"><input id="mp_${f.k}" type="number" min="0" inputmode="numeric" placeholder="0" ${valAttr} oninput="_mpRecalc()"></td>`;
+          }
+        });
+        row += `<td class="status-cell" id="mpbstat_single"><span class="stat-chip blank">— รอกรอก</span></td></tr>`;
+        box.innerHTML = `
+          <div style="overflow:auto;max-height:65vh;border-radius:10px">
+            <table class="mp-bulk-tbl" style="border-collapse:separate;border-spacing:0;font-size:12.5px;width:100%;min-width:1700px">
+              <thead>${h1}${h2}</thead>
+              <tbody>${row}</tbody>
+            </table>
+          </div>`;
       }
 
       function manpowerHistOpen(branchCode) {
