@@ -10033,18 +10033,20 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         { type:"input", k:"dual_ft",     g:"dual", l:"ทวิ FT" },
         { type:"input", k:"dual_pt",     g:"dual", l:"ทวิ PT" }
       ];
+      // ฟิลด์ที่ visible ตาม role: admin → เฉพาะ plan (สอง column) · user → ครบทุกฟิลด์ ยกเว้น plan
+      function _mpVisibleFields() {
+        const isAdmin = (S.role === "admin" || S.code === "ADMIN");
+        if (isAdmin) return _MP_BULK_FIELDS.filter(f => f.adminOnly);
+        return _MP_BULK_FIELDS.filter(f => !f.adminOnly);
+      }
       function _mpBulkRender() {
         const tbl = document.getElementById("mpBulkTbl");
         if (!tbl) return;
         const isAdmin = (S.role === "admin" || S.code === "ADMIN");
-        const grpCount = {};
-        _MP_BULK_FIELDS.forEach(f => { grpCount[f.g] = (grpCount[f.g]||0) + 1; });
-        const isGroupStart = (idx) => {
-          if (idx === 0) return true;
-          return _MP_BULK_FIELDS[idx].g !== _MP_BULK_FIELDS[idx-1].g;
-        };
+        const fields = _mpVisibleFields();
+        // โหมด admin → ใช้ layout สะอาด ไม่ต้องมี group header ซ้อนกัน
         const groupTitle = {
-          plan: "Plan (Admin ตั้ง)",
+          plan: "📋 Plan (Admin ตั้ง)",
           act:  "Actual + เทียบ Plan",
           sum:  "รวม FT/PT",
           srv:  "Service",
@@ -10052,17 +10054,72 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           pt:   "⏱️ รายละเอียด Part time",
           dual: "🎓 รายละเอียด ทวิ"
         };
+        // ── ADMIN VIEW: simplified — Branch | Plan Team | Plan Staff | สถานะ ──
+        if (isAdmin) {
+          tbl.classList.add("mp-bulk-admin");
+          tbl.style.minWidth = "560px";
+          let head = `<thead>
+            <tr style="background:linear-gradient(135deg,#ede9fe,#ddd6fe)">
+              <th class="branch-cell" style="text-align:left;padding:14px 18px;font-weight:800;color:#5b21b6;font-size:13.5px">สาขา</th>
+              <th style="text-align:center;padding:14px 12px;font-weight:800;color:#5b21b6;font-size:13.5px;width:180px">👔 Plan Team</th>
+              <th style="text-align:center;padding:14px 12px;font-weight:800;color:#5b21b6;font-size:13.5px;width:180px">🧑‍🍳 Plan Staff</th>
+              <th class="status-cell" style="text-align:center;padding:14px 12px;font-weight:800;color:#5b21b6;font-size:13px;width:140px">สถานะ</th>
+            </tr></thead>`;
+          const rows = _mpBulkCodes.map(code => {
+            const r = _mpData[code] || {};
+            const bInfo = BRANCH_DM_MAP[code] || {};
+            const plt = (r.plan_team != null && r.plan_team !== 0) ? r.plan_team : "";
+            const pls = (r.plan_staff != null && r.plan_staff !== 0) ? r.plan_staff : "";
+            return `<tr id="mpbrow_${code}" class="mp-bulk-admin-row">
+              <td class="branch-cell" style="padding:14px 18px;border-bottom:1px solid #f1f5f9">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span class="code" style="display:inline-block;padding:3px 10px;background:#7c3aed;color:#fff;border-radius:8px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums">${escHtml(code)}</span>
+                  <span style="font-weight:700;color:var(--txt);font-size:14px">${escHtml(bInfo.branch || "-")}</span>
+                </div>
+                <div style="font-size:11.5px;color:var(--txt2);margin-top:4px;margin-left:54px">BZM: ${escHtml(bInfo.dm || "—")}</div>
+              </td>
+              <td style="text-align:center;padding:14px 12px;border-bottom:1px solid #f1f5f9">
+                <input id="mpb_${code}_plan_team" type="number" min="0" inputmode="numeric" placeholder="—" value="${plt}"
+                  oninput="_mpBulkRowRecalc('${code}')"
+                  style="width:90px;text-align:center;font-size:18px;font-weight:800;padding:10px 12px;border:2px solid #ddd6fe;border-radius:10px;background:#faf5ff;color:#5b21b6;font-variant-numeric:tabular-nums;transition:all .15s ease"
+                  onfocus="this.style.borderColor='#7c3aed';this.style.background='#fff'"
+                  onblur="this.style.borderColor='#ddd6fe';this.style.background='#faf5ff'">
+              </td>
+              <td style="text-align:center;padding:14px 12px;border-bottom:1px solid #f1f5f9">
+                <input id="mpb_${code}_plan_staff" type="number" min="0" inputmode="numeric" placeholder="—" value="${pls}"
+                  oninput="_mpBulkRowRecalc('${code}')"
+                  style="width:90px;text-align:center;font-size:18px;font-weight:800;padding:10px 12px;border:2px solid #ddd6fe;border-radius:10px;background:#faf5ff;color:#5b21b6;font-variant-numeric:tabular-nums;transition:all .15s ease"
+                  onfocus="this.style.borderColor='#7c3aed';this.style.background='#fff'"
+                  onblur="this.style.borderColor='#ddd6fe';this.style.background='#faf5ff'">
+              </td>
+              <td class="status-cell" id="mpbstat_${code}" style="text-align:center;padding:14px 12px;border-bottom:1px solid #f1f5f9">
+                <span class="stat-chip blank">— รอกรอก</span>
+              </td></tr>`;
+          }).join("");
+          tbl.innerHTML = head + `<tbody>${rows}</tbody>`;
+          _mpBulkCodes.forEach(c => _mpBulkRowRecalc(c));
+          return;
+        }
+        // ── USER VIEW: ครบทุกฟิลด์ (ของเดิม) ──
+        tbl.classList.remove("mp-bulk-admin");
+        tbl.style.minWidth = "1700px";
+        const grpCount = {};
+        fields.forEach(f => { grpCount[f.g] = (grpCount[f.g]||0) + 1; });
+        const isGroupStart = (idx) => {
+          if (idx === 0) return true;
+          return fields[idx].g !== fields[idx-1].g;
+        };
         // header รวมกลุ่ม
         let h1 = `<tr><th rowspan="2" class="branch-cell">Branch</th>`;
         const seen = new Set();
-        _MP_BULK_FIELDS.forEach(f => {
+        fields.forEach(f => {
           if (seen.has(f.g)) return;
           seen.add(f.g);
           h1 += `<th colspan="${grpCount[f.g]}" class="mp-bulk-grp ${f.g} gstart ${f.g}">${escHtml(groupTitle[f.g] || f.g)}</th>`;
         });
         h1 += `<th rowspan="2" class="status-cell">สถานะ</th></tr>`;
         let h2 = `<tr>`;
-        _MP_BULK_FIELDS.forEach((f, idx) => {
+        fields.forEach((f, idx) => {
           let cls = `sub ${f.g}`;
           if (isGroupStart(idx)) cls += ` gstart ${f.g}`;
           if (f.color) cls += " h-" + f.color;
@@ -10074,7 +10131,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           const r = _mpData[code] || {};
           const bInfo = BRANCH_DM_MAP[code] || {};
           let row = `<tr id="mpbrow_${code}"><td class="branch-cell"><span class="code">${escHtml(code)}</span>${escHtml(bInfo.branch || "-")}</td>`;
-          _MP_BULK_FIELDS.forEach((f, idx) => {
+          fields.forEach((f, idx) => {
             let cls = `g-${f.g}`;
             if (isGroupStart(idx)) cls += ` gstart ${f.g}`;
             if (f.color) cls += " c-" + f.color;
@@ -10088,8 +10145,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               cls += " is-input";
               const rawVal = r[f.k];
               const valAttr = (rawVal != null && rawVal !== 0) ? `value="${rawVal}"` : `value=""`;
-              const ro = (f.adminOnly && !isAdmin) ? "readonly" : "";
-              row += `<td class="${cls}"><input id="mpb_${code}_${f.k}" type="number" min="0" inputmode="numeric" placeholder="0" ${valAttr} ${ro} oninput="_mpBulkRowRecalc('${code}')"></td>`;
+              row += `<td class="${cls}"><input id="mpb_${code}_${f.k}" type="number" min="0" inputmode="numeric" placeholder="0" ${valAttr} oninput="_mpBulkRowRecalc('${code}')"></td>`;
             }
           });
           row += `<td class="status-cell" id="mpbstat_${code}"><span class="stat-chip blank">— รอกรอก</span></td></tr>`;
@@ -10109,8 +10165,8 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         const y = parseInt(document.getElementById("manpowerYear").value, 10);
         const m = parseInt(document.getElementById("manpowerMonth").value, 10);
         const p = { mode: "saveManpower", branch_code: code, year: y, month: m };
-        // เก็บเฉพาะ input fields (calc fields ไม่ต้องส่งไป backend)
-        _MP_BULK_FIELDS.forEach(f => {
+        // เก็บเฉพาะ input fields ที่ visible (admin ไม่ overwrite ฟิลด์ user ด้วย 0)
+        _mpVisibleFields().forEach(f => {
           if (f.type === "input") p[f.k] = _mpBulkGet(code, f.k);
         });
         return p;
@@ -10145,6 +10201,13 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         }
       }
       function _mpBulkRowValidate(p) {
+        const isAdmin = (S.role === "admin" || S.code === "ADMIN");
+        // ADMIN: ตรวจแค่ Plan ต้อง > 0 ทั้งสองช่อง
+        if (isAdmin) {
+          if ((p.plan_team || 0) === 0)  return { ok:false, err:"Plan Team = 0" };
+          if ((p.plan_staff || 0) === 0) return { ok:false, err:"Plan staff = 0" };
+          return { ok:true };
+        }
         // Actual Team
         if ((p.actual_team || 0) === 0) return { ok:false, err:"Actual Team = 0" };
         // Service: FT+PT > 0
@@ -10179,7 +10242,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         const v = _mpBulkRowValidate(p);
         const row = document.getElementById("mpbrow_" + code);
         const stat = document.getElementById("mpbstat_" + code);
-        const anyFilled = _MP_BULK_FIELDS.some(f => f.type === "input" && p[f.k] > 0);
+        const anyFilled = _mpVisibleFields().some(f => f.type === "input" && p[f.k] > 0);
         if (!anyFilled) {
           row && row.classList.remove("ok", "bad");
           if (stat) stat.innerHTML = `<span class="stat-chip blank" title="ยังไม่ได้กรอก">— รอกรอก</span>`;
@@ -10198,7 +10261,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         }
       }
       function _mpBulkIsFilled(p) {
-        return _MP_BULK_FIELDS.some(f => f.type === "input" && p[f.k] > 0);
+        return _mpVisibleFields().some(f => f.type === "input" && p[f.k] > 0);
       }
       function _mpBulkValidate() {
         let ok = 0, bad = 0, blank = 0;
