@@ -6254,7 +6254,18 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
     </style>
   </head>
 
-  <body>
+  <body class="on-login">
+    <!-- Default body class = on-login → hide chrome (banner/sidebar/logout-btn) ตั้งแต่ first paint
+         init() จะลบ class นี้ทันทีถ้า SSO/restore สำเร็จ → ไม่มี flicker -->
+    <script>(function(){try{
+      // ถ้ามี SSO session valid → ลบ on-login ก่อน paint แรกเลย
+      var fab = null;
+      try { fab = JSON.parse(localStorage.getItem('fab_session') || 'null'); } catch(_) {}
+      var local = null;
+      try { local = localStorage.getItem('sf2_code'); } catch(_) {}
+      // มี session อันใดอันหนึ่ง = อยู่ในระบบ → ลบ on-login (ไม่แสดง chrome หน้า login)
+      if ((fab && fab.code) || local) document.body.classList.remove('on-login');
+    }catch(e){}})();</script>
 
     <!-- ════════════════════════════════════════
      SHARED HEADER (hidden until logged in)
@@ -7042,6 +7053,10 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               <span class="adm-live-txt">LIVE</span>
               <span class="adm-live-stamp" id="adminLoginStamp">—</span>
             </span>
+            <button class="btn btn-sm" onclick="_adminLoginsClear()" title="ล้างประวัติเก่ากว่า 7 วัน"
+                    style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-size:12px;padding:6px 12px;border-radius:8px;font-weight:700;margin-left:auto">
+              🗑️ ล้างเก่ากว่า 7 วัน
+            </button>
           </div>
           <div class="dash-card-wrap adm-desk-wrap" style="overflow:hidden;padding:0">
             <table class="dash-tbl adm-login-tbl" style="min-width:680px;width:100%;border-collapse:collapse">
@@ -8057,19 +8072,14 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             if (subInput && S.role === "branch" && !subInput.value) {
               subInput.value = fab.nick || fab.name || '';
             }
-            // บันทึก login event (SSO เข้า) แค่ครั้งเดียวต่อ browser tab session
-            // (sessionStorage = clear เมื่อปิด tab → เปิดใหม่ = log อีก · refresh = ไม่ log ซ้ำ)
-            try {
-              if (!sessionStorage.getItem("_loginLogged")) {
-                _logLoginEvent({
-                  code: S.code, name: S.name || fab.name || fab.nick || "",
-                  role: S.role || "",
-                  branch_code: S.branch_code || S.code || "",
-                  branch_name: S.branch || "", dm: S.dm || ""
-                });
-                sessionStorage.setItem("_loginLogged", "1");
-              }
-            } catch (_) {}
+            // บันทึก login event (SSO เข้า) — dedupe ภายใน 30 นาทีต่อ user
+            // (ป้องกัน refresh / เปิด tab ใหม่ → ขึ้นซ้ำๆ ใน login_logs)
+            _logLoginEventDeduped({
+              code: S.code, name: S.name || fab.name || fab.nick || "",
+              role: S.role || "",
+              branch_code: S.branch_code || S.code || "",
+              branch_name: S.branch || "", dm: S.dm || ""
+            });
             enterApp();
             return;
           }
@@ -8392,16 +8402,30 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         _idleResetTimer();
       }
 
+      // Dedupe login event ภายใน 30 นาทีต่อ user (กัน refresh / new tab → log ซ้ำ)
+      const _LOGIN_DEDUP_MS = 30 * 60 * 1000;
+      function _logLoginEventDeduped(rec) {
+        try {
+          const key = "_lastLogin_" + (rec.code || "_");
+          const last = parseInt(localStorage.getItem(key) || "0", 10);
+          if (Date.now() - last < _LOGIN_DEDUP_MS) {
+            console.log("[login_logs] dedup skip — last logged", Math.round((Date.now() - last)/1000), "s ago");
+            return;
+          }
+          _logLoginEvent(rec);
+          localStorage.setItem(key, String(Date.now()));
+        } catch (e) { console.warn("[login_logs dedup]", e); }
+      }
+
       function _doLoginCommit(u) {
         const newS = _stateFromDbUser(u);
         if (!newS) { showAlert('❌', 'รหัสไม่ถูกต้อง', 'role ในระบบไม่ถูกต้อง'); return; }
         S = newS;
         localStorage.setItem(LS_CODE, u.code);
-        _logLoginEvent({
+        _logLoginEventDeduped({
           code: u.code, name: u.name || u.nick || "", role: u.role || "",
           branch_code: u.branch_code || "", branch_name: u.branch_name || "", dm: u.dm || ""
         });
-        try { sessionStorage.setItem("_loginLogged", "1"); } catch (_) {}
         const isBranch = (u.role === "branch" || u.role === "franchise");
         let msg;
         if (isBranch) {
@@ -8420,8 +8444,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           if (su) {
             S = _stateFromSpecialUser(code, su);
             localStorage.setItem(LS_CODE, code);
-            _logLoginEvent({ code: code, name: su.name || "", role: su.role || "", dm: su.dm || "" });
-            try { sessionStorage.setItem("_loginLogged", "1"); } catch (_) {}
+            _logLoginEventDeduped({ code: code, name: su.name || "", role: su.role || "", dm: su.dm || "" });
             const msg = (su.role === "bzm") ? `${su.name} (BZM)` : su.name;
             showAlert('👋', 'ยินดีต้อนรับ!', msg, enterApp);
             return;
@@ -8432,8 +8455,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         if (!info) { showAlert('❌', 'รหัสไม่ถูกต้อง', 'ไม่พบรหัสสาขา ' + code); return; }
         S = { code: code, branch: info.branch, dm: info.dm, role: "branch" };
         localStorage.setItem(LS_CODE, code);
-        _logLoginEvent({ code: code, role: "branch", branch_code: code, branch_name: info.branch, dm: info.dm });
-        try { sessionStorage.setItem("_loginLogged", "1"); } catch (_) {}
+        _logLoginEventDeduped({ code: code, role: "branch", branch_code: code, branch_name: info.branch, dm: info.dm });
         showAlert('👋', 'ยินดีต้อนรับ!', `${code} ${info.branch}`, enterApp);
       }
 
@@ -8461,7 +8483,12 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           // SSO: ล้าง shared session → Hub และแอปอื่นต้อง login ใหม่
           clearFabSession();
           try { localStorage.removeItem(LS_CODE); } catch (e) {}
-          try { sessionStorage.removeItem("_loginLogged"); } catch (e) {}
+          try {
+            sessionStorage.removeItem("_loginLogged");
+            // clear dedup cache → ครั้งต่อไปจะ log ได้ทันที (ไม่ติด 30-min window)
+            Object.keys(localStorage).filter(k => k.startsWith("_lastLogin_"))
+              .forEach(k => localStorage.removeItem(k));
+          } catch (e) {}
           S = { code: "", branch: "", dm: "", role: "" };
           const ah = document.getElementById("appHdr"); if (ah) ah.style.display = "none";
           const hl = document.getElementById("hdrLogoutBtn"); if (hl) hl.style.display = "none";
@@ -8942,6 +8969,19 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
       // หยุด auto-refresh เมื่อสลับแท็บออก
       function _stopAdminLoginAutoRefresh() {
         if (_adminLoginAutoRefresh) { clearInterval(_adminLoginAutoRefresh); _adminLoginAutoRefresh = null; }
+      }
+      // ล้างประวัติเข้าใช้เก่ากว่า 7 วัน (admin only)
+      async function _adminLoginsClear() {
+        if (!confirm("ลบประวัติเข้าใช้ที่เก่ากว่า 7 วัน?\n\n(records ในช่วง 7 วันล่าสุดยังอยู่)")) return;
+        try {
+          const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+          const { error } = await sb.from("login_logs").delete().lt("logged_at", cutoff);
+          if (error) { showAlert("❌", "ลบไม่สำเร็จ", error.message); return; }
+          showAlert("✅", "ล้างประวัติแล้ว", "ลบ records ที่เก่ากว่า 7 วันเรียบร้อย");
+          loadAdminLogins(false);
+        } catch (e) {
+          showAlert("❌", "เกิดข้อผิดพลาด", e.message || "");
+        }
       }
       async function loadAdminLogins(silent) {
         const body = document.getElementById("adminLoginBody");
