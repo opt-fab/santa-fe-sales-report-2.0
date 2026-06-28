@@ -6638,20 +6638,19 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
       var local = null;
       try { local = localStorage.getItem('sf2_code'); } catch(_) {}
       var hasSession = (fab && fab.code) || local;
-      // มี session อันใดอันหนึ่ง = อยู่ในระบบ → ลบ on-login (ไม่แสดง chrome หน้า login)
       if (hasSession) {
         document.body.classList.remove('on-login');
       } else {
-        // ไม่มี session = login page → บังคับซ่อน header chrome กันโผล่ก่อน CSS apply
-        var hide = function(id){
+        // ไม่มี session = login page → บังคับ "ปิด" chrome ทุกตัวจน enterApp ปลด
+        var lock = function(id){
           var el = document.getElementById(id);
-          if (el) el.style.setProperty('display', 'none', 'important');
+          if (!el) return;
+          el.style.setProperty('display', 'none', 'important');
+          el.style.setProperty('visibility', 'hidden', 'important');
+          el.setAttribute('aria-hidden', 'true');
         };
-        hide('appHdr');
-        hide('hdrLogoutBtn');
-        hide('hdrHubBtn');
-        hide('testModeBanner');
-        hide('bypassOrderBanner');
+        ['appHdr','hdrLogoutBtn','hdrHubBtn','testModeBanner','bypassOrderBanner','deskSidebar','mobNav','mobMenuBtn'].forEach(lock);
+        document.querySelectorAll('.hdr-logout-btn, .hdr-hub-btn').forEach(lock);
       }
     }catch(e){}})();</script>
 
@@ -8945,24 +8944,58 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
       /* ════════════════════════════════════════════
          SCREENS
       ════════════════════════════════════════════ */
+      // Nuclear hide: บังคับซ่อนทุก chrome (header + logout btn + sidebar + nav + banners)
+      // ใช้ทุก lock ที่เป็นไปได้ → กัน CSS rule อื่นมาทับ
+      function _forceHideLoginChrome() {
+        const lockHide = (el) => {
+          if (!el) return;
+          el.style.setProperty('display', 'none', 'important');
+          el.style.setProperty('visibility', 'hidden', 'important');
+          el.setAttribute('aria-hidden', 'true');
+        };
+        ['appHdr', 'hdrLogoutBtn', 'hdrHubBtn', 'testModeBanner', 'bypassOrderBanner', 'deskSidebar', 'mobNav', 'mobMenuBtn']
+          .forEach(id => lockHide(document.getElementById(id)));
+        document.querySelectorAll('.hdr-logout-btn, .hdr-hub-btn').forEach(lockHide);
+      }
+      // คืนสภาพ chrome ตอน login สำเร็จ (ล้าง lock ที่ _forceHideLoginChrome ใส่ไว้)
+      function _unforceHideLoginChrome() {
+        const unlock = (el, defaultDisplay) => {
+          if (!el) return;
+          el.style.removeProperty('visibility');
+          el.removeAttribute('aria-hidden');
+          if (defaultDisplay != null) el.style.setProperty('display', defaultDisplay);
+          else el.style.removeProperty('display');
+        };
+        // appHdr ตั้ง flex (default ของ enterApp)
+        unlock(document.getElementById('appHdr'), 'flex');
+        unlock(document.getElementById('hdrLogoutBtn'), '');
+        unlock(document.getElementById('hdrHubBtn'), '');
+        unlock(document.getElementById('deskSidebar'), null);
+        unlock(document.getElementById('mobNav'), null);
+        unlock(document.getElementById('mobMenuBtn'), null);
+        document.querySelectorAll('.hdr-logout-btn, .hdr-hub-btn').forEach(el => unlock(el, ''));
+      }
+      let _loginGuardInt = null;
+      function _startLoginGuard() {
+        if (_loginGuardInt) return;
+        // ทุก 500ms: ถ้ายังอยู่หน้า login → บังคับ hide chrome ซ้ำ
+        _loginGuardInt = setInterval(() => {
+          if (document.body.classList.contains('on-login')) {
+            _forceHideLoginChrome();
+          } else {
+            clearInterval(_loginGuardInt);
+            _loginGuardInt = null;
+          }
+        }, 500);
+      }
       function showScreen(id) {
         document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
         document.getElementById(id).classList.add("active");
         // mark login state on body — CSS uses it to gate header/nav on touch
         document.body.classList.toggle("on-login", id === "sLogin");
-        // Defensive: บังคับซ่อน header chrome ทุกครั้งที่เข้าหน้า login
-        // (เผื่อ CSS specificity ไม่ทันจากที่อื่น หรือ inline style จากที่อื่นทับ)
         if (id === "sLogin") {
-          const hideById = (el) => {
-            if (!el) return;
-            el.style.setProperty('display', 'none', 'important');
-          };
-          hideById(document.getElementById("appHdr"));
-          hideById(document.getElementById("hdrLogoutBtn"));
-          hideById(document.getElementById("hdrHubBtn"));
-          hideById(document.getElementById("testModeBanner"));
-          hideById(document.getElementById("bypassOrderBanner"));
-          document.querySelectorAll(".hdr-logout-btn").forEach(hideById);
+          _forceHideLoginChrome();
+          _startLoginGuard();
           try {
             if (sessionStorage.getItem("idleTimeoutMsg") === "1") {
               sessionStorage.removeItem("idleTimeoutMsg");
@@ -9001,8 +9034,9 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         // ซ่อนหน้า login ก่อน (กันแสดงค้างระหว่าง await branches load ด้านล่าง)
         const sLogin = document.getElementById("sLogin");
         if (sLogin) sLogin.classList.remove("active");
-        // ออกจากสถานะ login → ปลด body.on-login เพื่อให้ chrome (header/bottom nav) บน iPad ขึ้น
+        // ออกจากสถานะ login → ปลด body.on-login + ปลด lock ที่ _forceHideLoginChrome ใส่ไว้
         document.body.classList.remove("on-login");
+        _unforceHideLoginChrome();
         const hdr = document.getElementById("appHdr");
         hdr.style.display = "flex";
         document.getElementById("hdrDivider").style.display = "";
