@@ -1511,9 +1511,31 @@
         padding: 6px 4px !important; font-size: 13px !important;
         text-align: center !important; box-sizing: border-box;
       }
-      .mp-single-tbl .branch-cell { padding: 8px 10px !important; min-width: 130px; }
-      .mp-single-tbl .status-cell { min-width: 80px; }
-      .mp-single-tbl .stat-chip { font-size: 10.5px !important; padding: 2px 6px !important; }
+      /* Branch column — กว้างพอใส่ชื่อสาขาในบรรทัดเดียว (โค้งบรรทัดได้ถ้ายาวมาก) */
+      .mp-single-tbl .branch-cell {
+        padding: 10px 12px !important;
+        width: 200px !important;
+        text-align: left !important;
+        white-space: normal;
+        word-break: break-word;
+      }
+      .mp-single-tbl td.branch-cell .code {
+        display: inline-block; vertical-align: middle;
+        padding: 2px 8px;
+        background: #f97316; color: #fff;
+        border-radius: 6px;
+        font-size: 11px; font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        margin-right: 6px;
+      }
+      .mp-single-tbl td.branch-cell {
+        font-weight: 700; color: #0f172a; font-size: 12.5px;
+      }
+      .mp-single-tbl .status-cell {
+        width: 95px !important;
+        padding: 8px 6px !important;
+      }
+      .mp-single-tbl .stat-chip { font-size: 10.5px !important; padding: 2px 6px !important; white-space: nowrap; }
 
       /* Bulk fill table — ใช้ !important ทุกที่ กันโดน global th{} ทับ */
       .mp-bulk-tbl { background:#fff; border:1.5px solid #000 !important; }
@@ -11671,7 +11693,10 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           h2 += `<th class="${cls}">${escHtml(f.l)}</th>`;
         });
         h2 += `</tr>`;
-        let row = `<tr id="mpbrow_single"><td class="branch-cell"><span class="code">${escHtml(branchCode)}</span>${escHtml(bInfo.branch || "-")}</td>`;
+        let row = `<tr id="mpbrow_single"><td class="branch-cell">
+          <span class="code">${escHtml(branchCode)}</span>
+          <span style="display:inline-block;vertical-align:middle">${escHtml(bInfo.branch || "-")}</span>
+        </td>`;
         fields.forEach((f, idx) => {
           let cls = `g-${f.g}`;
           if (isGroupStart(idx)) cls += ` gstart ${f.g}`;
