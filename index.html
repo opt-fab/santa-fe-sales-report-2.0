@@ -14962,6 +14962,17 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               cb({ ok: false, error: error.message, userMessage: "บันทึกไม่ได้: " + error.message });
               return;
             }
+            // ถ้ารอบ 16.00 และมี plan_sale → sync ไปตาราง plan_sale ด้วย (เหมือน edit mode)
+            // เคสสำคัญ: สาขาส่งย้อนหลัง — กรอก Plan ใน form ตอน submit → plan_sale table อัปเดตอัตโนมัติ
+            if (params.submit_time_slot === "16.00" && (payload.plan_sale > 0) && payload.submit_date) {
+              const { error: planErr } = await sb.from("plan_sale").upsert({
+                branch_code: payload.branch_code,
+                plan_date:   payload.submit_date,
+                plan_amount: payload.plan_sale,
+                updated_at:  new Date().toISOString()
+              }, { onConflict: "branch_code,plan_date" });
+              if (planErr) console.warn("[plan_sale sync on submit]", planErr);
+            }
             // mirror → Google Sheets (fire-and-forget)
             pushToSheet("submit_sales", payload);
             cb({ ok: true });
