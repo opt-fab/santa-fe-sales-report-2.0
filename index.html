@@ -14369,7 +14369,10 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           else if (isSat)  dayCls += " sat";
           else if (isSun)  dayCls += " sun";
 
-          const isLocked = isPast && !isToday;
+          // Admin: ลง/แก้ Plan ย้อนหลังได้ (สำหรับเคสส่งยอดขายย้อนหลังต้องการ Plan ของวันนั้น)
+          // Branch: ล็อกวันที่ผ่านมาแล้ว (แก้ผ่านประวัติรอบ 16.00 ตามเดิม)
+          const _isAdmin = (S.role === "admin" || S.code === "ADMIN");
+          const isLocked = !_isAdmin && isPast && !isToday;
           const inpCls = hasVal ? "plan-inp has-val" : "plan-inp";
           const statusHtml = isLocked
             ? `<span class="plan-status" title="ล็อก — แก้ไขผ่านประวัติรอบ 16.00">🔒</span>`
@@ -14431,10 +14434,13 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           return;
         }
         const today = todayStr();
+        const _isAdmin = (S.role === "admin" || S.code === "ADMIN");
         const entries = [];
         document.querySelectorAll(".plan-inp").forEach(inp => {
           const date = inp.dataset.date;
-          if (date < today) return; // ข้ามวันที่ผ่านแล้ว — แก้ผ่านประวัติรอบ 16.00 เท่านั้น
+          // Admin: รวมวันย้อนหลังด้วย (ลง Plan ย้อนหลังได้)
+          // Branch: ข้ามวันที่ผ่านแล้ว — แก้ผ่านประวัติรอบ 16.00 เท่านั้น
+          if (!_isAdmin && date < today) return;
           const val = parseFloat(inp.value.replace(/,/g, "")) || 0;
           entries.push({ date: date, plan_sale: val });
         });
