@@ -2842,6 +2842,205 @@
         background: #fff8f2;
       }
 
+      /* ═══════════════════════════════════════
+         CUSTOM SUCCESS MODAL (after sales submit)
+      ═══════════════════════════════════════ */
+      .ss-modal-bg {
+        position: fixed; inset: 0; z-index: 100000;
+        background: rgba(15, 23, 42, .65);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: flex; align-items: center; justify-content: center;
+        padding: 16px;
+        opacity: 0;
+        transition: opacity .22s ease;
+      }
+      .ss-modal-bg.is-open { opacity: 1; }
+      .ss-modal {
+        background: #fff;
+        border-radius: 22px;
+        width: min(440px, 100%);
+        overflow: hidden;
+        box-shadow: 0 24px 64px rgba(15,23,42,.32), 0 4px 16px rgba(15,23,42,.18);
+        transform: scale(.9) translateY(20px);
+        transition: transform .32s cubic-bezier(.18,.89,.32,1.28);
+      }
+      .ss-modal-bg.is-open .ss-modal { transform: scale(1) translateY(0); }
+
+      /* Hero */
+      .ss-hero {
+        position: relative;
+        padding: 28px 24px 24px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 60%, #047857 100%);
+        text-align: center;
+        color: #fff;
+        overflow: hidden;
+      }
+      .ss-hero::before {
+        content: "";
+        position: absolute; inset: 0;
+        background:
+          radial-gradient(circle at 20% 30%, rgba(255,255,255,.15), transparent 40%),
+          radial-gradient(circle at 80% 70%, rgba(255,255,255,.10), transparent 40%);
+        pointer-events: none;
+      }
+      .ss-confetti {
+        position: absolute; inset: 0;
+        pointer-events: none;
+        font-size: 18px;
+      }
+      .ss-confetti span {
+        position: absolute;
+        opacity: 0;
+        animation: ssConfettiFall 1.4s ease-out forwards;
+      }
+      .ss-confetti span:nth-child(1) { left: 12%; top: 12%; animation-delay: .12s; }
+      .ss-confetti span:nth-child(2) { left: 28%; top: 8%;  animation-delay: .22s; }
+      .ss-confetti span:nth-child(3) { right: 22%; top: 14%; animation-delay: .32s; }
+      .ss-confetti span:nth-child(4) { left: 78%; top: 10%;  animation-delay: .42s; }
+      .ss-confetti span:nth-child(5) { right: 10%; top: 20%; animation-delay: .52s; }
+      @keyframes ssConfettiFall {
+        0% { transform: translateY(-10px) rotate(0deg) scale(.6); opacity: 0; }
+        30% { opacity: 1; }
+        100% { transform: translateY(40px) rotate(180deg) scale(1.1); opacity: 0; }
+      }
+
+      .ss-check-wrap {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 76px; height: 76px;
+        background: rgba(255,255,255,.20);
+        border-radius: 50%;
+        margin-bottom: 12px;
+        position: relative; z-index: 1;
+        box-shadow: 0 0 0 8px rgba(255,255,255,.08);
+        animation: ssCheckPop .5s cubic-bezier(.18,.89,.32,1.28) backwards;
+      }
+      @keyframes ssCheckPop {
+        0% { transform: scale(.3); opacity: 0; }
+        60% { transform: scale(1.15); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      .ss-check {
+        width: 52px; height: 52px;
+        stroke: #fff; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round;
+      }
+      .ss-check-circle {
+        stroke-dasharray: 166; stroke-dashoffset: 166;
+        animation: ssCheckCircle .55s ease forwards;
+      }
+      .ss-check-tick {
+        stroke-dasharray: 60; stroke-dashoffset: 60;
+        animation: ssCheckTick .35s .35s ease forwards;
+      }
+      @keyframes ssCheckCircle { to { stroke-dashoffset: 0; } }
+      @keyframes ssCheckTick   { to { stroke-dashoffset: 0; } }
+
+      .ss-title {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -.02em;
+        margin: 6px 0 4px;
+        position: relative; z-index: 1;
+      }
+      .ss-subtitle {
+        font-size: 13px;
+        color: rgba(255,255,255,.85);
+        font-weight: 500;
+        position: relative; z-index: 1;
+      }
+
+      /* Body */
+      .ss-body {
+        padding: 20px 22px 18px;
+        background: #fafbfc;
+      }
+      .ss-info-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 4px 0;
+        box-shadow: 0 1px 3px rgba(15,23,42,.04);
+      }
+      .ss-info-row {
+        display: flex; align-items: center; gap: 14px;
+        padding: 12px 16px;
+      }
+      .ss-info-ico {
+        font-size: 22px;
+        width: 38px; height: 38px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #f8fafc; border-radius: 10px;
+        flex-shrink: 0;
+      }
+      .ss-info-text { flex: 1; min-width: 0; }
+      .ss-info-lbl {
+        font-size: 11px; color: #64748b; font-weight: 600;
+        text-transform: uppercase; letter-spacing: .04em;
+      }
+      .ss-info-val {
+        font-size: 15px; font-weight: 800; color: #0f172a;
+        margin-top: 2px;
+      }
+      .ss-info-divider {
+        height: 1px; background: #f1f5f9; margin: 0 16px;
+      }
+
+      .ss-cta-hint {
+        display: flex; align-items: center; gap: 12px;
+        margin-top: 14px;
+        padding: 14px 16px;
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        border: 1px solid #bfdbfe;
+        border-radius: 12px;
+      }
+      .ss-cta-hint-title { font-weight: 800; font-size: 13.5px; color: #1e3a8a; }
+      .ss-cta-hint-sub { font-size: 12px; color: #1e40af; margin-top: 2px; line-height: 1.4; }
+
+      /* Actions */
+      .ss-actions {
+        display: flex; gap: 10px;
+        padding: 16px 22px 22px;
+        background: #fafbfc;
+      }
+      .ss-btn {
+        flex: 1;
+        padding: 12px 16px;
+        font-family: inherit; font-size: 14px; font-weight: 800;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all .15s ease;
+        border: 1.5px solid transparent;
+      }
+      .ss-btn-outline {
+        background: #fff; color: #475569;
+        border-color: #cbd5e1;
+      }
+      .ss-btn-outline:hover { background: #f8fafc; border-color: #94a3b8; }
+      .ss-btn-brand {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(16,185,129,.35);
+      }
+      .ss-btn-brand:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        box-shadow: 0 6px 16px rgba(16,185,129,.45);
+        transform: translateY(-1px);
+      }
+      .ss-btn-brand:active { transform: translateY(0); }
+
+      /* Mobile tweaks */
+      @media (max-width: 480px) {
+        .ss-hero { padding: 24px 20px 20px; }
+        .ss-title { font-size: 20px; }
+        .ss-info-val { font-size: 14px; }
+        .ss-actions { flex-direction: column; }
+      }
+
+      @keyframes ssPulseRed {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,.5); }
+        50%      { box-shadow: 0 0 0 4px rgba(220,38,38,0); }
+      }
+
       /* ─── Login history table polish ─── */
       .adm-login-tbl tbody tr:not(.adm-login-detail) {
         border-bottom: 1px solid #f1f5f9;
@@ -8564,12 +8763,17 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         const q = (document.getElementById("adminLoginSearch")?.value || "").toLowerCase().trim();
         const roleF = document.getElementById("adminLoginRoleFilter")?.value || "";
         // แสดงเฉพาะ event_type = 'login' เป็นแถวหลัก · logout match ในการขยาย
-        const logins = _adminLogins.filter(r => (r.event_type || "login") === "login").filter(r => {
-          if (roleF && r.role !== roleF) return false;
-          if (!q) return true;
-          const hay = [r.user_code, r.user_name, r.branch_code, r.branch_name, r.dm].join(" ").toLowerCase();
-          return hay.includes(q);
-        });
+        // เรียงใหม่→เก่าก่อน filter เพื่อให้ login ล่าสุดอยู่บนสุดเสมอ (กันกรณี API ส่งมาสลับ)
+        const logins = _adminLogins
+          .filter(r => (r.event_type || "login") === "login")
+          .slice()
+          .sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at))
+          .filter(r => {
+            if (roleF && r.role !== roleF) return false;
+            if (!q) return true;
+            const hay = [r.user_code, r.user_name, r.branch_code, r.branch_name, r.dm].join(" ").toLowerCase();
+            return hay.includes(q);
+          });
         const cnt = document.getElementById("adminLoginCount");
         if (cnt) cnt.textContent = `${logins.length.toLocaleString()} ครั้ง`;
 
@@ -8603,9 +8807,16 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
                     </div>
                   </td>
                 </tr>` : "";
-              return `<tr style="cursor:pointer" onclick="_adminLoginToggle(${key})">
+              // "ใหม่" badge เฉพาะ login ภายใน 5 นาที (auto refresh จะปัดให้ทุก 20s)
+              const ageMs = Date.now() - new Date(r.logged_at).getTime();
+              const isNew = ageMs < 5 * 60 * 1000;
+              const newBadge = isNew
+                ? `<span style="margin-left:6px;display:inline-block;padding:2px 8px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;font-size:10px;font-weight:800;border-radius:999px;letter-spacing:.04em;animation:ssPulseRed 1.6s ease-in-out infinite">ใหม่</span>`
+                : '';
+              const rowBg = isNew ? 'background:linear-gradient(90deg,#fef3c7 0%,#fff 50%);' : '';
+              return `<tr style="cursor:pointer;${rowBg}" onclick="_adminLoginToggle(${key})">
                 <td style="text-align:center;color:var(--txt2);font-size:12px">${open ? "▾" : "▸"}</td>
-                <td style="font-weight:700">${escHtml(rowLabel(r))}</td>
+                <td style="font-weight:700">${escHtml(rowLabel(r))}${newBadge}</td>
                 <td><span style="display:inline-block;padding:2px 10px;border-radius:999px;background:${roleClr}22;color:${roleClr};font-weight:700;font-size:11.5px">${roleLbl}</span></td>
                 <td style="color:var(--txt2);font-size:12.5px">${escHtml(r.dm || "—")}</td>
                 <td style="color:var(--txt2);font-size:12px">${escHtml(r.platform || "—")}</td>
@@ -14070,7 +14281,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         //   slot = "สิ้นวัน"  → ต้องมี 16.00 ของวันเดียวกัน
         //   slot = "16.00"   → ต้องมีสิ้นวันของเมื่อวาน (ถ้าเมื่อวานไม่ใช่ขอบเขตข้อมูล)
         if (slot === "สิ้นวัน") {
-          sb.from("sales_data").select("id")
+          sb.from("sales_data").select("id, actual_sale")
             .eq("branch_code", S.code)
             .eq("submit_date", date)
             .eq("submit_time_slot", "16.00")
@@ -14081,7 +14292,23 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
                 const [yy, mm, dd] = date.split("-");
                 const thDate = `${parseInt(dd)}/${parseInt(mm)}/${parseInt(yy)+543}`;
                 cb({ ok: false, msg: `ยังไม่ได้ส่งรอบ 16.00 ของวันที่ ${thDate} กรุณาส่งรอบ 16.00 ก่อน` });
-              } else cb({ ok: true });
+                return;
+              }
+              // ── กฎ: ยอดสิ้นวันต้องมากกว่ารอบ 16.00 เสมอ ──
+              const r16 = parseFloat(data[0].actual_sale) || 0;
+              const eodEl = document.getElementById("actual_sale");
+              const rEod  = parseFloat((eodEl ? eodEl.value : "").replace(/,/g, "")) || 0;
+              if (r16 > 0 && rEod <= r16) {
+                const fmt = (n) => Math.round(n).toLocaleString("th-TH");
+                cb({ ok: false, msg:
+                  `ยอดขายสิ้นวันต้องมากกว่ารอบ 16:00\n\n` +
+                  `🕓 ยอด 16:00 = ฿${fmt(r16)}\n` +
+                  `🌙 ยอดที่จะส่ง = ฿${fmt(rEod)}\n\n` +
+                  `กรุณาตรวจสอบยอดอีกครั้ง (ยอดสิ้นวัน = ยอดสะสมทั้งวัน ต้องมากกว่ายอดสะสมถึง 16:00)`
+                });
+                return;
+              }
+              cb({ ok: true });
             });
           return;
         }
@@ -14206,37 +14433,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             return;
           }
           if (res.ok) {
-            const _br   = S.branch || "";
-            const _date = _pendingPayload.submit_date;
-            const _slot = _pendingPayload.submit_time_slot;
-            // วันที่เป็นไทย: "25 มิ.ย. 69"
-            const _TH_M = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-            const _parts = _date.split("-");
-            const _thDate = `${parseInt(_parts[2], 10)} ${_TH_M[parseInt(_parts[1], 10) - 1]} ${(parseInt(_parts[0], 10) + 543) % 100}`;
-            const _slotIco  = _slot === "16.00" ? "🕓" : "🌙";
-            const _slotLbl  = _slot === "16.00" ? "รอบ 16:00 น." : "รอบสิ้นวัน";
-            const _msg = `<div style="text-align:left">
-                <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;border-radius:14px;padding:14px 16px;margin-bottom:12px">
-                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-                    <span style="font-size:20px">🏬</span>
-                    <span style="font-weight:800;font-size:15px;color:#14532d">${escHtml(_br)}</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between;font-size:13px;color:#166534">
-                    <span>📅 ${escHtml(_thDate)}</span>
-                    <span style="font-weight:700">${_slotIco} ${_slotLbl}</span>
-                  </div>
-                </div>
-                <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px">
-                  <span style="font-size:28px">📊</span>
-                  <div style="flex:1;line-height:1.5">
-                    <div style="font-weight:800;font-size:13.5px;color:#1e3a8a">ดูสถิติเบื้องต้นได้ที่</div>
-                    <div style="font-size:12.5px;color:#1e40af">หน้าแดชบอร์ดของระบบ</div>
-                  </div>
-                </div>
-              </div>`;
-            showAlert("✅", "บันทึกสำเร็จ", _msg,
-              function(){ try { showDash(); } catch(_) {} },
-              { html: true, btnText: "📊 ไปแดชบอร์ด →", cancelText: "กรอกต่อ" });
+            _showSubmitSuccess(S.branch || "", _pendingPayload.submit_date, _pendingPayload.submit_time_slot);
             _pendingPayload = null;
             clearForm();
           } else if (res.code === "BUSY_PEAK") {
@@ -15394,6 +15591,100 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
 
       let _alertCb = null;
       let _alertCancelCb = null;
+      /* ══════════════════════════════════════════════
+         CUSTOM SUCCESS MODAL — สวยกว่า showAlert
+      ══════════════════════════════════════════════ */
+      function _showSubmitSuccess(branch, date, slot) {
+        const _TH_M = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+        const _p = date.split("-");
+        const _thFullDate = `${parseInt(_p[2],10)} ${_TH_M[parseInt(_p[1],10)-1]} ${parseInt(_p[0],10)+543}`;
+        const _slotIco  = slot === "16.00" ? "🕓" : "🌙";
+        const _slotLbl  = slot === "16.00" ? "รอบ 16:00 น." : "รอบสิ้นวัน";
+        const _slotColor = slot === "16.00" ? "#0ea5e9" : "#7c3aed";
+        const _slotBg    = slot === "16.00" ? "#f0f9ff" : "#faf5ff";
+
+        // ลบ modal เก่าถ้ามี
+        const old = document.getElementById("submitSuccessModal");
+        if (old) old.remove();
+
+        const el = document.createElement("div");
+        el.id = "submitSuccessModal";
+        el.className = "ss-modal-bg";
+        el.innerHTML = `
+          <div class="ss-modal" role="dialog" aria-modal="true">
+            <!-- Hero gradient with animated check -->
+            <div class="ss-hero">
+              <div class="ss-confetti">
+                <span>✨</span><span>🎉</span><span>✨</span><span>⭐</span><span>🎊</span>
+              </div>
+              <div class="ss-check-wrap">
+                <svg class="ss-check" viewBox="0 0 52 52">
+                  <circle class="ss-check-circle" cx="26" cy="26" r="24" fill="none"/>
+                  <path class="ss-check-tick" fill="none" d="M14 27 l8 8 l16 -18"/>
+                </svg>
+              </div>
+              <div class="ss-title">บันทึกสำเร็จ</div>
+              <div class="ss-subtitle">ข้อมูลถูกบันทึกลงระบบเรียบร้อย</div>
+            </div>
+
+            <!-- Body -->
+            <div class="ss-body">
+              <div class="ss-info-card">
+                <div class="ss-info-row">
+                  <span class="ss-info-ico">🏬</span>
+                  <div class="ss-info-text">
+                    <div class="ss-info-lbl">สาขา</div>
+                    <div class="ss-info-val">${escHtml(branch || "—")}</div>
+                  </div>
+                </div>
+                <div class="ss-info-divider"></div>
+                <div class="ss-info-row">
+                  <span class="ss-info-ico">📅</span>
+                  <div class="ss-info-text">
+                    <div class="ss-info-lbl">วันที่</div>
+                    <div class="ss-info-val">${escHtml(_thFullDate)}</div>
+                  </div>
+                </div>
+                <div class="ss-info-divider"></div>
+                <div class="ss-info-row">
+                  <span class="ss-info-ico" style="color:${_slotColor}">${_slotIco}</span>
+                  <div class="ss-info-text">
+                    <div class="ss-info-lbl">รอบส่ง</div>
+                    <div class="ss-info-val" style="color:${_slotColor}">${_slotLbl}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ss-cta-hint">
+                <span style="font-size:22px">📊</span>
+                <div>
+                  <div class="ss-cta-hint-title">ดูสถิติเบื้องต้น</div>
+                  <div class="ss-cta-hint-sub">เปิดหน้าแดชบอร์ด → ดูภาพรวมยอดขายวันนี้</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="ss-actions">
+              <button type="button" class="ss-btn ss-btn-outline" onclick="_ssClose()">📝 กรอกต่อ</button>
+              <button type="button" class="ss-btn ss-btn-brand" onclick="_ssGoDash()">📊 ดูแดชบอร์ด →</button>
+            </div>
+          </div>`;
+        document.body.appendChild(el);
+        // เปิด animation หลัง append
+        requestAnimationFrame(() => el.classList.add("is-open"));
+      }
+      function _ssClose() {
+        const el = document.getElementById("submitSuccessModal");
+        if (!el) return;
+        el.classList.remove("is-open");
+        setTimeout(() => el.remove(), 250);
+      }
+      function _ssGoDash() {
+        _ssClose();
+        try { showDash(); } catch(_) {}
+      }
+
       function showAlert(ico, title, msg, okCb, opts) {
         opts = opts || {};
         const icoEl = document.getElementById("alertIco");
