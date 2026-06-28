@@ -7867,87 +7867,74 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
             </div>
           </div>
 
-          <!-- ── ทีมผู้จัดการสาขา ── -->
-          <div class="mp-sec mp-sec-mgr">
+          <!-- ═══ NEW LAYOUT — ตรงกับ "กรอกหลายสาขา" (bulk fields) ═══ -->
+          <!-- ── 📊 Actual + เทียบ Plan ── -->
+          <div class="mp-sec mp-sec-act" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe">
             <div class="mp-sec-hdr">
-              <div class="mp-sec-title">👔 ทีมผู้จัดการสาขา</div>
-              <div class="mp-sec-tot">รวม: <b id="mpTotMgr">0</b></div>
+              <div class="mp-sec-title" style="color:#1e40af">📊 Actual + เทียบ Plan</div>
             </div>
-            <div class="mp-grid-mgr">
-              <div class="mp-cell"><label>RGM</label><input id="mp_rgm" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>SAM</label><input id="mp_sam" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>AM</label><input id="mp_am"  type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-              <div class="mp-cell"><label>SS</label><input id="mp_ss"  type="number" min="0" value="0" oninput="_mpRecalc()"></div>
+            <div class="mp-grid-mgr" style="grid-template-columns:1fr 1fr 1fr">
+              <div class="mp-cell" style="background:#fff;border:1px solid #bfdbfe">
+                <label style="color:#1e40af;font-weight:700">Actual Team</label>
+                <input id="mp_actual_team" type="number" min="0" value="" placeholder="0" inputmode="numeric"
+                  style="font-size:18px;font-weight:800;text-align:center;color:#1e40af;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px"
+                  oninput="_mpRecalc()">
+              </div>
+              <div class="mp-cell" style="background:#fff;border:1px solid #bfdbfe">
+                <label style="color:#1e40af;font-weight:700">Actual staff</label>
+                <div id="mp_actStaff" style="font-size:20px;font-weight:800;text-align:center;color:#475569;padding:10px;background:#f8fafc;border-radius:8px;font-variant-numeric:tabular-nums">0</div>
+              </div>
+              <div class="mp-cell" style="background:#fff;border:1px solid #bfdbfe">
+                <label style="color:#1e40af;font-weight:700">Actual vs Plan</label>
+                <div id="mp_vsPlan" style="font-size:20px;font-weight:800;text-align:center;color:#475569;padding:10px;background:#f8fafc;border-radius:8px;font-variant-numeric:tabular-nums">0%</div>
+              </div>
             </div>
           </div>
 
-          <!-- ── พนักงานครัว ── -->
-          <div class="mp-sec mp-sec-kit">
-            <div class="mp-sec-hdr">
-              <div class="mp-sec-title">🍳 พนักงานครัว</div>
-              <div class="mp-sec-tot">รวม: <b id="mpTotKit">0</b></div>
-            </div>
-            <div class="mp-grid-staff">
-              <div class="mp-staff-col">
-                <div class="mp-staff-lbl">Basic</div>
-                <div class="mp-pair">
-                  <div class="mp-pt"><span>PT</span><input id="mp_k_basic_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                  <div class="mp-ft"><span>FT</span><input id="mp_k_basic_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                </div>
-              </div>
-              <div class="mp-staff-col">
-                <div class="mp-staff-lbl">Silver</div>
-                <div class="mp-pair">
-                  <div class="mp-pt"><span>PT</span><input id="mp_k_silver_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                  <div class="mp-ft"><span>FT</span><input id="mp_k_silver_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                </div>
-              </div>
-              <div class="mp-staff-col">
-                <div class="mp-staff-lbl">Gold</div>
-                <div class="mp-pair">
-                  <div class="mp-pt"><span>PT</span><input id="mp_k_gold_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                  <div class="mp-ft"><span>FT</span><input id="mp_k_gold_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                </div>
-              </div>
-            </div>
-            <div class="mp-subtot">
-              <span>PT รวม: <b id="mpKitPT">0</b></span>
-              <span>FT รวม: <b id="mpKitFT">0</b></span>
-            </div>
-          </div>
-
-          <!-- ── พนักงานบริการ ── -->
+          <!-- ── 🍽️ พนักงานบริการ (Service) — 5 inputs + total ── -->
           <div class="mp-sec mp-sec-srv">
             <div class="mp-sec-hdr">
               <div class="mp-sec-title">🍽️ พนักงานบริการ</div>
-              <div class="mp-sec-tot">รวม: <b id="mpTotSrv">0</b></div>
+              <div class="mp-sec-tot">Total: <b id="mp_totSrv">0</b></div>
             </div>
-            <div class="mp-grid-staff">
-              <div class="mp-staff-col">
-                <div class="mp-staff-lbl">Basic</div>
-                <div class="mp-pair">
-                  <div class="mp-pt"><span>PT</span><input id="mp_s_basic_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                  <div class="mp-ft"><span>FT</span><input id="mp_s_basic_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                </div>
-              </div>
-              <div class="mp-staff-col">
-                <div class="mp-staff-lbl">Silver</div>
-                <div class="mp-pair">
-                  <div class="mp-pt"><span>PT</span><input id="mp_s_silver_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                  <div class="mp-ft"><span>FT</span><input id="mp_s_silver_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                </div>
-              </div>
-              <div class="mp-staff-col">
-                <div class="mp-staff-lbl">Gold</div>
-                <div class="mp-pair">
-                  <div class="mp-pt"><span>PT</span><input id="mp_s_gold_pt" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                  <div class="mp-ft"><span>FT</span><input id="mp_s_gold_ft" type="number" min="0" value="0" oninput="_mpRecalc()"></div>
-                </div>
-              </div>
+            <div class="mp-grid-mgr" style="grid-template-columns:repeat(5,1fr)">
+              <div class="mp-cell"><label>FT</label><input id="mp_s_ft"     type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
+              <div class="mp-cell"><label>PT</label><input id="mp_s_pt"     type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
+              <div class="mp-cell"><label>Basic</label><input id="mp_s_basic"  type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
+              <div class="mp-cell"><label>Silver</label><input id="mp_s_silver" type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
+              <div class="mp-cell"><label>Gold</label><input id="mp_s_gold"   type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
             </div>
-            <div class="mp-subtot">
-              <span>PT รวม: <b id="mpSrvPT">0</b></span>
-              <span>FT รวม: <b id="mpSrvFT">0</b></span>
+          </div>
+
+          <!-- ── 🍳 พนักงานครัว (Kitchen) — 5 inputs + total ── -->
+          <div class="mp-sec mp-sec-kit">
+            <div class="mp-sec-hdr">
+              <div class="mp-sec-title">🍳 พนักงานครัว</div>
+              <div class="mp-sec-tot">Total: <b id="mp_totKit">0</b></div>
+            </div>
+            <div class="mp-grid-mgr" style="grid-template-columns:repeat(5,1fr)">
+              <div class="mp-cell"><label>FT</label><input id="mp_k_ft"     type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
+              <div class="mp-cell"><label>PT</label><input id="mp_k_pt"     type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
+              <div class="mp-cell"><label>Basic</label><input id="mp_k_basic"  type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
+              <div class="mp-cell"><label>Silver</label><input id="mp_k_silver" type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
+              <div class="mp-cell"><label>Gold</label><input id="mp_k_gold"   type="number" min="0" value="" placeholder="0" inputmode="numeric" oninput="_mpRecalc()"></div>
+            </div>
+          </div>
+
+          <!-- ── 📊 รวม FT/PT (calc) ── -->
+          <div class="mp-sec" style="background:#f8fafc;border:1px solid #e2e8f0">
+            <div class="mp-sec-hdr">
+              <div class="mp-sec-title" style="color:#475569">📊 รวม FT / PT</div>
+            </div>
+            <div class="mp-grid-mgr" style="grid-template-columns:1fr 1fr">
+              <div class="mp-cell" style="background:#fff;border:1px solid #e2e8f0">
+                <label style="color:#0ea5e9;font-weight:700">FT (Service + Kitchen)</label>
+                <div id="mp_grandFT" style="font-size:20px;font-weight:800;text-align:center;color:#0369a1;padding:10px;background:#f0f9ff;border-radius:8px;font-variant-numeric:tabular-nums">0</div>
+              </div>
+              <div class="mp-cell" style="background:#fff;border:1px solid #e2e8f0">
+                <label style="color:#a855f7;font-weight:700">PT (Service + Kitchen)</label>
+                <div id="mp_grandPT" style="font-size:20px;font-weight:800;text-align:center;color:#7e22ce;padding:10px;background:#faf5ff;border-radius:8px;font-variant-numeric:tabular-nums">0</div>
+              </div>
             </div>
           </div>
 
@@ -10782,48 +10769,76 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         ids.forEach(id => { const v = parseInt((document.getElementById(id) || {}).value, 10); if (!isNaN(v)) t += v; });
         return t;
       }
+      // helper อ่านค่า int จาก input (รองรับ "" → 0)
+      function _mpInt(id) {
+        const el = document.getElementById(id);
+        if (!el) return 0;
+        return parseInt(el.value, 10) || 0;
+      }
       function _mpRecalc() {
-        document.getElementById("mpTotMgr").textContent = _mpSum(["mp_rgm","mp_sam","mp_am","mp_ss"]);
-        const kPT = _mpSum(["mp_k_basic_pt","mp_k_silver_pt","mp_k_gold_pt"]);
-        const kFT = _mpSum(["mp_k_basic_ft","mp_k_silver_ft","mp_k_gold_ft"]);
-        document.getElementById("mpKitPT").textContent = kPT;
-        document.getElementById("mpKitFT").textContent = kFT;
-        document.getElementById("mpTotKit").textContent = kPT + kFT;
-        const sPT = _mpSum(["mp_s_basic_pt","mp_s_silver_pt","mp_s_gold_pt"]);
-        const sFT = _mpSum(["mp_s_basic_ft","mp_s_silver_ft","mp_s_gold_ft"]);
-        document.getElementById("mpSrvPT").textContent = sPT;
-        document.getElementById("mpSrvFT").textContent = sFT;
-        document.getElementById("mpTotSrv").textContent = sPT + sFT;
+        // ── NEW LAYOUT — ตรงกับ bulk fields ──
+        const sFT = _mpInt("mp_s_ft");
+        const sPT = _mpInt("mp_s_pt");
+        const kFT = _mpInt("mp_k_ft");
+        const kPT = _mpInt("mp_k_pt");
+        const actStaff = sFT + sPT + kFT + kPT;
+        const grandFT  = sFT + kFT;
+        const grandPT  = sPT + kPT;
+        const totSrv   = sFT + sPT;
+        const totKit   = kFT + kPT;
+
+        const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v); };
+        setText("mp_actStaff", actStaff);
+        setText("mp_grandFT",  grandFT);
+        setText("mp_grandPT",  grandPT);
+        setText("mp_totSrv",   totSrv);
+        setText("mp_totKit",   totKit);
+
+        // Actual vs Plan %
+        const planStaff = _mpInt("mp_plan_staff");
+        const vsEl = document.getElementById("mp_vsPlan");
+        if (vsEl) {
+          if (planStaff <= 0) {
+            vsEl.textContent = "—";
+            vsEl.style.color = "#94a3b8";
+          } else {
+            const pct = Math.round((actStaff / planStaff) * 1000) / 10;
+            vsEl.textContent = pct + "%";
+            vsEl.style.color = pct >= 100 ? "#15803d" : pct >= 65 ? "#d97706" : "#dc2626";
+          }
+        }
 
         // Part-time details
-        const pt8  = parseInt(document.getElementById("mp_pt_8h").value, 10)     || 0;
-        const ptD  = parseInt(document.getElementById("mp_pt_dual40").value, 10) || 0;
-        const pt45 = parseInt(document.getElementById("mp_pt_45h").value, 10)    || 0;
+        const pt8  = _mpInt("mp_pt_8h");
+        const ptD  = _mpInt("mp_pt_dual40");
+        const pt45 = _mpInt("mp_pt_45h");
         const ptTot = pt8 + ptD + pt45;
-        document.getElementById("mpTotPt").textContent = ptTot;
-        const ptRef = kPT + sPT;
-        const ptRefEl = document.getElementById("mp_pt_ref");
-        if (ptRefEl) ptRefEl.value = ptRef;
+        setText("mpTotPt", ptTot);
+        const ptRef = grandPT;
         const ptMatch = document.getElementById("mpPtMatch");
-        if (ptTot === ptRef) {
-          ptMatch.className = "mp-chk ok";
-          ptMatch.innerHTML = `✓ ผลรวมตรงกับ PT พนักงานครัว+บริการ (${ptRef} คน)`;
-        } else {
-          ptMatch.className = "mp-chk bad";
-          ptMatch.innerHTML = `❌ ผลรวมต้องเท่ากับ PT พนักงานครัว+บริการ = ${ptRef} คน (ตอนนี้ ${ptTot})`;
+        if (ptMatch) {
+          if (ptTot === ptRef) {
+            ptMatch.className = "mp-chk ok";
+            ptMatch.innerHTML = `✓ ผลรวมตรงกับ PT (Service + Kitchen) = ${ptRef} คน`;
+          } else {
+            ptMatch.className = "mp-chk bad";
+            ptMatch.innerHTML = `❌ ผลรวมต้องเท่ากับ PT (Service + Kitchen) = ${ptRef} คน (ตอนนี้ ${ptTot})`;
+          }
         }
 
         // ทวิภาคี
-        const dFT = parseInt(document.getElementById("mp_dual_ft").value, 10) || 0;
-        const dPT = parseInt(document.getElementById("mp_dual_pt").value, 10) || 0;
-        document.getElementById("mpTotDual").textContent = dFT + dPT;
+        const dFT = _mpInt("mp_dual_ft");
+        const dPT = _mpInt("mp_dual_pt");
+        setText("mpTotDual", dFT + dPT);
         const dMatch = document.getElementById("mpDualMatch");
-        if (dPT === ptD) {
-          dMatch.className = "mp-chk ok";
-          dMatch.innerHTML = `✓ ทวิภาคี PT ถูกต้อง`;
-        } else {
-          dMatch.className = "mp-chk bad";
-          dMatch.innerHTML = `❌ ทวิภาคี PT ต้องเป็น ${ptD} คน (ตอนนี้ ${dPT}) — เท่ากับช่อง "PT ทวิภาคี 40 ชม." ด้านบน`;
+        if (dMatch) {
+          if (dPT === ptD) {
+            dMatch.className = "mp-chk ok";
+            dMatch.innerHTML = `✓ ทวิภาคี PT ถูกต้อง`;
+          } else {
+            dMatch.className = "mp-chk bad";
+            dMatch.innerHTML = `❌ ทวิภาคี PT ต้องเป็น ${ptD} คน (ตอนนี้ ${dPT}) — เท่ากับช่อง "PT ทวิภาคี 40 ชม."`;
+          }
         }
       }
 
@@ -11634,15 +11649,28 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         if (planTeam)  planTeam.value  = (r.plan_team  > 0 ? r.plan_team  : "");
         if (planStaff) planStaff.value = (r.plan_staff > 0 ? r.plan_staff : "");
         // ───────────────────────────────────────────────────────────
-        setV("mp_rgm", r.rgm); setV("mp_sam", r.sam); setV("mp_am", r.am); setV("mp_ss", r.ss);
-        setV("mp_k_basic_pt", r.k_basic_pt); setV("mp_k_basic_ft", r.k_basic_ft);
-        setV("mp_k_silver_pt", r.k_silver_pt); setV("mp_k_silver_ft", r.k_silver_ft);
-        setV("mp_k_gold_pt", r.k_gold_pt); setV("mp_k_gold_ft", r.k_gold_ft);
-        setV("mp_s_basic_pt", r.s_basic_pt); setV("mp_s_basic_ft", r.s_basic_ft);
-        setV("mp_s_silver_pt", r.s_silver_pt); setV("mp_s_silver_ft", r.s_silver_ft);
-        setV("mp_s_gold_pt", r.s_gold_pt); setV("mp_s_gold_ft", r.s_gold_ft);
-        setV("mp_pt_8h", r.pt_8h); setV("mp_pt_dual40", r.pt_dual40); setV("mp_pt_45h", r.pt_45h);
-        setV("mp_dual_ft", r.dual_ft); setV("mp_dual_pt", r.dual_pt);
+        // ── NEW LAYOUT — populate fields ตรงกับ bulk ──
+        // ค่าว่าง "" ถ้า 0 — ให้เห็น placeholder
+        const setEmpty = (id, v) => {
+          const el = document.getElementById(id);
+          if (el) el.value = (v > 0 ? v : "");
+        };
+        setEmpty("mp_actual_team", r.actual_team);
+        setEmpty("mp_s_ft",     r.s_ft);
+        setEmpty("mp_s_pt",     r.s_pt);
+        setEmpty("mp_s_basic",  r.s_basic);
+        setEmpty("mp_s_silver", r.s_silver);
+        setEmpty("mp_s_gold",   r.s_gold);
+        setEmpty("mp_k_ft",     r.k_ft);
+        setEmpty("mp_k_pt",     r.k_pt);
+        setEmpty("mp_k_basic",  r.k_basic);
+        setEmpty("mp_k_silver", r.k_silver);
+        setEmpty("mp_k_gold",   r.k_gold);
+        setEmpty("mp_pt_8h",     r.pt_8h);
+        setEmpty("mp_pt_dual40", r.pt_dual40);
+        setEmpty("mp_pt_45h",    r.pt_45h);
+        setEmpty("mp_dual_ft",   r.dual_ft);
+        setEmpty("mp_dual_pt",   r.dual_pt);
         document.getElementById("mp_warn").style.display = "none";
         _mpRecalc();
         openM("mManpower");
@@ -12025,38 +12053,41 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           });
           return;
         }
+        // ── NEW LAYOUT — payload structure ตรงกับ bulk fields ──
         const payload = {
           mode: "saveManpower",
           branch_code: document.getElementById("mp_branchCode").value,
           year:  parseInt(document.getElementById("mp_year").value, 10),
           month: parseInt(document.getElementById("mp_month").value, 10),
-          rgm: get("mp_rgm"), sam: get("mp_sam"), am: get("mp_am"), ss: get("mp_ss"),
-          k_basic_pt: get("mp_k_basic_pt"), k_basic_ft: get("mp_k_basic_ft"),
-          k_silver_pt: get("mp_k_silver_pt"), k_silver_ft: get("mp_k_silver_ft"),
-          k_gold_pt: get("mp_k_gold_pt"), k_gold_ft: get("mp_k_gold_ft"),
-          s_basic_pt: get("mp_s_basic_pt"), s_basic_ft: get("mp_s_basic_ft"),
-          s_silver_pt: get("mp_s_silver_pt"), s_silver_ft: get("mp_s_silver_ft"),
-          s_gold_pt: get("mp_s_gold_pt"), s_gold_ft: get("mp_s_gold_ft"),
+          actual_team: get("mp_actual_team"),
+          s_ft: get("mp_s_ft"),   s_pt: get("mp_s_pt"),
+          s_basic: get("mp_s_basic"), s_silver: get("mp_s_silver"), s_gold: get("mp_s_gold"),
+          k_ft: get("mp_k_ft"),   k_pt: get("mp_k_pt"),
+          k_basic: get("mp_k_basic"), k_silver: get("mp_k_silver"), k_gold: get("mp_k_gold"),
           pt_8h: get("mp_pt_8h"), pt_dual40: get("mp_pt_dual40"), pt_45h: get("mp_pt_45h"),
           dual_ft: get("mp_dual_ft"), dual_pt: get("mp_dual_pt")
         };
-        // ─── validation: ผลรวมแต่ละหมวดต้องไม่เป็น 0 ───
-        const totMgr = payload.rgm + payload.sam + payload.am + payload.ss;
-        const kPT = payload.k_basic_pt + payload.k_silver_pt + payload.k_gold_pt;
-        const sPT = payload.s_basic_pt + payload.s_silver_pt + payload.s_gold_pt;
-        const totKitSrv = payload.k_basic_pt + payload.k_basic_ft + payload.k_silver_pt + payload.k_silver_ft + payload.k_gold_pt + payload.k_gold_ft
-                        + payload.s_basic_pt + payload.s_basic_ft + payload.s_silver_pt + payload.s_silver_ft + payload.s_gold_pt + payload.s_gold_ft;
-        if (totMgr === 0) return fail("ยังไม่ได้กรอกทีมผู้จัดการสาขา");
-        if (totKitSrv === 0) return fail("ยังไม่ได้กรอกพนักงานครัว/บริการ");
-        // ─── validation: ทวิภาคี PT ต้องเท่ากับ PT ทวิภาคี 40 ชม. ───
+        // ─── validation: ตาม bulk logic ───
+        if (payload.actual_team === 0) return fail("ยังไม่ได้กรอก Actual Team");
+        const sFP = payload.s_ft + payload.s_pt;
+        const kFP = payload.k_ft + payload.k_pt;
+        if (sFP === 0) return fail("ยังไม่ได้กรอก Service FT/PT");
+        if (kFP === 0) return fail("ยังไม่ได้กรอก Kitchen FT/PT");
+        // Service: Basic + Silver + Gold = FT + PT
+        const sTier = payload.s_basic + payload.s_silver + payload.s_gold;
+        if (sTier !== sFP) return fail(`Service: Basic+Silver+Gold (${sTier}) ≠ FT+PT (${sFP})`);
+        // Kitchen: Basic + Silver + Gold = FT + PT
+        const kTier = payload.k_basic + payload.k_silver + payload.k_gold;
+        if (kTier !== kFP) return fail(`Kitchen: Basic+Silver+Gold (${kTier}) ≠ FT+PT (${kFP})`);
+        // ทวิภาคี PT = pt_dual40
         if (payload.dual_pt !== payload.pt_dual40) {
           return fail(`ทวิภาคี PT ต้องเป็น ${payload.pt_dual40} คน (ตอนนี้ ${payload.dual_pt})`);
         }
-        // ─── soft check: PT-detail รวม ควรเท่ากับ PT จากครัว+บริการ ───
+        // Part-time: รวม = PT (Service + Kitchen)
         const ptSum = payload.pt_8h + payload.pt_dual40 + payload.pt_45h;
-        const ptRef = kPT + sPT;
+        const ptRef = payload.s_pt + payload.k_pt;
         if (ptSum !== ptRef) {
-          return fail(`Part-time: ผลรวมต้องเท่ากับ PT พนักงานครัว+บริการ = ${ptRef} คน (ตอนนี้ ${ptSum})`);
+          return fail(`Part-time: ผลรวมต้องเท่ากับ PT (Service + Kitchen) = ${ptRef} คน (ตอนนี้ ${ptSum})`);
         }
         const btn = document.getElementById("mpSaveBtn");
         if (btn) { btn.disabled = true; btn.textContent = "⏳ กำลังบันทึก..."; }
