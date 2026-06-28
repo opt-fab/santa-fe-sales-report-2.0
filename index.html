@@ -8817,12 +8817,42 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
           // หยุดจับ idle timer
           _idleStop();
           // บันทึก logout event ก่อนเคลียร์ S
+          // ตั้ง _logoutSent flag กัน pagehide listener ส่ง logout event ซ้ำ
           if (S && S.code) {
-            _logLoginEvent({
+            try { sessionStorage.setItem("_logoutSent", "1"); } catch (_) {}
+            console.log("[doLogout] ส่ง logout event:", S.code, S.role);
+            const logoutRec = {
               code: S.code, name: S.name || S.nick || "", role: S.role || "",
-              branch_code: S.branch_code || S.code || "", branch_name: S.branch || "", dm: S.dm || "",
+              branch_code: S.branch_code || S.code || "",
+              branch_name: S.branch || "", dm: S.dm || "",
               event_type: "logout"
-            });
+            };
+            // วิธีที่ 1: fetch keepalive (เร็ว เผื่อปิด tab ทันที)
+            _logLoginEvent(logoutRec);
+            // วิธีที่ 2 (backup): sb.from().insert() — รอ response เพื่อแน่ใจว่าเข้า DB
+            try {
+              const ua = navigator.userAgent || "";
+              let platform = "Unknown";
+              if (/iPhone|iPad|iPod/i.test(ua)) platform = "iOS";
+              else if (/Android/i.test(ua)) platform = "Android";
+              else if (/Windows/i.test(ua)) platform = "Windows";
+              else if (/Macintosh|Mac OS/i.test(ua)) platform = "macOS";
+              else if (/Linux/i.test(ua)) platform = "Linux";
+              sb.from("login_logs").insert({
+                user_code:   String(logoutRec.code || ""),
+                user_name:   String(logoutRec.name || ""),
+                role:        String(logoutRec.role || ""),
+                branch_code: String(logoutRec.branch_code || ""),
+                branch_name: String(logoutRec.branch_name || ""),
+                dm:          String(logoutRec.dm || ""),
+                ua:          ua.slice(0, 300),
+                platform:    platform,
+                event_type:  "logout"
+              }).then(({ error }) => {
+                if (error) console.warn("[doLogout sb backup] error:", error.message);
+                else console.log("[doLogout sb backup] ✓ inserted");
+              });
+            } catch (e) { console.warn("[doLogout sb backup]", e); }
           }
           // SSO: ล้าง shared session → Hub และแอปอื่นต้อง login ใหม่
           clearFabSession();
