@@ -922,17 +922,20 @@
       body.is-touch .desk-sidebar { display: none !important; }
       body.is-touch:not(.on-login) #appHdr { display: flex !important; }
       body.is-touch.on-login #appHdr { display: none !important; }
-      /* บนหน้า login (ทุกขนาดจอ) → ซ่อน HEADER ทั้งหมด + chrome อื่นๆ
-         การซ่อน #appHdr ทั้งอันแก้ปัญหาปุ่ม "ออกจากระบบ" โผล่บนหน้า login
-         (เร็วกว่าและกัน specificity battle กับ rule มือถือเดิม) */
+      /* บนหน้า login (ทุกขนาดจอ) → ซ่อน HEADER + chrome ทั้งหมด
+         ใช้ specificity สูง (body.on-login + #hdr + .hdr-logout-btn) เพื่อชนะ rule มือถือ
+         และ #appHdr * เป็น safety net — ครอบคลุมทุก descendant ของ header */
       body.on-login #appHdr,
+      body.on-login #appHdr *,
       body.on-login #hdrLogoutBtn,
       body.on-login #hdrHubBtn,
       body.on-login #testModeBanner,
       body.on-login #bypassOrderBanner,
       body.on-login #deskSidebar,
       body.on-login #mobNav,
-      body.on-login .hdr-logout-btn { display: none !important; }
+      body.on-login button.hdr-logout-btn,
+      body.on-login .hdr-logout-btn,
+      body.is-touch.on-login .hdr-logout-btn { display: none !important; visibility: hidden !important; }
       body.is-touch .screen.active:not(#sLogin) { margin-left: 0 !important; padding-bottom: 80px; }
       body.is-touch .mob-nav.visible {
         display: block !important;
@@ -6419,8 +6422,22 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
       try { fab = JSON.parse(localStorage.getItem('fab_session') || 'null'); } catch(_) {}
       var local = null;
       try { local = localStorage.getItem('sf2_code'); } catch(_) {}
+      var hasSession = (fab && fab.code) || local;
       // มี session อันใดอันหนึ่ง = อยู่ในระบบ → ลบ on-login (ไม่แสดง chrome หน้า login)
-      if ((fab && fab.code) || local) document.body.classList.remove('on-login');
+      if (hasSession) {
+        document.body.classList.remove('on-login');
+      } else {
+        // ไม่มี session = login page → บังคับซ่อน header chrome กันโผล่ก่อน CSS apply
+        var hide = function(id){
+          var el = document.getElementById(id);
+          if (el) el.style.setProperty('display', 'none', 'important');
+        };
+        hide('appHdr');
+        hide('hdrLogoutBtn');
+        hide('hdrHubBtn');
+        hide('testModeBanner');
+        hide('bypassOrderBanner');
+      }
     }catch(e){}})();</script>
 
     <!-- ════════════════════════════════════════
@@ -8698,8 +8715,19 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         document.getElementById(id).classList.add("active");
         // mark login state on body — CSS uses it to gate header/nav on touch
         document.body.classList.toggle("on-login", id === "sLogin");
-        // ถ้าเด้งออกเพราะ idle timeout → แสดง banner เตือน 1 ครั้ง
+        // Defensive: บังคับซ่อน header chrome ทุกครั้งที่เข้าหน้า login
+        // (เผื่อ CSS specificity ไม่ทันจากที่อื่น หรือ inline style จากที่อื่นทับ)
         if (id === "sLogin") {
+          const hideById = (el) => {
+            if (!el) return;
+            el.style.setProperty('display', 'none', 'important');
+          };
+          hideById(document.getElementById("appHdr"));
+          hideById(document.getElementById("hdrLogoutBtn"));
+          hideById(document.getElementById("hdrHubBtn"));
+          hideById(document.getElementById("testModeBanner"));
+          hideById(document.getElementById("bypassOrderBanner"));
+          document.querySelectorAll(".hdr-logout-btn").forEach(hideById);
           try {
             if (sessionStorage.getItem("idleTimeoutMsg") === "1") {
               sessionStorage.removeItem("idleTimeoutMsg");
