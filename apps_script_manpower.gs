@@ -14,6 +14,9 @@
  *     - Who has access: Anyone
  *     - Deploy → คัดลอก Web app URL
  *  5. ส่ง URL ให้ผม → ผมใส่ใน index.html ให้
+ *
+ * NOTE: รัน "doPost" จาก editor ตรงๆ จะ error เพราะ e=undefined
+ *       ให้รัน "syncAll" แทน
  */
 
 // ════════════════════════════════════════════
@@ -25,7 +28,9 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 // Sheet ID ปลายทาง — hardcode เพื่อให้ทำงานได้ทั้ง standalone และ bound script
 const SHEET_ID = "1OwmLDyuPOKM2rNq4yaXHpVE6Mvfo6Jntk0kJukPHOU4";
 
-// Header ของแต่ละ sheet (ลำดับคอลัมน์)
+// ════════════════════════════════════════════
+// HEADERS — ลำดับคอลัมน์ของแต่ละ sheet tab
+// ════════════════════════════════════════════
 const SALES_HEADERS = [
   "id", "branch_code", "branch_name", "district_manager", "submitter_name",
   "submit_date", "submit_time_slot", "submitted_at",
@@ -46,6 +51,7 @@ const BRANCHES_HEADERS = [
 
 const MANPOWER_HEADERS = [
   "id", "branch_code", "year", "month",
+  // ── NEW STRUCTURE (Excel template) ──
   // Plan + Actual Team (admin ตั้ง plan_*; user กรอก actual_team)
   "plan_team", "plan_staff", "actual_team",
   // Service (5 ช่อง: FT/PT/Basic/Silver/Gold)
@@ -56,7 +62,7 @@ const MANPOWER_HEADERS = [
   "pt_8h", "pt_dual40", "pt_45h",
   // รายละเอียด ทวิภาคี
   "dual_ft", "dual_pt",
-  // Legacy (per-tier PT/FT + ทีมผู้จัดการเก่า — เผื่อข้อมูลเก่า)
+  // ── LEGACY (เก็บไว้เผื่อข้อมูลเก่า — sheet แสดง column ว่างถ้าไม่มีค่า) ──
   "rgm", "sam", "am", "ss",
   "k_basic_pt", "k_basic_ft", "k_silver_pt", "k_silver_ft", "k_gold_pt", "k_gold_ft",
   "s_basic_pt", "s_basic_ft", "s_silver_pt", "s_silver_ft", "s_gold_pt", "s_gold_ft",
@@ -68,13 +74,28 @@ const USERS_HEADERS = [
   "dm", "branch_code", "branch_name", "active", "created_at", "updated_at"
 ];
 
+const LOGIN_LOGS_HEADERS = [
+  "id", "user_code", "user_name", "role",
+  "branch_code", "branch_name", "dm",
+  "ua", "platform", "event_type", "logged_at"
+];
+
+const USER_ACTIONS_HEADERS = [
+  "id", "user_code", "action", "detail", "created_at"
+];
+
 // ════════════════════════════════════════════
-// PUSH — รับ POST จาก index.html → trigger full sync
+// PUSH — รับ POST จาก index.html → trigger sync เฉพาะ table ที่เกี่ยวข้อง
 // (Supabase = source of truth → re-fetch ทั้ง table แม่นยำที่สุด)
 // ════════════════════════════════════════════
 function doPost(e) {
   try {
-    const action = (e.parameter || {}).action;
+    // ถ้าถูกกด Run จาก editor ตรงๆ → e จะเป็น undefined
+    if (!e || !e.parameter) {
+      Logger.log("doPost called without event — ใช้ผ่าน web app เท่านั้น (รัน syncAll แทนถ้าต้องการทดสอบ)");
+      return _resp({ ok: false, error: "no event (manual run)" });
+    }
+    const action = e.parameter.action;
 
     if (action === "submit_sales") {
       syncTable("sales_data", "Sales", SALES_HEADERS);
@@ -111,22 +132,27 @@ function _resp(obj) {
 }
 
 // ════════════════════════════════════════════
-// PULL — sync ทั้ง table ทุก 1 นาที (safety net)
+// PULL — sync ทั้ง 7 tables (auto ทุก 1 นาที + manual run ได้)
 // ════════════════════════════════════════════
 function syncAll() {
-  syncTable("sales_data", "Sales",    SALES_HEADERS);
-  syncTable("plan_sale",  "Plan",     PLAN_HEADERS);
-  syncTable("branches",   "Branches", BRANCHES_HEADERS);
-  syncTable("manpower",   "Manpower", MANPOWER_HEADERS);
-  syncTable("users",      "Users",    USERS_HEADERS);
+  syncTable("sales_data",   "Sales",       SALES_HEADERS);
+  syncTable("plan_sale",    "Plan",        PLAN_HEADERS);
+  syncTable("branches",     "Branches",    BRANCHES_HEADERS);
+  syncTable("manpower",     "Manpower",    MANPOWER_HEADERS);
+  syncTable("users",        "Users",       USERS_HEADERS);
+  syncTable("login_logs",   "LoginLogs",   LOGIN_LOGS_HEADERS);
+  syncTable("user_actions", "UserActions", USER_ACTIONS_HEADERS);
 }
 
 function syncTable(tableName, sheetName, headers) {
-  // manpower: เรียงตาม year+month (ใหม่สุด → เก่าสุด) แทน id
-  // users: ไม่มี id → เรียงตาม code
+  // เลือกลำดับการ sort ตาม table
+  // (branches/users ไม่มีคอลัมน์ id — ต้อง override)
   let orderBy = "id.desc";
-  if (tableName === "manpower") orderBy = "year.desc,month.desc,branch_code.asc";
-  else if (tableName === "users") orderBy = "role.asc,code.asc";
+  if (tableName === "manpower")          orderBy = "year.desc,month.desc,branch_code.asc";
+  else if (tableName === "users")        orderBy = "role.asc,code.asc";
+  else if (tableName === "branches")     orderBy = "branch_code.asc";
+  else if (tableName === "login_logs")   orderBy = "logged_at.desc";
+  else if (tableName === "user_actions") orderBy = "created_at.desc";
 
   const url = `${SUPABASE_URL}/rest/v1/${tableName}?select=*&order=${orderBy}&limit=10000`;
   const response = UrlFetchApp.fetch(url, {
@@ -138,7 +164,7 @@ function syncTable(tableName, sheetName, headers) {
   });
 
   if (response.getResponseCode() !== 200) {
-    Logger.log(`[${tableName}] ${response.getContentText()}`);
+    Logger.log(`[${tableName}] HTTP ${response.getResponseCode()}: ${response.getContentText()}`);
     return;
   }
 
@@ -161,7 +187,7 @@ function syncTable(tableName, sheetName, headers) {
     sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
   }
 
-  // timestamp
+  // timestamp "Last sync: dd/MM/yyyy HH:mm:ss"
   const tz = "Asia/Bangkok";
   const stamp = Utilities.formatDate(new Date(), tz, "dd/MM/yyyy HH:mm:ss");
   sheet.getRange(1, headers.length + 2).setValue("Last sync:");
@@ -182,11 +208,11 @@ function setupTriggers() {
 
 function stopTriggers() {
   ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
-  SpreadsheetApp.getUi().alert("Stopped.");
+  try { SpreadsheetApp.getUi().alert("Stopped."); } catch (_) { Logger.log("Stopped."); }
 }
 
 // ════════════════════════════════════════════
-// Menu
+// Menu (โชว์ใน Sheet)
 // ════════════════════════════════════════════
 function onOpen() {
   SpreadsheetApp.getUi()

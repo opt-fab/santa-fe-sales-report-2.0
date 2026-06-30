@@ -12956,10 +12956,20 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         return (codes || []).reduce((s, bc) => s + (parseFloat(map[bc]) || 0), 0);
       }
       function _ddAgg(rows) {
-        const eod = (rows || []).filter(r => r.submit_time_slot === "สิ้นวัน");
+        // จัดกลุ่ม branch+date 1 รายการต่อวัน · prefer "สิ้นวัน" · fallback "16.00" ถ้ายังไม่ส่งสิ้นวัน
+        // (รวมยอด preliminary แสดงในแดชบอร์ดได้ทันที ไม่ต้องรอสิ้นวัน)
+        const byKey = {};
+        (rows || []).forEach(r => {
+          const k = (r.branch_code || "") + "|" + (r.submit_date || "");
+          const prev = byKey[k];
+          if (!prev) { byKey[k] = r; return; }
+          // ถ้า prev = 16.00 และ r = สิ้นวัน → แทนที่ (EOD ชนะ)
+          if (prev.submit_time_slot !== "สิ้นวัน" && r.submit_time_slot === "สิ้นวัน") byKey[k] = r;
+        });
+        const picked = Object.values(byKey);
         const a = { actual: 0, bills: 0, cust: 0, labHr: 0, labBaht: 0, sale: {}, trans: {} };
         CHANNEL_DEFS.forEach(c => { a.sale[c.key] = 0; a.trans[c.key] = 0; });
-        eod.forEach(r => {
+        picked.forEach(r => {
           a.actual  += parseFloat(r.actual_sale) || 0;
           a.bills   += parseFloat(r.total_trans) || 0;
           a.cust    += parseFloat(r.customer) || 0;
