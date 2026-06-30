@@ -10714,6 +10714,7 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
          MANPOWER — กรอกกำลังคนต่อสาขา ต่อเดือน
       ════════════════════════════════════════════ */
       var _mpData = {};  // { branch_code: { rgm:..., k_basic_pt:..., ... } }
+      var _mpPrevData = {}; // ข้อมูลเดือนก่อนหน้า — ใช้เป็น default ถ้าเดือนนี้ว่าง
       var _MP_MONTHS_TH = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
 
       function showManpower() {
@@ -10880,6 +10881,16 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         body.innerHTML = `<tr><td colspan="7" style="padding:24px;text-align:center;color:#94a3b8">⏳ กำลังโหลด...</td></tr>`;
         if (cards) cards.innerHTML = `<div class="mp-empty">⏳ กำลังโหลด...</div>`;
         const codes = inZone.map(b => b.branch_code);
+        // คำนวณเดือนก่อนหน้า — ใช้เป็น default ถ้าเดือนนี้ยังไม่มีข้อมูล
+        const py = (m === 1) ? (y - 1) : y;
+        const pm = (m === 1) ? 12 : (m - 1);
+        // ─ โหลด prev month ขนานไป (fire-and-forget) ─
+        apiCall({ mode: "listManpower", year: py, month: pm, branch_codes: codes }, function(pres) {
+          _mpPrevData = {};
+          if (pres && pres.ok && Array.isArray(pres.rows)) {
+            pres.rows.forEach(r => { _mpPrevData[r.branch_code] = r; });
+          }
+        });
         apiCall({ mode: "listManpower", year: y, month: m, branch_codes: codes }, function(res) {
           _mpData = {};
           if (res && res.ok && Array.isArray(res.rows)) {
@@ -11366,7 +11377,11 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
               <th class="status-cell" style="text-align:center;padding:14px 12px;font-weight:800;color:#5b21b6;font-size:13px;width:140px">สถานะ</th>
             </tr></thead>`;
           const rows = _mpBulkCodes.map(code => {
-            const r = _mpData[code] || {};
+            let r = _mpData[code] || {};
+            // ถ้าเดือนนี้ไม่มี plan → ใช้เดือนก่อนหน้า (ทีม management แก้ไขได้)
+            if (!(r.plan_team > 0 || r.plan_staff > 0) && _mpPrevData[code]) {
+              r = Object.assign({}, _mpPrevData[code], { _inherited: true });
+            }
             const bInfo = BRANCH_DM_MAP[code] || {};
             const plt = (r.plan_team != null && r.plan_team !== 0) ? r.plan_team : "";
             const pls = (r.plan_staff != null && r.plan_staff !== 0) ? r.plan_staff : "";
@@ -11431,7 +11446,12 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         h2 += `</tr>`;
         // body
         const rows = _mpBulkCodes.map(code => {
-          const r = _mpData[code] || {};
+          let r = _mpData[code] || {};
+          // ถ้าเดือนนี้ไม่มีข้อมูล → ใช้เดือนก่อนหน้าเป็น default (ทีม management แก้ไขได้)
+          const hasCur = r && (r.actual_team > 0 || r.s_ft > 0 || r.s_pt > 0 || r.k_ft > 0 || r.k_pt > 0);
+          if (!hasCur && _mpPrevData[code]) {
+            r = Object.assign({}, _mpPrevData[code], { _inherited: true });
+          }
           const bInfo = BRANCH_DM_MAP[code] || {};
           let row = `<tr id="mpbrow_${code}"><td class="branch-cell"><span class="code">${escHtml(code)}</span>${escHtml(bInfo.branch || "-")}</td>`;
           fields.forEach((f, idx) => {
@@ -11649,7 +11669,13 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         document.getElementById("mp_year").value = y;
         document.getElementById("mp_month").value = m;
         document.getElementById("mpTitle").textContent = `Manpower · ${bName} · ${_MP_MONTHS_TH[m-1]} ${y+543}`;
-        const r = _mpData[branchCode] || {};
+        // ถ้าเดือนนี้ไม่มีข้อมูล → ใช้เดือนก่อนหน้าเป็น default (ทีม management แก้ไขได้)
+        let r = _mpData[branchCode] || {};
+        const hasCurrent = r && (r.actual_team > 0 || r.s_ft > 0 || r.s_pt > 0 || r.k_ft > 0 || r.k_pt > 0 || r.plan_team > 0 || r.plan_staff > 0);
+        if (!hasCurrent && _mpPrevData[branchCode]) {
+          r = Object.assign({}, _mpPrevData[branchCode], { _inherited: true });
+          console.log("[manpowerOpen] ใช้ค่าเดือนก่อนหน้าเป็น default สำหรับ", branchCode);
+        }
         const isAdmin = (S.role === "admin" || S.code === "ADMIN");
 
         // ── Render 1-row table เหมือน "กรอกหลายสาขา" (bulk) ใน modal ──
