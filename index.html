@@ -9147,6 +9147,9 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
 
         if (isAdmin) showAdmin("branches");
         else         showDash();
+        // หลัง login + S.code set + on-login removed → re-evaluate banners
+        // (เผื่อ test mode/bypass เปิดอยู่ ต้องโชว์แถบเตือน)
+        try { if (typeof _recomputeBanners === "function") _recomputeBanners(); } catch (_) {}
       }
 
       function showForm() {
@@ -12249,16 +12252,25 @@ body.is-touch .mob-nav-inner > .mob-nav-btn { flex:1 0 64px; display:flex; flex-
         const bnB = document.getElementById("bypassOrderBanner");
         const both = t && b;
         // ใช้ setProperty + 'important' เพื่อ override inline display:none !important (default ใน HTML)
+        // + remove visibility:hidden ที่ boot script ใส่ไว้ (กัน banner ซ่อนแม้ display:block)
         if (bnB) {
-          if (b) bnB.style.setProperty('display', 'block', 'important');
-          else   bnB.style.setProperty('display', 'none', 'important');
+          if (b) {
+            bnB.style.setProperty('display', 'block', 'important');
+            bnB.style.setProperty('visibility', 'visible', 'important');
+          } else {
+            bnB.style.setProperty('display', 'none', 'important');
+          }
           bnB.style.top = "0";
           bnB.style.left = "0";
           bnB.style.right = both ? "50%" : "0";
         }
         if (bnT) {
-          if (t) bnT.style.setProperty('display', 'block', 'important');
-          else   bnT.style.setProperty('display', 'none', 'important');
+          if (t) {
+            bnT.style.setProperty('display', 'block', 'important');
+            bnT.style.setProperty('visibility', 'visible', 'important');
+          } else {
+            bnT.style.setProperty('display', 'none', 'important');
+          }
           bnT.style.top = "0";
           bnT.style.left = both ? "50%" : "0";
           bnT.style.right = "0";
